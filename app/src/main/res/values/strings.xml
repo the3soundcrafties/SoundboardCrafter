@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Soundboard Crafter</string>
+    <string name="toolbar_menu_add_sound">+</string>
     <string name="music_button">Play</string>
 </resources>
