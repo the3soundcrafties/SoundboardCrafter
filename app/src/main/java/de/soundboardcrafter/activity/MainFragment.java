@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import de.soundboardcrafter.R;
@@ -26,7 +27,8 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
+        Button playButton = (Button) rootView.findViewById(R.id.button);
+        playButton.setOnClickListener(e -> OurSoundPlayer.playSound(this.getContext(),OurSoundPlayer.S1));
         return rootView;
     }
 

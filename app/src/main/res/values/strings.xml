@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Soundboard Crafter</string>
-    <string name="music_button">musik_button</string>
+    <string name="music_button">Play</string>
 </resources>

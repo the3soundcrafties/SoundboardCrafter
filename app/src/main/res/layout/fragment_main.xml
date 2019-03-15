@@ -9,6 +9,6 @@
         android:id="@+id/button"
         android:layout_width="182dp"
         android:layout_height="78dp"
-        android:text="Button" />
+        android:text="@string/music_button" />
 
 </FrameLayout>
