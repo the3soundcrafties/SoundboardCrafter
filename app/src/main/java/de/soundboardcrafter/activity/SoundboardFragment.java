@@ -10,6 +10,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
+
+import com.google.common.base.Preconditions;
 
 import de.soundboardcrafter.R;
 
@@ -32,6 +35,10 @@ public class SoundboardFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard, container, false);
+        String[] items = {"hallo","huhu","hihiho","haha"};
+        GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
+        SoundBoardItemAdapter soundBoardItemAdapter = new SoundBoardItemAdapter(this.getContext(), items);
+        gridView.setAdapter(soundBoardItemAdapter);
         return rootView;
     }
 
