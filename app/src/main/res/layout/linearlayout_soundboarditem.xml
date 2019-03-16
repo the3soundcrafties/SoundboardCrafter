@@ -10,14 +10,14 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:baselineAlignBottom="false"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@drawable/ic_play" />
 
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
-        android:layout_height="32dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:paddingTop="4dp"
-        android:text="Dummy"
+        android:text="Livin On A Prayer"
         android:textAlignment="textStart" />
 </LinearLayout>

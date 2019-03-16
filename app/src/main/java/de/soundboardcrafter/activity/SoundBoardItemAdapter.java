@@ -59,13 +59,16 @@ public class SoundboardItemAdapter extends BaseAdapter {
         }
 
         TextView nameTextView = (TextView) convertView.findViewById(R.id.name);
+        ImageView playStopImageView = (ImageView) convertView.findViewById(R.id.play_stop_button);
         nameTextView.setText(sound.getName());
         final Uri path = Uri.fromFile(new File(sound.getPath()));
         convertView.setOnClickListener(l -> {
             if(OurSoundPlayer.isPlaying(activity,path)){
                 OurSoundPlayer.stopSound(activity, path);
+                playStopImageView.setImageResource(R.drawable.ic_play);
             }else{
                 OurSoundPlayer.playSound(activity, path);
+                playStopImageView.setImageResource(R.drawable.ic_stop);
             }
         });
         return convertView;
