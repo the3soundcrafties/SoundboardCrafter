@@ -12,9 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+import java.nio.file.Paths;
+import java.util.List;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Shows Soundboard in a Grid
@@ -35,9 +40,11 @@ public class SoundboardFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard, container, false);
-        String[] items = {"hallo","huhu","hihiho","haha"};
+        Sound sound = new Sound("/storage/emulated/0/Musik/BoA_-_Mamoritai_Tales_Of_Graces_F_op.English_Version_(mp3.pm).mp3",
+                "mamoritai", 50f, true);
+        Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(sound));
         GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
-        SoundBoardItemAdapter soundBoardItemAdapter = new SoundBoardItemAdapter(this.getContext(), items);
+        SoundboardItemAdapter soundBoardItemAdapter = new SoundboardItemAdapter(this.getActivity(), board);
         gridView.setAdapter(soundBoardItemAdapter);
         return rootView;
     }

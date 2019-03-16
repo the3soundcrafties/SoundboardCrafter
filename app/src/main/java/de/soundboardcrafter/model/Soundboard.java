@@ -25,11 +25,10 @@ public class Soundboard {
      */
     private ArrayList<Sound> sounds;
 
-    public Soundboard(@NonNull String name) {
-        checkNotNull(name, "name is null");
-
+    public Soundboard(@NonNull String name, @NonNull ArrayList<Sound> sounds) {
         id = UUID.randomUUID();
-        this.name = name;
+        this.name =  checkNotNull(name, "name is null");;
+        this.sounds = checkNotNull(sounds, "sound is null");
     }
 
     public @NonNull UUID getId() {

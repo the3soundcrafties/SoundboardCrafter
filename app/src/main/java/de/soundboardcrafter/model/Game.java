@@ -15,10 +15,8 @@ public class Game {
     @NonNull private String name;
 
     public Game(@NonNull String name) {
-        checkNotNull(name, "name is null");
-
         id = UUID.randomUUID();
-        this.name = name;
+        this.name = checkNotNull(name, "name is null");;
     }
 
     public @NonNull UUID getId() {

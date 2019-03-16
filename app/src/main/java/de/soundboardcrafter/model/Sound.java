@@ -2,6 +2,7 @@ package de.soundboardcrafter.model;
 
 import com.google.common.base.Preconditions;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class Sound {
     /**
      * Path to the audio file
      */
-    @NonNull private Path path;
+    @NonNull private String path;
 
     /**
      * Display name
@@ -40,9 +41,8 @@ public class Sound {
      */
     private boolean loop;
 
-    public Sound(@NonNull Path path, @NonNull String name, float relativeVolume, boolean loop) {
+    public Sound(@NonNull String path, @NonNull String name, float relativeVolume, boolean loop) {
         id = UUID.randomUUID();
-
         this.path = checkNotNull(path, "path is null");
         this.name = checkNotNull(name, "name is null");
         this.relativeVolume = relativeVolume;
@@ -54,11 +54,11 @@ public class Sound {
     }
 
     @NonNull
-    public Path getPath() {
+    public String getPath() {
         return path;
     }
 
-    public void setPath(@NonNull Path path) {
+    public void setPath(@NonNull String path) {
         checkNotNull(path,
                 "path is null");
         this.path = path;

@@ -8,12 +8,16 @@
         android:id="@+id/play_stop_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="0"
+        android:baselineAlignBottom="false"
         app:srcCompat="@android:drawable/ic_media_play" />
 
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:paddingTop="4dp"
+        android:text="Dummy"
+        android:textAlignment="textStart" />
 </LinearLayout>
