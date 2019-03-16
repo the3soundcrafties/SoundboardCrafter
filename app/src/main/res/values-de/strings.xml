@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="toolbar_menu_add_sound">Sound hinzufügen</string>
+    <string name="music_button_song1">Spiele Lied 1</string>
+    <string name="music_button_song2">Spiele Lied 2</string>
+    <string name="music_button_song3">Spiele Lied 3</string>
 </resources>

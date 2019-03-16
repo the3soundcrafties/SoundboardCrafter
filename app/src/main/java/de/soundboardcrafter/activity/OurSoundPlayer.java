@@ -10,7 +10,9 @@ import java.util.HashMap;
 import de.soundboardcrafter.R;
 
 public class OurSoundPlayer {
-    public static final int S1 = R.raw.trailer2;
+    public static final int trailer2 = R.raw.trailer2;
+    public static final int dramatic_beat = R.raw.dramatic_beat;
+    public static final int desolated_field = R.raw.desolated_field;
     private static SoundPool soundPool;
     private static HashMap<Integer, Integer> soundPoolMap;
 
@@ -23,7 +25,9 @@ public class OurSoundPlayer {
         soundPool = new SoundPool.Builder()
                 .setAudioAttributes(attribute).setMaxStreams(2).build();
         soundPoolMap = new HashMap(3);
-        soundPoolMap.put(S1, soundPool.load(context, R.raw.trailer2, 1));
+        soundPoolMap.put(trailer2, soundPool.load(context, R.raw.trailer2, 1));
+        soundPoolMap.put(dramatic_beat, soundPool.load(context, R.raw.dramatic_beat, 1));
+        soundPoolMap.put(desolated_field, soundPool.load(context, R.raw.desolated_field, 1));
     }
 
     /** Play a given sound in the soundPool */
