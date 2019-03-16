@@ -3,6 +3,8 @@ package de.soundboardcrafter.dao;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.nfc.Tag;
+import android.util.Log;
 
 import de.soundboardcrafter.dao.DBSchema.GameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
@@ -60,17 +62,25 @@ class DBHelper extends SQLiteOpenHelper {
                     "PRIMARY KEY (" + SoundboardSoundTable.Cols.SOUNDBOARD_ID + ", " + //
                     SoundboardSoundTable.Cols.SOUND_ID + "));";
 
+    private static final String TAG = DBHelper.class.getName();
+
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.d(TAG, "Creating database...");
+
         db.execSQL(CREATE_TABLE_GAME);
         db.execSQL(CREATE_TABLE_SOUNDBOARD);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_GAME);
         db.execSQL(CREATE_TABLE_SOUND);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_SOUND);
+
+        // TODO extra index on primary keys necessary?
+
+        Log.d(TAG, "Database created.");
     }
 
     @Override
