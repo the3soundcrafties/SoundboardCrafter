@@ -23,8 +23,7 @@ public class Sound {
     /**
      * Path to the audio file
      */
-    private @NonNull
-    Path path;
+    @NonNull private Path path;
 
     /**
      * Display name

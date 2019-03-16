@@ -11,8 +11,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A game to which a soundboard might be linked.
  */
 public class Game {
-    private final @NonNull UUID id;
-    private @NonNull String name;
+    @NonNull private final UUID id;
+    @NonNull private String name;
 
     public Game(@NonNull String name) {
         checkNotNull(name, "name is null");
