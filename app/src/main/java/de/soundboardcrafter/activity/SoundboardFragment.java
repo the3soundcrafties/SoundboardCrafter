@@ -40,8 +40,8 @@ public class SoundboardFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard, container, false);
-        Sound sound = new Sound("/storage/emulated/0/Musik/BoA_-_Mamoritai_Tales_Of_Graces_F_op.English_Version_(mp3.pm).mp3",
-                "mamoritai", 50f, true);
+        Sound sound = new Sound("/storage/emulated/0/soundboard crafter test songs/Bon Jovi-Livin On A Prayer.mp3",
+                "Livin On A Prayer", 50f, true);
         Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(sound));
         GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
         SoundboardItemAdapter soundBoardItemAdapter = new SoundboardItemAdapter(this.getActivity(), board);
