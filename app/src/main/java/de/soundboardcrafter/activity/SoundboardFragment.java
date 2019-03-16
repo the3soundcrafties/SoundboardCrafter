@@ -44,7 +44,9 @@ public class SoundboardFragment extends Fragment {
                 "Livin On A Prayer", 50, true);
         Sound stayAnotherDay = new Sound("/storage/emulated/0/soundboard crafter test songs/Stay Another Day.mp3",
                 "Stay Another Day", 50, true);
-        Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(livinOnAPrayer, stayAnotherDay));
+        Sound trailer2 = new Sound("/storage/emulated/0/soundboard crafter test songs/trailer2.wav",
+                "Trailer2", 90, false);
+        Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(livinOnAPrayer, stayAnotherDay, trailer2));
         GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
         SoundboardItemAdapter soundBoardItemAdapter = new SoundboardItemAdapter(this.getActivity(), board);
         gridView.setAdapter(soundBoardItemAdapter);

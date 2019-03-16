@@ -10,6 +10,7 @@ import android.net.Uri;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -17,6 +18,7 @@ import javax.annotation.Nonnull;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import de.soundboardcrafter.model.Sound;
 
 /**
  * Manage playing Songs.
@@ -27,27 +29,30 @@ public class OurSoundPlayer {
     /**
      * Play a given sound in a mediaplayer
      */
-    public static void playSound(Activity activity, Uri pathSoundFile) {
+    public static void playSound(Activity activity, Sound sound) {
         checkPermission(activity);
         MediaPlayer mediaPlayer = null;
         try {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-            mediaPlayer.setDataSource(activity, pathSoundFile);
+            mediaPlayer.setDataSource(activity, Uri.fromFile(new File(sound.getPath())));
+            mediaPlayer.setVolume(sound.getRelativeVolume(), sound.getRelativeVolume());
+            mediaPlayer.setLooping(sound.isLoop());
             mediaPlayer.prepare();
+            // TODO: 16.03.2019 asynchrones vorbereiten
         } catch (IOException e) {
             // TODO: 16.03.2019 richtiges handling
             e.printStackTrace();
         }
-        currentPlayer.put(pathSoundFile.getPath(), mediaPlayer);
+        currentPlayer.put(sound.getPath(), mediaPlayer);
         mediaPlayer.start();
     }
 
-    public static boolean isPlaying(@Nonnull Activity activity, @Nonnull Uri path) {
+    public static boolean isPlaying(@Nonnull Activity activity, @Nonnull Sound sound) {
         Preconditions.checkNotNull(activity, "activity is null");
-        Preconditions.checkNotNull(path, "path is null");
+        Preconditions.checkNotNull(sound, "sound is null");
 
-        MediaPlayer mediaPlayer = currentPlayer.get(path.getPath());
+        MediaPlayer mediaPlayer = currentPlayer.get(sound.getPath());
         if(mediaPlayer ==null){
             return false;
         }
@@ -55,15 +60,15 @@ public class OurSoundPlayer {
     }
 
 
-    public static void stopSound(Activity activity, Uri path) {
+    public static void stopSound(Activity activity, Sound sound) {
         Preconditions.checkNotNull(activity, "activity is null");
-        Preconditions.checkNotNull(path, "path is null");
+        Preconditions.checkNotNull(sound, "sound is null");
 
-        MediaPlayer mediaPlayer = currentPlayer.get(path.getPath());
+        MediaPlayer mediaPlayer = currentPlayer.get(sound.getPath());
         if(mediaPlayer == null) {
             return;
         }
-        currentPlayer.remove(path.getPath());
+        currentPlayer.remove(sound.getPath());
         mediaPlayer.stop();
         mediaPlayer.release();
     }
