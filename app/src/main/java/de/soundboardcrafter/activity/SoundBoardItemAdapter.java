@@ -61,7 +61,13 @@ public class SoundboardItemAdapter extends BaseAdapter {
         TextView nameTextView = (TextView) convertView.findViewById(R.id.name);
         nameTextView.setText(sound.getName());
         final Uri path = Uri.fromFile(new File(sound.getPath()));
-        convertView.setOnClickListener(l -> OurSoundPlayer.playSound(activity, path));
+        convertView.setOnClickListener(l -> {
+            if(OurSoundPlayer.isPlaying(activity,path)){
+                OurSoundPlayer.stopSound(activity, path);
+            }else{
+                OurSoundPlayer.playSound(activity, path);
+            }
+        });
         return convertView;
     }
 }
