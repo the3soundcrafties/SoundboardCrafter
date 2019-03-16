@@ -19,37 +19,41 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <code>Sound</code>s are basically links to some audio file on the device.
  */
 public class Sound {
-    private final @NonNull UUID id;
+    private final @NonNull
+    UUID id;
 
     /**
      * Path to the audio file
      */
-    @NonNull private String path;
+    @NonNull
+    private String path;
 
     /**
      * Display name
      */
-    private @NonNull String name;
+    private @NonNull
+    String name;
 
     /**
-     * Volume when the sound is played. <code>1.0</code> is the original volume.
+     * Volume when the sound is played as a percentage. <code>100</code> is the original volume.
      */
-    private float relativeVolume;
+    private int volumePercentage;
 
     /**
      * Whether the sound shall be played in a loop.
      */
     private boolean loop;
 
-    public Sound(@NonNull String path, @NonNull String name, float relativeVolume, boolean loop) {
+    public Sound(@NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
         id = UUID.randomUUID();
         this.path = checkNotNull(path, "path is null");
         this.name = checkNotNull(name, "name is null");
-        this.relativeVolume = relativeVolume;
+        this.volumePercentage = volumePercentage;
         this.loop = loop;
     }
 
-    public @NonNull UUID getId() {
+    public @NonNull
+    UUID getId() {
         return id;
     }
 
@@ -76,12 +80,12 @@ public class Sound {
         this.name = name;
     }
 
-    public float getRelativeVolume() {
-        return relativeVolume;
+    public int getVolumePercentage() {
+        return volumePercentage;
     }
 
-    public void setRelativeVolume(float relativeVolume) {
-        this.relativeVolume = relativeVolume;
+    public void setVolumePercentage(int volumePercentage) {
+        this.volumePercentage = volumePercentage;
     }
 
     public boolean isLoop() {
@@ -98,7 +102,7 @@ public class Sound {
                 "id=" + id +
                 ", path=" + path +
                 ", name='" + name + '\'' +
-                ", relativeVolume=" + relativeVolume +
+                ", volumePercentage=" + volumePercentage +
                 ", loop=" + loop +
                 '}';
     }
