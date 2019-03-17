@@ -1,9 +1,6 @@
 package de.soundboardcrafter.activity;
 
 import android.app.Activity;
-import android.content.Context;
-import android.media.Image;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.common.base.Preconditions;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +22,8 @@ import de.soundboardcrafter.model.Soundboard;
 public class SoundboardItemAdapter extends BaseAdapter {
     private final Activity activity;
     private final Soundboard soundboard;
+    private static String TAG = MediaPlayerManagerService.class.getName();
+
 
     public SoundboardItemAdapter(Activity activity, Soundboard soundboard) {
         this.activity = activity;
@@ -61,22 +56,21 @@ public class SoundboardItemAdapter extends BaseAdapter {
 
         TextView nameTextView = (TextView) convertView.findViewById(R.id.name);
         ImageView playStopImageView = (ImageView) convertView.findViewById(R.id.play_stop_button);
-        setPlayStopIcon(activity, sound, playStopImageView);
+        setPlayStopIcon(activity, soundboard, sound, playStopImageView);
         nameTextView.setText(sound.getName());
         convertView.setOnClickListener(l -> {
-            if (OurSoundPlayer.isPlaying(activity, sound)) {
-                OurSoundPlayer.stopSound(activity, sound);
+            if (!MediaPlayerManagerService.shouldBePlaying(activity, soundboard, sound)) {
+                MediaPlayerManagerService.playSound(activity, soundboard, sound, () -> playStopImageView.setImageResource(R.drawable.ic_stop));
             } else {
-                OurSoundPlayer.playSound(activity, sound);
+                MediaPlayerManagerService.stopSound(activity, soundboard, sound, () -> playStopImageView.setImageResource(R.drawable.ic_play));
             }
-            setPlayStopIcon(activity,sound,playStopImageView);
         });
 
         return convertView;
     }
 
-    public void setPlayStopIcon(Activity activity, Sound sound, ImageView imageView){
-        if (OurSoundPlayer.isPlaying(activity, sound)) {
+    private void setPlayStopIcon(Activity activity, Soundboard soundboard, Sound sound, ImageView imageView) {
+        if (MediaPlayerManagerService.shouldBePlaying(activity, soundboard, sound)) {
             imageView.setImageResource(R.drawable.ic_stop);
         } else {
             imageView.setImageResource(R.drawable.ic_play);
