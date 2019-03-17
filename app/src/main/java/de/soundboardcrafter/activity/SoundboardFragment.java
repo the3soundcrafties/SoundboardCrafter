@@ -56,6 +56,7 @@ public class SoundboardFragment extends Fragment {
         GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
         SoundboardItemAdapter soundBoardItemAdapter = new SoundboardItemAdapter(this.getActivity(), board);
         gridView.setAdapter(soundBoardItemAdapter);
+
         return rootView;
     }
 
