@@ -1,5 +1,6 @@
 package de.soundboardcrafter.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +14,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A soundboard, that is a keyboard you can play sounds with.
  * The application supports several soundboards.
  */
-public class Soundboard {
-    private final @NonNull UUID id;
+public class Soundboard implements Serializable {
+    private final @NonNull
+    UUID id;
     private @NonNull
     String name;
 
@@ -27,15 +29,18 @@ public class Soundboard {
 
     public Soundboard(@NonNull String name, @NonNull ArrayList<Sound> sounds) {
         id = UUID.randomUUID();
-        this.name =  checkNotNull(name, "name is null");;
+        this.name = checkNotNull(name, "name is null");
+        ;
         this.sounds = checkNotNull(sounds, "sound is null");
     }
 
-    public @NonNull UUID getId() {
+    public @NonNull
+    UUID getId() {
         return id;
     }
 
-    public @NonNull String getName() {
+    public @NonNull
+    String getName() {
         return name;
     }
 

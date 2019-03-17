@@ -1,9 +1,6 @@
 package de.soundboardcrafter.model;
 
-import com.google.common.base.Preconditions;
-
-import java.net.URI;
-import java.nio.file.Path;
+import java.io.Serializable;
 import java.util.UUID;
 
 import androidx.annotation.NonNull;
@@ -18,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p></p>
  * <code>Sound</code>s are basically links to some audio file on the device.
  */
-public class Sound {
+public class Sound implements Serializable {
     private final @NonNull
     UUID id;
 
