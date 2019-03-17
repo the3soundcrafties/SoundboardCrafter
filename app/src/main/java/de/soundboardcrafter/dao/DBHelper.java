@@ -18,7 +18,7 @@ class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version
      */
-    private static final int VERSION = 1;
+    private static final int VERSION = 3;
 
     /**
      * Database name
@@ -31,11 +31,17 @@ class DBHelper extends SQLiteOpenHelper {
                     GameTable.Cols.NAME + " TEXT NOT NULL, " + //
                     "PRIMARY KEY (" + GameTable.Cols.ID + "));";
 
+    private static final String DROP_TABLE_GAME = //
+            "DROP TABLE " + GameTable.NAME + ";";
+
     private static final String CREATE_TABLE_SOUNDBOARD = //
             "CREATE TABLE " + SoundboardTable.NAME + " (" + //
                     SoundboardTable.Cols.ID + " TEXT NOT NULL, " + //
                     SoundboardTable.Cols.NAME + " TEXT NOT NULL, " + //
                     "PRIMARY KEY (" + SoundboardTable.Cols.ID + "));";
+
+    private static final String DROP_TABLE_SOUNDBOARD = //
+            "DROP TABLE " + SoundboardTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUNDBOARD_GAME = //
             "CREATE TABLE " + SoundboardGameTable.NAME + " (" + //
@@ -43,6 +49,9 @@ class DBHelper extends SQLiteOpenHelper {
                     SoundboardGameTable.Cols.GAME_ID + " TEXT NOT NULL, " + //
                     "PRIMARY KEY (" + SoundboardGameTable.Cols.SOUNDBOARD_ID + ", " + //
                     SoundboardGameTable.Cols.GAME_ID + "));";
+
+    private static final String DROP_TABLE_SOUNDBOARD_GAME = //
+            "DROP TABLE " + SoundboardGameTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUND = //
             "CREATE TABLE " + SoundTable.NAME + " (" + //
@@ -54,12 +63,19 @@ class DBHelper extends SQLiteOpenHelper {
                     SoundTable.Cols.LOOP + " INTEGER NOT NULL, " + //
                     "PRIMARY KEY (" + SoundTable.Cols.ID + "));";
 
+    private static final String DROP_TABLE_SOUND = //
+            "DROP TABLE " + SoundTable.NAME + ";";
+
     private static final String CREATE_TABLE_SOUNDBOARD_SOUND = //
             "CREATE TABLE " + SoundboardSoundTable.NAME + " (" + //
                     SoundboardSoundTable.Cols.SOUNDBOARD_ID + " TEXT NOT NULL, " + //
                     SoundboardSoundTable.Cols.SOUND_ID + " TEXT NOT NULL, " + //
+                    SoundboardSoundTable.Cols.POS_INDEX + " INTEGER NOT NULL, " + //
                     "PRIMARY KEY (" + SoundboardSoundTable.Cols.SOUNDBOARD_ID + ", " + //
                     SoundboardSoundTable.Cols.SOUND_ID + "));";
+
+    private static final String DROP_TABLE_SOUNDBOARD_SOUND = //
+            "DROP TABLE " + SoundboardSoundTable.NAME + ";";
 
     private static final String TAG = DBHelper.class.getName();
 
@@ -71,6 +87,18 @@ class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "Creating database...");
 
+        createTables(db);
+
+        Log.d(TAG, "Database created.");
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        dropTables(db);
+        createTables(db);
+    }
+
+    private void createTables(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_GAME);
         db.execSQL(CREATE_TABLE_SOUNDBOARD);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_GAME);
@@ -78,12 +106,17 @@ class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_SOUNDBOARD_SOUND);
 
         // TODO extra index on primary keys necessary?
-
-        Log.d(TAG, "Database created.");
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // update logic, if any
+    private void dropTables(SQLiteDatabase db) {
+        db.execSQL(DROP_TABLE_GAME);
+        db.execSQL(DROP_TABLE_SOUNDBOARD);
+        db.execSQL(DROP_TABLE_SOUNDBOARD_GAME);
+        db.execSQL(DROP_TABLE_SOUND);
+        db.execSQL(DROP_TABLE_SOUNDBOARD_SOUND);
+    }
+
+    private void insertSoundboard(String name) {
+        // TODO insert some sample data
     }
 }

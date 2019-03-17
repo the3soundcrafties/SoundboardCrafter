@@ -1,9 +1,5 @@
 package de.soundboardcrafter.model;
 
-import com.google.common.base.Preconditions;
-
-import java.net.URI;
-import java.nio.file.Path;
 import java.util.UUID;
 
 import androidx.annotation.NonNull;
@@ -45,7 +41,11 @@ public class Sound {
     private boolean loop;
 
     public Sound(@NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
-        id = UUID.randomUUID();
+        this(UUID.randomUUID(), path, name, volumePercentage, loop);
+    }
+
+    public Sound(UUID id, @NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
+        this.id = checkNotNull(id, "id is null");
         this.path = checkNotNull(path, "path is null");
         this.name = checkNotNull(name, "name is null");
         this.volumePercentage = volumePercentage;

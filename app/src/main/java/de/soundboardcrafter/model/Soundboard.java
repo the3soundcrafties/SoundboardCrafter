@@ -14,7 +14,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * The application supports several soundboards.
  */
 public class Soundboard {
-    private final @NonNull UUID id;
+    private final @NonNull
+    UUID id;
     private @NonNull
     String name;
 
@@ -26,16 +27,22 @@ public class Soundboard {
     private ArrayList<Sound> sounds;
 
     public Soundboard(@NonNull String name, @NonNull ArrayList<Sound> sounds) {
-        id = UUID.randomUUID();
-        this.name =  checkNotNull(name, "name is null");;
+        this(UUID.randomUUID(), name, sounds);
+    }
+
+    public Soundboard(UUID id, @NonNull String name, @NonNull ArrayList<Sound> sounds) {
+        this.id = checkNotNull(id, "id is null");
+        this.name = checkNotNull(name, "name is null");
         this.sounds = checkNotNull(sounds, "sound is null");
     }
 
-    public @NonNull UUID getId() {
+    public @NonNull
+    UUID getId() {
         return id;
     }
 
-    public @NonNull String getName() {
+    public @NonNull
+    String getName() {
         return name;
     }
 
