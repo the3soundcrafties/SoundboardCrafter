@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.lang.ref.WeakReference;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,6 +32,7 @@ import de.soundboardcrafter.model.Soundboard;
  */
 public class SoundboardFragment extends Fragment {
     private GridView gridView;
+    private MediaPlayerManagerService mediaPlayerManagerService;
 
     public SoundboardFragment() {
         // Required empty public constructor
@@ -42,7 +44,13 @@ public class SoundboardFragment extends Fragment {
         setHasOptionsMenu(true);
         checkPermission(getActivity());
         new FindSoundboardsTask(getActivity()).execute();
+        mediaPlayerManagerService = new MediaPlayerManagerService(getActivity());
         // Will call setupAdapter() later.
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     private static void checkPermission(Activity activity) {
@@ -81,9 +89,8 @@ public class SoundboardFragment extends Fragment {
 
     private void setupAdapter(ImmutableList<Soundboard> soundboards) {
         Soundboard someSoundboard = soundboards.iterator().next();
-
         SoundboardItemAdapter soundBoardItemAdapter =
-                new SoundboardItemAdapter(getActivity(), someSoundboard);
+                new SoundboardItemAdapter(getContext(), mediaPlayerManagerService, someSoundboard);
 
         gridView.setAdapter(soundBoardItemAdapter);
 
