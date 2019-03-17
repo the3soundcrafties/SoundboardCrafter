@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.Image;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +46,7 @@ public class SoundboardItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public Sound getItem(int position) {
         return soundboard.getSounds().get(position);
     }
 
@@ -60,17 +61,25 @@ public class SoundboardItemAdapter extends BaseAdapter {
 
         TextView nameTextView = (TextView) convertView.findViewById(R.id.name);
         ImageView playStopImageView = (ImageView) convertView.findViewById(R.id.play_stop_button);
+        setPlayStopIcon(activity, sound, playStopImageView);
         nameTextView.setText(sound.getName());
         convertView.setOnClickListener(l -> {
             if (OurSoundPlayer.isPlaying(activity, sound)) {
                 OurSoundPlayer.stopSound(activity, sound);
-                playStopImageView.setImageResource(R.drawable.ic_play);
             } else {
                 OurSoundPlayer.playSound(activity, sound);
-                playStopImageView.setImageResource(R.drawable.ic_stop);
             }
+            setPlayStopIcon(activity,sound,playStopImageView);
         });
 
         return convertView;
+    }
+
+    public void setPlayStopIcon(Activity activity, Sound sound, ImageView imageView){
+        if (OurSoundPlayer.isPlaying(activity, sound)) {
+            imageView.setImageResource(R.drawable.ic_stop);
+        } else {
+            imageView.setImageResource(R.drawable.ic_play);
+        }
     }
 }

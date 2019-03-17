@@ -11,6 +11,8 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.ListAdapter;
+import android.widget.TextView;
 
 import com.google.common.collect.Lists;
 
@@ -34,7 +36,10 @@ public class SoundboardFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,9 +52,11 @@ public class SoundboardFragment extends Fragment {
         Sound trailer2 = new Sound("/storage/emulated/0/soundboard crafter test songs/trailer2.wav",
                 "Trailer2", 90, false);
         Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(livinOnAPrayer, stayAnotherDay, trailer2));
+
         GridView gridView = (GridView)rootView.findViewById(R.id.gridview_soundboard);
         SoundboardItemAdapter soundBoardItemAdapter = new SoundboardItemAdapter(this.getActivity(), board);
         gridView.setAdapter(soundBoardItemAdapter);
+
         return rootView;
     }
 
@@ -58,4 +65,5 @@ public class SoundboardFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_main, menu);
     }
+
 }

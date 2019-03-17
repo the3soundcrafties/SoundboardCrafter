@@ -36,7 +36,7 @@ public class OurSoundPlayer {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
             mediaPlayer.setDataSource(activity, Uri.fromFile(new File(sound.getPath())));
-            mediaPlayer.setVolume(sound.getVolumePercentage() / 100f, sound.getVolumePercentage() / 100f);
+            mediaPlayer.setVolume((float)sound.getVolumePercentage()/100f, (float)sound.getVolumePercentage()/100f);
             mediaPlayer.setLooping(sound.isLoop());
             mediaPlayer.prepare();
             // TODO: 16.03.2019 asynchrones vorbereiten
