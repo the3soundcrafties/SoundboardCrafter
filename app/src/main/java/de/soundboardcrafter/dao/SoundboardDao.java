@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ import de.soundboardcrafter.model.Soundboard;
  */
 public class SoundboardDao {
     private static SoundboardDao instance;
+    private final Context appContext;
 
     private SQLiteDatabase database;
 
@@ -36,7 +38,8 @@ public class SoundboardDao {
     }
 
     private SoundboardDao(Context context) {
-        database = new DBHelper(context.getApplicationContext()).getWritableDatabase();
+        appContext = context.getApplicationContext();
+        database = new DBHelper(appContext).getWritableDatabase();
 
         clearDatabase();
         insertDummyData();
@@ -52,13 +55,27 @@ public class SoundboardDao {
     }
 
     private void insertDummyData() {
-        Sound livinOnAPrayer = new Sound("/storage/emulated/0/soundboard crafter test songs/Bon Jovi-Livin On A Prayer.mp3",
-                "Livin On A Prayer", 50, true);
-        Sound stayAnotherDay = new Sound("/storage/emulated/0/soundboard crafter test songs/Stay Another Day.mp3",
-                "Stay Another Day", 50, true);
-        Sound trailer2 = new Sound("/storage/emulated/0/soundboard crafter test songs/trailer2.wav",
-                "Trailer2", 90, false);
-        Soundboard soundboard = new Soundboard("my new Soundboard", Lists.newArrayList(livinOnAPrayer, stayAnotherDay, trailer2));
+        File directory = new File("/storage/emulated/0/soundboard crafter test songs");
+        // get all the files from a directory
+        File[] fList = directory.listFiles();
+        ArrayList<Sound> soundList = new ArrayList<>();
+        int volume = 10;
+        for (File file : fList) {
+            volume += 30 % 90 + 10;
+            int index = 0;
+            String name = file.getName();
+            if (file.getName().indexOf("-") > -1) {
+                name = file.getName().substring(file.getName().indexOf("-") + 1, file.getName().indexOf("."));
+            } else {
+                name = file.getName().substring(0, file.getName().indexOf("."));
+            }
+
+            Sound newSound = new Sound(file.getAbsolutePath(), name, volume, false);
+            soundList.add(newSound);
+        }
+        System.out.println(fList);
+
+        Soundboard soundboard = new Soundboard("my new Soundboard", soundList);
 
         insert(soundboard);
     }

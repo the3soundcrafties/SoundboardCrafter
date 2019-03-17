@@ -1,6 +1,9 @@
 package de.soundboardcrafter.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +19,8 @@ import com.google.common.collect.ImmutableList;
 import java.lang.ref.WeakReference;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -35,15 +40,30 @@ public class SoundboardFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
+        checkPermission(getActivity());
         new FindSoundboardsTask(getActivity()).execute();
         // Will call setupAdapter() later.
+    }
+
+    public static void checkPermission(Activity activity) {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+
+
+            // TODO: 16.03.2019 when the user decline the permission, the application should not hung up
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // TODO: 17.03.2019 destroy service save state 
+        // TODO: 17.03.2019 destroy service save state
     }
 
     @Override
