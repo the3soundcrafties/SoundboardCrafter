@@ -4,7 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
+import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -27,8 +29,15 @@ public class SoundboardDao {
         database = new DBHelper(context.getApplicationContext()).getWritableDatabase();
     }
 
-    public static ImmutableList<Soundboard> findAll() {
-        // TODO Read from database
-        return ImmutableList.of();
+    public ImmutableList<Soundboard> findAll() {
+        Sound livinOnAPrayer = new Sound("/storage/emulated/0/soundboard crafter test songs/Bon Jovi-Livin On A Prayer.mp3",
+                "Livin On A Prayer", 50, true);
+        Sound stayAnotherDay = new Sound("/storage/emulated/0/soundboard crafter test songs/Stay Another Day.mp3",
+                "Stay Another Day", 50, true);
+        Sound trailer2 = new Sound("/storage/emulated/0/soundboard crafter test songs/trailer2.wav",
+                "Trailer2", 90, false);
+        Soundboard board = new Soundboard("my new Soundboard", Lists.newArrayList(livinOnAPrayer, stayAnotherDay, trailer2));
+
+        return ImmutableList.of(board);
     }
 }
