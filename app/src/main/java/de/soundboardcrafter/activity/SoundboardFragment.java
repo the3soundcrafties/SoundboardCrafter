@@ -1,6 +1,9 @@
 package de.soundboardcrafter.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +18,10 @@ import com.google.common.collect.ImmutableList;
 
 import java.lang.ref.WeakReference;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -26,6 +32,7 @@ import de.soundboardcrafter.model.Soundboard;
  */
 public class SoundboardFragment extends Fragment {
     private GridView gridView;
+    private MediaPlayerManagerService mediaPlayerManagerService;
 
     public SoundboardFragment() {
         // Required empty public constructor
@@ -35,15 +42,38 @@ public class SoundboardFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
+        checkPermission(getActivity());
         new FindSoundboardsTask(getActivity()).execute();
+        mediaPlayerManagerService = new MediaPlayerManagerService(getActivity());
         // Will call setupAdapter() later.
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    private static void checkPermission(Activity activity) {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+
+
+            // TODO: 16.03.2019 when the user decline the permission, the application should not hung up
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // TODO: 17.03.2019 destroy service save state 
+        // TODO: 17.03.2019 destroy service save state
+        // TODO: 17.03.2019 icon change on finish song
+        // TODO: 17.03.2019 scrolling is strange
     }
 
     @Override
@@ -59,9 +89,8 @@ public class SoundboardFragment extends Fragment {
 
     private void setupAdapter(ImmutableList<Soundboard> soundboards) {
         Soundboard someSoundboard = soundboards.iterator().next();
-
         SoundboardItemAdapter soundBoardItemAdapter =
-                new SoundboardItemAdapter(getActivity(), someSoundboard);
+                new SoundboardItemAdapter(getContext(), mediaPlayerManagerService, someSoundboard);
 
         gridView.setAdapter(soundBoardItemAdapter);
 

@@ -1,13 +1,11 @@
 package de.soundboardcrafter.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.IBinder;
@@ -27,8 +25,6 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -37,8 +33,17 @@ import de.soundboardcrafter.model.Soundboard;
  */
 public class MediaPlayerManagerService {
 
-    private static MediaPlayerConnectionService connectionService;
+    private MediaPlayerConnectionService connectionService;
     private static String TAG = MediaPlayerManagerService.class.getName();
+    private final Activity activity;
+
+    MediaPlayerManagerService(Activity activity) {
+        this.activity = activity;
+        Intent intent = new Intent(activity, MediaPlayerService.class);
+        connectionService = new MediaPlayerConnectionService(intent);
+        activity.bindService(intent, connectionService, Context.BIND_AUTO_CREATE);
+        activity.startService(intent);
+    }
 
     @FunctionalInterface
     public interface OnPlay extends Serializable {
@@ -53,27 +58,18 @@ public class MediaPlayerManagerService {
     /**
      * Play a given sound in a MediaPlayer by starting a MediaPlayerService
      */
-    public static void playSound(Activity activity, Soundboard soundboard, Sound sound, OnPlay onPlay) {
-        checkPermission(activity);
-        if (onPlay != null) {
-            onPlay.onStartPlaying();
-        }
-        if (connectionService == null) {
-            connectionService = new MediaPlayerConnectionService();
-            Intent intent = new Intent(activity, MediaPlayerService.class);
-            //initally we provide soundbar and sound through the intent so it is pass through the connection
-            intent.putExtra(MediaPlayerService.EXTRA_SOUNDBOARD, soundboard);
-            intent.putExtra(MediaPlayerService.EXTRA_SOUND, sound);
-            activity.bindService(intent, connectionService, Context.BIND_AUTO_CREATE);
-            activity.startService(intent);
-        } else {
-            //here we are sure the service must be already connected, so we can start a further media player
-            connectionService.startMediaPlayer(soundboard, sound);
-        }
-
+    void playSound(Soundboard soundboard, Sound sound, OnPlay onPlay, OnStop onStop) {
+        connectionService.startMediaPlayer(soundboard, sound, onPlay, onStop);
     }
 
-    public static boolean shouldBePlaying(@Nonnull Activity activity, @Nonnull Soundboard soundboard, @Nonnull Sound sound) {
+    void stopService() {
+        if (connectionService != null) {
+            connectionService.stopService();
+
+        }
+    }
+
+    boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
         Preconditions.checkNotNull(activity, "activity is null");
         Preconditions.checkNotNull(sound, "sound is null");
         if (connectionService == null) {
@@ -82,34 +78,24 @@ public class MediaPlayerManagerService {
         return connectionService.shouldBePlaying(soundboard, sound);
     }
 
-    public static void stopSound(Activity activity, Soundboard soundboard, Sound sound, OnStop onStop) {
+    void stopSound(Soundboard soundboard, Sound sound, OnStop onStop) {
         Preconditions.checkNotNull(activity, "activity is null");
         Preconditions.checkNotNull(sound, "sound is null");
         if (connectionService != null) {
-            onStop.onStop();
-            connectionService.stopMediaPlayer(soundboard, sound);
+            connectionService.stopMediaPlayer(soundboard, sound, onStop);
         }
 
     }
 
-    public static void checkPermission(Activity activity) {
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    1);
-
-
-            // TODO: 16.03.2019 when the user decline the permission, the application should not hung up
-        }
-    }
 
     public static class MediaPlayerConnectionService implements ServiceConnection {
         private static String TAG = MediaPlayerConnectionService.class.getName();
+        private final Intent intent;
         private MediaPlayerService service;
+
+        MediaPlayerConnectionService(Intent intent) {
+            this.intent = intent;
+        }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -133,27 +119,33 @@ public class MediaPlayerManagerService {
 
         }
 
-        public void startMediaPlayer(Soundboard soundboard, Sound sound) {
+        void startMediaPlayer(Soundboard soundboard, Sound sound, OnPlay onPlay, OnStop onStop) {
             if (service != null) {
-                service.addMediaPlayer(soundboard, sound);
+                service.addMediaPlayer(soundboard, sound, onPlay, onStop);
             }
         }
 
-        public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
+        boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
             return service != null && service.shouldBePlaying(soundboard, sound);
         }
 
-        public void stopMediaPlayer(Soundboard soundboard, Sound sound) {
+        void stopMediaPlayer(Soundboard soundboard, Sound sound, OnStop onStop) {
             if (service != null) {
-                service.stopPlaying(soundboard, sound);
+                service.stopPlaying(soundboard, sound, onStop);
+            }
+        }
+
+        void stopService() {
+            if (service != null) {
+                service.stopService(intent);
             }
         }
     }
 
     public static class MediaPlayerService extends Service {
         private final IBinder binder = new Binder();
-        protected static final String EXTRA_SOUND = "Sound";
-        protected static final String EXTRA_SOUNDBOARD = "Soundboard";
+        static final String EXTRA_SOUND = "Sound";
+        static final String EXTRA_SOUNDBOARD = "Soundboard";
         /**
          * pair<SoundboardID, SoundId>
          **/
@@ -171,21 +163,19 @@ public class MediaPlayerManagerService {
         @Nullable
         @Override
         public IBinder onBind(Intent intent) {
-            Soundboard soundboard = (Soundboard) intent.getSerializableExtra(EXTRA_SOUNDBOARD);
-            Sound sound = (Sound) intent.getSerializableExtra(EXTRA_SOUND);
-            addMediaPlayer(soundboard, sound);
             return binder;
         }
 
-        public void stopPlaying(Soundboard soundboard, Sound sound) {
+        void stopPlaying(Soundboard soundboard, Sound sound, OnStop onStop) {
             MediaPlayer player = mediaPlayers.get(createKey(soundboard, sound));
             if (player != null) {
+                onStop.onStop();
                 player.stop();
-                stopAndRemoveMediaPlayer(player);
+                removeMediaPlayer(player);
             }
         }
 
-        private void stopAndRemoveMediaPlayer(MediaPlayer mediaPlayer) {
+        private void removeMediaPlayer(MediaPlayer mediaPlayer) {
             if (mediaPlayer != null) {
                 mediaPlayer.release();
                 Pair<UUID, UUID> key = findKey(mediaPlayer);
@@ -208,13 +198,14 @@ public class MediaPlayerManagerService {
             return null;
         }
 
-        public class Binder extends android.os.Binder {
+        class Binder extends android.os.Binder {
             MediaPlayerService getService() {
                 return MediaPlayerService.this;
             }
         }
 
-        public void addMediaPlayer(Soundboard soundboard, Sound sound) {
+        void addMediaPlayer(Soundboard soundboard, Sound sound, OnPlay onPlay, OnStop onStop) {
+            onPlay.onStartPlaying();
             Pair<UUID, UUID> key = createKey(soundboard, sound);
             MediaPlayer existingMediaPlayer = mediaPlayers.get(key);
             if (existingMediaPlayer == null) {
@@ -230,7 +221,7 @@ public class MediaPlayerManagerService {
                 mediaPlayer.setVolume((float) sound.getVolumePercentage() / 100f, (float) sound.getVolumePercentage() / 100f);
                 mediaPlayer.setLooping(sound.isLoop());
                 mediaPlayer.setOnPreparedListener((mbd) -> onPrepared(mbd));
-                mediaPlayer.setOnCompletionListener((mbd) -> onCompletion(mbd));
+                mediaPlayer.setOnCompletionListener((mbd) -> onCompletion(mbd, onStop));
                 mediaPlayer.prepareAsync(); // prepare async to not block main thread
                 mediaPlayers.put(key, mediaPlayer);
             } else {
@@ -243,30 +234,34 @@ public class MediaPlayerManagerService {
             return Pair.create(soundboard.getId(), sound.getId());
         }
 
-        public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
-            return this.mediaPlayers.get(createKey(soundboard, sound)) != null;
+        boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
+            return mediaPlayers.get(createKey(soundboard, sound)) != null;
         }
 
         /**
          * Called when MediaPlayer is ready
          */
-        public void onPrepared(MediaPlayer player) {
+        void onPrepared(MediaPlayer player) {
             player.start();
         }
 
-        public boolean onError(MediaPlayer player, int what, int extra) {
-            stopAndRemoveMediaPlayer(player);
+        boolean onError(MediaPlayer player, int what, int extra) {
+            removeMediaPlayer(player);
             return true;
         }
 
-        public void onCompletion(MediaPlayer player) {
-            stopAndRemoveMediaPlayer(player);
+        void onCompletion(MediaPlayer player, OnStop onStop) {
+            onStop.onStop();
+            removeMediaPlayer(player);
         }
 
         @Override
         public void onDestroy() {
             super.onDestroy();
-            this.mediaPlayers.values().stream().forEach(mediaPlayer -> stopAndRemoveMediaPlayer(mediaPlayer));
+            mediaPlayers.values().stream().forEach(mediaPlayer -> {
+                mediaPlayer.stop();
+                removeMediaPlayer(mediaPlayer);
+            });
         }
 
 
