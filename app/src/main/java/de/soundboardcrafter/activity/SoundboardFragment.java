@@ -45,7 +45,7 @@ public class SoundboardFragment extends Fragment {
         // Will call setupAdapter() later.
     }
 
-    public static void checkPermission(Activity activity) {
+    private static void checkPermission(Activity activity) {
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -64,6 +64,8 @@ public class SoundboardFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
+        // TODO: 17.03.2019 icon change on finish song
+        // TODO: 17.03.2019 scrolling is strange
     }
 
     @Override
