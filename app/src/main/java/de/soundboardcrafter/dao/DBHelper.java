@@ -3,7 +3,6 @@ package de.soundboardcrafter.dao;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.nfc.Tag;
 import android.util.Log;
 
 import de.soundboardcrafter.dao.DBSchema.GameTable;
@@ -64,7 +63,7 @@ class DBHelper extends SQLiteOpenHelper {
 
     private static final String TAG = DBHelper.class.getName();
 
-    public DBHelper(Context context) {
+    DBHelper(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
     }
 
