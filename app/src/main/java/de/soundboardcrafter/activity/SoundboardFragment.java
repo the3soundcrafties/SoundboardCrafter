@@ -73,7 +73,6 @@ public class SoundboardFragment extends Fragment {
         super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
         // TODO: 17.03.2019 icon change on finish song
-        // TODO: 17.03.2019 scrolling is strange
     }
 
     @Override
