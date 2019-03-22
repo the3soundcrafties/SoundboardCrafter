@@ -11,7 +11,7 @@ import de.soundboardcrafter.model.Soundboard;
 
 public class SoundBoardItemRow extends RelativeLayout {
 
-    private TextView nameTextView;
+    private TextView soundItem;
 
 
     public SoundBoardItemRow(Context context) {
@@ -25,7 +25,7 @@ public class SoundBoardItemRow extends RelativeLayout {
         // Inflate the view into this object
         inflater.inflate(R.layout.soundboard_item, this, true);
 
-        nameTextView = (TextView) findViewById(R.id.name);
+        soundItem = (TextView) findViewById(R.id.sounditem);
     }
 
     /**
@@ -33,7 +33,7 @@ public class SoundBoardItemRow extends RelativeLayout {
      * children views with the model text.
      */
     void setSound(Soundboard soundboard, Sound sound, MediaPlayerManagerService service) {
-        nameTextView.setText(sound.getName());
+        soundItem.setText(sound.getName());
         setPlayStopIcon(soundboard, sound, service);
         setOnClickListener(l -> {
             if (!service.shouldBePlaying(soundboard, sound)) {
@@ -55,6 +55,6 @@ public class SoundBoardItemRow extends RelativeLayout {
     }
 
     private void setImage(int p) {
-        nameTextView.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
+        soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
     }
 }
