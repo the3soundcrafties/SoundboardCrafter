@@ -40,12 +40,9 @@ public class SoundboardDao {
     private SoundboardDao(Context context) {
         appContext = context.getApplicationContext();
         database = new DBHelper(appContext).getWritableDatabase();
-
-        clearDatabase();
-        insertDummyData();
     }
 
-    private void clearDatabase() {
+    public void clearDatabase() {
         unlinkAllSounds();
         deleteAllSounds();
 
@@ -54,7 +51,7 @@ public class SoundboardDao {
         deleteAllSoundboards();
     }
 
-    private void insertDummyData() {
+    public void insertDummyData() {
         File directory = new File("/storage/emulated/0/soundboard crafter test songs");
         // get all the files from a directory
         File[] fList = directory.listFiles();
