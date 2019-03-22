@@ -28,6 +28,9 @@ public class SoundboardItemAdapter extends BaseAdapter {
         this.context = checkNotNull(context, "context is null");
     }
 
+    /**
+     * Sets the soundboard.
+     */
     public void setSoundboard(Soundboard soundboard) {
         this.soundboard = soundboard;
 
@@ -35,8 +38,15 @@ public class SoundboardItemAdapter extends BaseAdapter {
     }
 
     /**
+     * Returns the soundboard.
+     */
+    public Soundboard getSoundboard() {
+        return soundboard;
+    }
+
+    /**
      * Removes all sounds from the adapter. Should a sound currently be playing,
-     * stop it be the sound is removed.
+     * stop it before the sound is removed.
      */
     void clear() {
         for (Sound sound : soundboard.getSounds()) {
@@ -49,6 +59,23 @@ public class SoundboardItemAdapter extends BaseAdapter {
 
         notifyDataSetChanged();
     }
+
+    /**
+     * Removes the sound from the adapter. Should the sound currently be playing,
+     * stop it before the sound is removed.
+     */
+    void remove(int position) {
+        Sound sound = soundboard.getSounds().get(position);
+
+        if (mediaPlayerManagerService.shouldBePlaying(soundboard, sound)) {
+            mediaPlayerManagerService.stopSound(soundboard, sound);
+        }
+
+        soundboard.removeSound(position);
+
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public int getCount() {

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -13,7 +14,12 @@ import de.soundboardcrafter.model.Soundboard;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 public class SoundBoardItemRow extends RelativeLayout {
+    private static final String TAG = SoundBoardItemRow.class.getName();
+
+    @NonNull
     private TextView soundItem;
+
+    private Sound sound;
 
     public SoundBoardItemRow(Context context) {
         super(context);
@@ -34,16 +40,24 @@ public class SoundBoardItemRow extends RelativeLayout {
      * children views with the model text.
      */
     void setSound(Soundboard soundboard, Sound sound, MediaPlayerManagerService service) {
-        soundItem.setText(sound.getName());
-        setPlayStopIcon(soundboard, sound, service);
+        this.sound = sound;
+        soundItem.setText(this.sound.getName());
+        setPlayStopIcon(soundboard, this.sound, service);
+
         setOnClickListener(l -> {
-            if (!service.shouldBePlaying(soundboard, sound)) {
-                service.playSound(soundboard, sound,
+            if (!service.shouldBePlaying(soundboard, this.sound)) {
+                service.playSound(soundboard, this.sound,
                         () -> setImage(R.drawable.ic_stop),
                         () -> setImage(R.drawable.ic_play));
             } else {
-                service.stopSound(soundboard, sound, () -> setImage(R.drawable.ic_play));
+                service.stopSound(soundboard, this.sound, () -> setImage(R.drawable.ic_play));
             }
+        });
+
+        setOnLongClickListener(l -> {
+            // Do NOT consume long clicks.
+            // Without this, this context menu on the grid view won't work
+            return false;
         });
     }
 
@@ -57,5 +71,13 @@ public class SoundBoardItemRow extends RelativeLayout {
 
     private void setImage(int p) {
         soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
+    }
+
+    String getSoundName() {
+        return getSound().getName();
+    }
+
+    Sound getSound() {
+        return sound;
     }
 }

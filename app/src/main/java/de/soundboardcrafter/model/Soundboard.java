@@ -67,6 +67,13 @@ public class Soundboard implements Serializable {
         sounds.clear();
     }
 
+    /**
+     * Removes this sound from the soundboard.
+     */
+    public void removeSound(int index) {
+        sounds.remove(index);
+    }
+
     @Override
     public String toString() {
         return "Soundboard{" +

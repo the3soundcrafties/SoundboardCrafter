@@ -1,12 +1,10 @@
 <resources>
     <string name="app_name">Soundboard Crafter</string>
-    <string name="toolbar_menu_add_sound">Add Sound</string>
+    <string name="toolbar_menu_reset_all">Reset all</string>
+    <string name="context_menu_remve_sound">Remove</string>
     <string name="reset_all_title">Reset sounds?</string>
     <string name="reset_all_message">All sounds will be deleted from the app and restored from
         the file system. Settings like the volume will be lost.</string>
     <string name="reset_all_title_cancel">Cancel</string>
     <string name="reset_all_title_ok">OK</string>
-    <string name="music_button_song1">Play Song 1</string>
-    <string name="music_button_song2">Play Song 2</string>
-    <string name="music_button_song3">Play Song 3</string>
 </resources>

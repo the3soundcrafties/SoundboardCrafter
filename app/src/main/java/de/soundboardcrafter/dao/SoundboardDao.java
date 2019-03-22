@@ -239,10 +239,49 @@ public class SoundboardDao {
         insertOrThrow(SoundboardSoundTable.NAME, values);
     }
 
-    // TODO update
-
     private void unlinkAllSounds() {
         database.delete(SoundboardSoundTable.NAME, null, new String[]{});
+    }
+
+    public void unlinkSound(Soundboard soundboard, int index) {
+        int numDeleted = database.delete(SoundboardSoundTable.NAME,
+                SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
+                        SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
+                new String[]{soundboard.getId().toString(),
+                        Integer.toString(index)});
+
+        if (numDeleted != 1) {
+            throw new RuntimeException("There wasn't exactly one sound at index " + index + ".");
+        }
+
+        fillSoundGap(soundboard, index);
+    }
+
+    /**
+     * Fills the gap at index - 1 and lets the following sounds - if any - move up.
+     */
+    private void fillSoundGap(Soundboard soundboard, int gapIndex) {
+        int i = gapIndex + 1;
+
+        int rowsUpdated;
+        do {
+            ContentValues values = new ContentValues();
+            values.put(SoundboardSoundTable.Cols.POS_INDEX, i - 1);
+
+            rowsUpdated = database.update(SoundboardSoundTable.NAME,
+                    values,
+                    SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
+                            SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
+                    new String[]{soundboard.getId().toString(),
+                            Integer.toString(i)});
+
+            if (rowsUpdated > 1) {
+                throw new RuntimeException("More than one row at index " + (i - 1) +
+                        " in soundboard " + soundboard.getName());
+            }
+
+            i++;
+        } while (rowsUpdated > 0);
     }
 
     private void deleteAllSounds() {

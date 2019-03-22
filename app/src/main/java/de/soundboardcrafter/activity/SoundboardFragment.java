@@ -8,12 +8,14 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.google.common.collect.ImmutableList;
@@ -70,6 +72,7 @@ public class SoundboardFragment extends Fragment {
                 container, false);
 
         gridView = (GridView) rootView.findViewById(R.id.gridview_soundboard);
+        registerForContextMenu(gridView);
 
         // TODO Start without any soundboard
         Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
@@ -130,6 +133,45 @@ public class SoundboardFragment extends Fragment {
     }
 
     @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.fragment_main_context, menu);
+
+        AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
+                (AdapterView.AdapterContextMenuInfo) menuInfo;
+        SoundBoardItemRow itemRow = (SoundBoardItemRow) adapterContextMenuInfo.targetView;
+
+        menu.setHeaderTitle(itemRow.getSoundName());
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.context_menu_remove_sound) {
+            AdapterView.AdapterContextMenuInfo menuInfo =
+                    (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            SoundBoardItemRow itemRow = (SoundBoardItemRow) menuInfo.targetView;
+
+            Log.d(TAG, "Removing sound " + itemRow.getSoundName());
+
+            soundBoardItemAdapter.remove(menuInfo.position);
+
+            new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
+
+            // TODO Check, whether this is the last appearance of the sound.
+            // If so, ask the user, whether the sound shall be fully
+            // deleted (from the sounds table).
+            // Problem: That would meany asking the database about other
+            // appearances of the same sound. But database IO
+            // shall only haben in the AsynTasks' thread.
+            // What shall we do?
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
@@ -137,12 +179,7 @@ public class SoundboardFragment extends Fragment {
 
         if (requestCode == REQUEST_RESET_ALL) {
             Log.i(TAG, "Resetting sound data");
-
-            // FIXME Disable options button (necessary?)
-
-            // Stop all sound and remove Sounds from GUI
             soundBoardItemAdapter.clear();
-
             new ResetAllTask(getActivity()).execute();
         }
     }
@@ -214,10 +251,42 @@ public class SoundboardFragment extends Fragment {
     }
 
     /**
+     * A background task, used to remove sounds with the given indexes from the soundboard
+     */
+    public class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
+        private final String TAG = RemoveSoundsTask.class.getName();
+
+        private WeakReference<Context> appContextRef;
+        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
+
+        RemoveSoundsTask(Context context) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+        }
+
+        @Override
+        protected Void doInBackground(Integer... indexes) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            for (int index : indexes) {
+                Log.d(TAG, "Removing sound + " + index + " from soundboard");
+
+                soundboardDao.unlinkSound(soundBoardItemAdapter.getSoundboard(), index);
+            }
+
+            return null;
+        }
+    }
+
+    /**
      * A background task, used to reset the soundboards and retrieve them from the database.
      */
     public class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
-        private final String TAG = FindSoundboardsTask.class.getName();
+        private final String TAG = ResetAllTask.class.getName();
 
         private WeakReference<Context> appContextRef;
         private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
@@ -266,5 +335,4 @@ public class SoundboardFragment extends Fragment {
             soundBoardItemAdapter.setSoundboard(soundboards.iterator().next());
         }
     }
-
 }
