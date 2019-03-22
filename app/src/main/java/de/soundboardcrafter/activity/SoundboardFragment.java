@@ -23,7 +23,6 @@ import java.lang.ref.WeakReference;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -39,6 +38,7 @@ public class SoundboardFragment extends Fragment {
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private static final int REQUEST_RESET_ALL = 0;
+    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     private GridView gridView;
 
@@ -63,21 +63,6 @@ public class SoundboardFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-    private static void checkPermission(Activity activity) {
-        // Here, activity is the current activity
-        if (ContextCompat.checkSelfPermission(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    1);
-
-            // TODO: 16.03.2019 when the user declines the permission, the application must
-            // not hang up
-        }
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -93,10 +78,31 @@ public class SoundboardFragment extends Fragment {
 
         gridView.setAdapter(soundBoardItemAdapter);
 
-        checkPermission(getActivity());
-        new FindSoundboardsTask(getActivity()).execute();
+        // Here, activity is the current activity
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            // From here on see #onRequestPermissionsResult()
+        } else {
+            new FindSoundboardsTask(getActivity()).execute();
+        }
 
         return rootView;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                // User denied. Stop the app.
+                getActivity().finishAndRemoveTask();
+            } else {
+                new FindSoundboardsTask(getActivity()).execute();
+            }
+        }
     }
 
     @Override
@@ -172,7 +178,17 @@ public class SoundboardFragment extends Fragment {
 
             Log.d(TAG, "Loading soundboards...");
 
-            final ImmutableList<Soundboard> res = soundboardDao.findAll();
+            ImmutableList<Soundboard> res = soundboardDao.findAll();
+
+            if (res.isEmpty()) {
+                Log.d(TAG, "No soundboards found.");
+                Log.d(TAG, "Insert some dummy data...");
+
+                soundboardDao.insertDummyData();
+
+                Log.d(TAG, "...and load the soundboards again");
+                res = soundboardDao.findAll();
+            }
 
             Log.d(TAG, "Soundboards loaded.");
 
