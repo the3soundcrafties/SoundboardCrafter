@@ -9,10 +9,11 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
+/**
+ * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
+ */
 public class SoundBoardItemRow extends RelativeLayout {
-
     private TextView soundItem;
-
 
     public SoundBoardItemRow(Context context) {
         super(context);

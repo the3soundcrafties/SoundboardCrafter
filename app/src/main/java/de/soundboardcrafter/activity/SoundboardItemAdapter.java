@@ -5,27 +5,49 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.google.common.base.Preconditions;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Adapter for a SoundBoardItem. Display a Button with Text and Icon
  */
 public class SoundboardItemAdapter extends BaseAdapter {
-    private final Soundboard soundboard;
+    private Soundboard soundboard;
     private static String TAG = MediaPlayerManagerService.class.getName();
     private final MediaPlayerManagerService mediaPlayerManagerService;
     private final Context context;
 
     SoundboardItemAdapter(@Nonnull Context context, @Nonnull MediaPlayerManagerService mediaPlayerManagerService, @Nonnull Soundboard soundboard) {
-        this.soundboard = Preconditions.checkNotNull(soundboard, "soundboard is null");
-        this.mediaPlayerManagerService = Preconditions.checkNotNull(mediaPlayerManagerService, "mediaPlayerManagerService!=null");
-        this.context = Preconditions.checkNotNull(context, "context is null");
+        this.soundboard = checkNotNull(soundboard, "soundboard is null");
+        this.mediaPlayerManagerService = checkNotNull(mediaPlayerManagerService, "mediaPlayerManagerService!=null");
+        this.context = checkNotNull(context, "context is null");
+    }
+
+    public void setSoundboard(Soundboard soundboard) {
+        this.soundboard = soundboard;
+
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Removes all sounds from the adapter. Should a sound currently be playing,
+     * stop it be the sound is removed.
+     */
+    void clear() {
+        for (Sound sound : soundboard.getSounds()) {
+            if (mediaPlayerManagerService.shouldBePlaying(soundboard, sound)) {
+                mediaPlayerManagerService.stopSound(soundboard, sound);
+            }
+        }
+
+        soundboard.clearSounds();
+
+        notifyDataSetChanged();
     }
 
     @Override
@@ -56,6 +78,4 @@ public class SoundboardItemAdapter extends BaseAdapter {
 
         return convertView;
     }
-
-
 }

@@ -78,7 +78,11 @@ public class MediaPlayerManagerService {
         return connectionService.shouldBePlaying(soundboard, sound);
     }
 
-    void stopSound(Soundboard soundboard, Sound sound, OnStop onStop) {
+    void stopSound(Soundboard soundboard, Sound sound) {
+        stopSound(soundboard, sound, null);
+    }
+
+    void stopSound(Soundboard soundboard, Sound sound, @Nullable OnStop onStop) {
         Preconditions.checkNotNull(activity, "activity is null");
         Preconditions.checkNotNull(sound, "sound is null");
         if (connectionService != null) {
@@ -86,7 +90,6 @@ public class MediaPlayerManagerService {
         }
 
     }
-
 
     public static class MediaPlayerConnectionService implements ServiceConnection {
         private static String TAG = MediaPlayerConnectionService.class.getName();
@@ -129,7 +132,7 @@ public class MediaPlayerManagerService {
             return service != null && service.shouldBePlaying(soundboard, sound);
         }
 
-        void stopMediaPlayer(Soundboard soundboard, Sound sound, OnStop onStop) {
+        void stopMediaPlayer(Soundboard soundboard, Sound sound, @Nullable OnStop onStop) {
             if (service != null) {
                 service.stopPlaying(soundboard, sound, onStop);
             }
@@ -166,10 +169,12 @@ public class MediaPlayerManagerService {
             return binder;
         }
 
-        void stopPlaying(Soundboard soundboard, Sound sound, OnStop onStop) {
+        void stopPlaying(Soundboard soundboard, Sound sound, @Nullable OnStop onStop) {
             MediaPlayer player = mediaPlayers.get(createKey(soundboard, sound));
             if (player != null) {
-                onStop.onStop();
+                if (onStop != null) {
+                    onStop.onStop();
+                }
                 player.stop();
                 removeMediaPlayer(player);
             }

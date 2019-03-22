@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 
@@ -40,6 +41,9 @@ public class SoundboardFragment extends Fragment {
     private static final int REQUEST_RESET_ALL = 0;
 
     private GridView gridView;
+
+    // TODO Allow for zero or more than one soundboards
+    private SoundboardItemAdapter soundBoardItemAdapter;
     private MediaPlayerManagerService mediaPlayerManagerService;
 
     public SoundboardFragment() {
@@ -82,19 +86,17 @@ public class SoundboardFragment extends Fragment {
 
         gridView = (GridView) rootView.findViewById(R.id.gridview_soundboard);
 
+        // TODO Start without any soundboard
+        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
+        soundBoardItemAdapter =
+                new SoundboardItemAdapter(getContext(), mediaPlayerManagerService, dummySoundboard);
+
+        gridView.setAdapter(soundBoardItemAdapter);
+
         checkPermission(getActivity());
         new FindSoundboardsTask(getActivity()).execute();
 
         return rootView;
-    }
-
-    private void setupAdapter(ImmutableList<Soundboard> soundboards) {
-        Soundboard someSoundboard = soundboards.iterator().next();
-        SoundboardItemAdapter soundBoardItemAdapter =
-                new SoundboardItemAdapter(getContext(), mediaPlayerManagerService, someSoundboard);
-
-        gridView.setAdapter(soundBoardItemAdapter);
-
     }
 
     @Override
@@ -130,9 +132,10 @@ public class SoundboardFragment extends Fragment {
         if (requestCode == REQUEST_RESET_ALL) {
             Log.i(TAG, "Resetting sound data");
 
-            // FIXME 1. Disable options button (necessary?)
-            // FIXME 2. Stop all sound and remove Sounds from GUI
+            // FIXME Disable options button (necessary?)
 
+            // Stop all sound and remove Sounds from GUI
+            soundBoardItemAdapter.clear();
 
             new ResetAllTask(getActivity()).execute();
         }
@@ -190,7 +193,7 @@ public class SoundboardFragment extends Fragment {
                 return;
             }
 
-            setupAdapter(soundboards);
+            soundBoardItemAdapter.setSoundboard(soundboards.iterator().next());
         }
     }
 
@@ -218,12 +221,6 @@ public class SoundboardFragment extends Fragment {
 
             Log.d(TAG, "Resetting soundboards.");
 
-            // FIXME 3. Clear and reset database
-            // FIXME 4. re-read sounds
-            // FIXME 5. enable button
-
-            // (3 separate AsyncTasks?)
-
             soundboardDao.clearDatabase();
             soundboardDao.insertDummyData();
 
@@ -250,7 +247,7 @@ public class SoundboardFragment extends Fragment {
                 return;
             }
 
-            setupAdapter(soundboards);
+            soundBoardItemAdapter.setSoundboard(soundboards.iterator().next());
         }
     }
 

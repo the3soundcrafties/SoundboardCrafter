@@ -60,6 +60,13 @@ public class Soundboard implements Serializable {
         return Collections.unmodifiableList(sounds);
     }
 
+    /**
+     * Clears all sounds, so the list of sounds is empty afterwards.
+     */
+    public void clearSounds() {
+        sounds.clear();
+    }
+
     @Override
     public String toString() {
         return "Soundboard{" +
