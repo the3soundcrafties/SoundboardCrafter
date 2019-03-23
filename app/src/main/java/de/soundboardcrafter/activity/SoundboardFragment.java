@@ -181,7 +181,6 @@ public class SoundboardFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
-        // TODO: 17.03.2019 icon change on finish song
     }
 
     /**
@@ -269,11 +268,6 @@ public class SoundboardFragment extends Fragment {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
                 soundboardDao.unlinkSound(soundBoardItemAdapter.getSoundboard(), index);
-
-                // TODO When removing the sound from the soundboard
-                // also check, whether this was the last appearance of the sound.
-                // If so, ask the user in a dialog, whether the sound shall be fully
-                // deleted (from the sounds table) or not.
             }
 
             return null;

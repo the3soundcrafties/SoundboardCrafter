@@ -105,7 +105,7 @@ class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_SOUND);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_SOUND);
 
-        // TODO extra index on primary keys necessary?
+        // TODO extra index on primary keys necessary / useful?
     }
 
     private void dropTables(SQLiteDatabase db) {
@@ -114,9 +114,5 @@ class DBHelper extends SQLiteOpenHelper {
         db.execSQL(DROP_TABLE_SOUNDBOARD_GAME);
         db.execSQL(DROP_TABLE_SOUND);
         db.execSQL(DROP_TABLE_SOUNDBOARD_SOUND);
-    }
-
-    private void insertSoundboard(String name) {
-        // TODO insert some sample data
     }
 }
