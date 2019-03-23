@@ -1,9 +1,9 @@
 package de.soundboardcrafter.model;
 
-import com.google.common.base.Preconditions;
-
 import java.io.Serializable;
 import java.util.UUID;
+
+import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 
@@ -100,7 +100,8 @@ public class Sound implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public @Nonnull
+    String toString() {
         return "Sound{" +
                 "id=" + id +
                 ", path=" + path +

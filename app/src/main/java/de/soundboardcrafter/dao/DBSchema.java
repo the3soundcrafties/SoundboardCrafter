@@ -1,7 +1,7 @@
 package de.soundboardcrafter.dao;
 
 /**
- * The names of the tables and colummns in the database schema, where the soundboards, sounds etc.
+ * The names of the tables and columns in the database schema, where the soundboards, sounds etc.
  * are stored.
  */
 class DBSchema {
@@ -69,7 +69,7 @@ class DBSchema {
     }
 
     /**
-     * Which sound belong too which soundbar(s)
+     * Which sound belong too which soundboard(s)
      */
     static final class SoundboardSoundTable {
         static final String NAME = "soundboard_sound";
@@ -78,7 +78,7 @@ class DBSchema {
             static final String SOUNDBOARD_ID = "soundboard_id";
             static final String SOUND_ID = "sound_id";
             /**
-             * Position this sound has on the soundbar
+             * Position this sound has on the soundboard
              */
             static final String POS_INDEX = "pos_index";
         }

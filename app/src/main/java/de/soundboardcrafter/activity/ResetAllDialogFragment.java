@@ -15,8 +15,6 @@ import de.soundboardcrafter.R;
  * recreated from the file system using default values.
  */
 public class ResetAllDialogFragment extends DialogFragment {
-    private static final String EXTRA_SHALL_RESET = ResetAllDialogFragment.class.getName() + ".shallReset";
-
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -24,20 +22,19 @@ public class ResetAllDialogFragment extends DialogFragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.reset_all_title)
                         .setMessage(R.string.reset_all_message)
-                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResult(Activity.RESULT_OK))
+                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK())
                         .setNegativeButton(R.string.reset_all_title_cancel, null)
                         .create();
     }
 
     /**
-     * Sends the chosen result (whether the app <code>shallReset</code> things)
-     * back to the calling Fragment.
+     * Sends the result OK back to the calling Fragment.
      */
-    private void sendResult(int resultCode) {
+    private void sendResultOK() {
         if (getTargetFragment() == null) {
             return;
         }
 
-        getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, null);
+        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
     }
 }

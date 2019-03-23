@@ -23,6 +23,8 @@ import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 
+import javax.annotation.Nonnull;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -30,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -41,8 +44,6 @@ public class SoundboardFragment extends Fragment {
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private static final int REQUEST_RESET_ALL = 0;
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
-
-    private GridView gridView;
 
     // TODO Allow for zero or more than one soundboards
     private SoundboardItemAdapter soundBoardItemAdapter;
@@ -61,23 +62,18 @@ public class SoundboardFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard,
                 container, false);
 
-        gridView = (GridView) rootView.findViewById(R.id.gridview_soundboard);
+        GridView gridView = rootView.findViewById(R.id.grid_view_soundboard);
         registerForContextMenu(gridView);
 
         // TODO Start without any soundboard
         Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
         soundBoardItemAdapter =
-                new SoundboardItemAdapter(getContext(), mediaPlayerManagerService, dummySoundboard);
+                new SoundboardItemAdapter(mediaPlayerManagerService, dummySoundboard);
 
         gridView.setAdapter(soundBoardItemAdapter);
 
@@ -109,13 +105,13 @@ public class SoundboardFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@Nonnull Menu menu, @Nonnull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_main, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@Nonnull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_menu_reset_all:
                 resetAllOrCancel();
@@ -133,7 +129,8 @@ public class SoundboardFragment extends Fragment {
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getActivity().getMenuInflater();
         inflater.inflate(R.menu.fragment_main_context, menu);
@@ -146,22 +143,28 @@ public class SoundboardFragment extends Fragment {
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.context_menu_remove_sound) {
-            AdapterView.AdapterContextMenuInfo menuInfo =
-                    (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-            SoundBoardItemRow itemRow = (SoundBoardItemRow) menuInfo.targetView;
+    public boolean onContextItemSelected(@Nonnull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.context_menu_edit_sound:
+                AdapterView.AdapterContextMenuInfo menuInfo =
+                        (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                SoundBoardItemRow itemRow = (SoundBoardItemRow) menuInfo.targetView;
+                Sound sound = itemRow.getSound();
 
-            Log.d(TAG, "Removing sound " + itemRow.getSoundName());
+                Log.d(TAG, "Editing sound \"" + sound.getName() + "\"");
+                // TODO Open edit Activity
+                return true;
+            case R.id.context_menu_remove_sound:
+                menuInfo =
+                        (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
-            soundBoardItemAdapter.remove(menuInfo.position);
-
-            new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
-
-            return true;
+                Log.d(TAG, "Removing sound " + menuInfo.position);
+                soundBoardItemAdapter.remove(menuInfo.position);
+                new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
+                return true;
+            default:
+                return false;
         }
-
-        return false;
     }
 
     @Override
@@ -189,7 +192,7 @@ public class SoundboardFragment extends Fragment {
     public class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
         private final String TAG = FindSoundboardsTask.class.getName();
 
-        private WeakReference<Context> appContextRef;
+        private final WeakReference<Context> appContextRef;
         private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         FindSoundboardsTask(Context context) {
@@ -248,7 +251,7 @@ public class SoundboardFragment extends Fragment {
     public class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
         private final String TAG = RemoveSoundsTask.class.getName();
 
-        private WeakReference<Context> appContextRef;
+        private final WeakReference<Context> appContextRef;
         private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         RemoveSoundsTask(Context context) {
@@ -280,7 +283,7 @@ public class SoundboardFragment extends Fragment {
     public class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
         private final String TAG = ResetAllTask.class.getName();
 
-        private WeakReference<Context> appContextRef;
+        private final WeakReference<Context> appContextRef;
         private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         ResetAllTask(Context context) {

@@ -31,9 +31,9 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Starting Foreground Services with the Help of MediaPlayerService
  */
-public class MediaPlayerManagerService {
+class MediaPlayerManagerService {
 
-    private MediaPlayerConnectionService connectionService;
+    private final MediaPlayerConnectionService connectionService;
     private static String TAG = MediaPlayerManagerService.class.getName();
     private final Activity activity;
 
@@ -91,8 +91,8 @@ public class MediaPlayerManagerService {
 
     }
 
-    public static class MediaPlayerConnectionService implements ServiceConnection {
-        private static String TAG = MediaPlayerConnectionService.class.getName();
+    static class MediaPlayerConnectionService implements ServiceConnection {
+        private static final String TAG = MediaPlayerConnectionService.class.getName();
         private final Intent intent;
         private MediaPlayerService service;
 
@@ -152,7 +152,7 @@ public class MediaPlayerManagerService {
         /**
          * pair<SoundboardID, SoundId>
          **/
-        private HashMap<Pair<UUID, UUID>, MediaPlayer> mediaPlayers = new HashMap<>();
+        private final HashMap<Pair<UUID, UUID>, MediaPlayer> mediaPlayers = new HashMap<>();
 
         public MediaPlayerService() {
 
@@ -187,8 +187,6 @@ public class MediaPlayerManagerService {
                 if (key != null) {
                     mediaPlayers.remove(key);
                 }
-                mediaPlayer = null;
-
             }
         }
 
@@ -216,7 +214,7 @@ public class MediaPlayerManagerService {
             if (existingMediaPlayer == null) {
                 final MediaPlayer mediaPlayer = new MediaPlayer();
                 mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-                mediaPlayer.setOnErrorListener((mbd, what, extra) -> onError(mbd, what, extra));
+                mediaPlayer.setOnErrorListener(this::onError);
                 try {
                     mediaPlayer.setDataSource(sound.getPath());
                 } catch (IOException e) {
@@ -225,7 +223,7 @@ public class MediaPlayerManagerService {
                 mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
                 mediaPlayer.setVolume((float) sound.getVolumePercentage() / 100f, (float) sound.getVolumePercentage() / 100f);
                 mediaPlayer.setLooping(sound.isLoop());
-                mediaPlayer.setOnPreparedListener((mbd) -> onPrepared(mbd));
+                mediaPlayer.setOnPreparedListener(this::onPrepared);
                 mediaPlayer.setOnCompletionListener((mbd) -> onCompletion(mbd, onStop));
                 mediaPlayer.prepareAsync(); // prepare async to not block main thread
                 mediaPlayers.put(key, mediaPlayer);
@@ -263,13 +261,10 @@ public class MediaPlayerManagerService {
         @Override
         public void onDestroy() {
             super.onDestroy();
-            mediaPlayers.values().stream().forEach(mediaPlayer -> {
+            for (MediaPlayer mediaPlayer : mediaPlayers.values()) {
                 mediaPlayer.stop();
                 removeMediaPlayer(mediaPlayer);
-            });
+            }
         }
-
-
     }
-
 }

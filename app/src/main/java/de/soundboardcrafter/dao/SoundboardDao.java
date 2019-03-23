@@ -23,11 +23,8 @@ import de.soundboardcrafter.model.Soundboard;
  */
 public class SoundboardDao {
     private static SoundboardDao instance;
-    private final Context appContext;
 
-    private SQLiteDatabase database;
-
-    private static final String TAG = SoundboardDao.class.getName();
+    private final SQLiteDatabase database;
 
     public static SoundboardDao getInstance(final Context context) {
         if (instance == null) {
@@ -38,7 +35,7 @@ public class SoundboardDao {
     }
 
     private SoundboardDao(Context context) {
-        appContext = context.getApplicationContext();
+        Context appContext = context.getApplicationContext();
         database = new DBHelper(appContext).getWritableDatabase();
     }
 
@@ -59,9 +56,8 @@ public class SoundboardDao {
         int volume = 10;
         for (File file : fList) {
             volume += 30 % 90 + 10;
-            int index = 0;
-            String name = file.getName();
-            if (file.getName().indexOf("-") > -1) {
+            final String name;
+            if (file.getName().contains("-")) {
                 name = file.getName().substring(file.getName().indexOf("-") + 1, file.getName().indexOf("."));
             } else {
                 name = file.getName().substring(0, file.getName().indexOf("."));
@@ -70,7 +66,6 @@ public class SoundboardDao {
             Sound newSound = new Sound(file.getAbsolutePath(), name, volume, false);
             soundList.add(newSound);
         }
-        System.out.println(fList);
 
         Soundboard soundboard = new Soundboard("my new Soundboard", soundList);
 
@@ -196,7 +191,7 @@ public class SoundboardDao {
 
         ContentValues values = new ContentValues();
         values.put(SoundboardTable.Cols.ID, id.toString());
-        values.put(SoundboardTable.Cols.NAME, name.toString());
+        values.put(SoundboardTable.Cols.NAME, name);
 
         insertOrThrow(SoundboardTable.NAME, values);
     }

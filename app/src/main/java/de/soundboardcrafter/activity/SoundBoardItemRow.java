@@ -14,25 +14,20 @@ import de.soundboardcrafter.model.Soundboard;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 public class SoundBoardItemRow extends RelativeLayout {
-    private static final String TAG = SoundBoardItemRow.class.getName();
-
     @NonNull
-    private TextView soundItem;
+    private final TextView soundItem;
 
     private Sound sound;
 
     public SoundBoardItemRow(Context context) {
         super(context);
-        init(context);
-    }
 
-    private void init(Context context) {
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the view into this object
         inflater.inflate(R.layout.soundboard_item, this, true);
 
-        soundItem = (TextView) findViewById(R.id.sounditem);
+        soundItem = findViewById(R.id.sound_item);
     }
 
     /**

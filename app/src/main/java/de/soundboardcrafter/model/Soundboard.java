@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
+
 import androidx.annotation.NonNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,7 +27,7 @@ public class Soundboard implements Serializable {
      * Sounds can be shared between soundboards, and there are no empty
      * positions.
      */
-    private ArrayList<Sound> sounds;
+    private final ArrayList<Sound> sounds;
 
     public Soundboard(@NonNull String name, @NonNull ArrayList<Sound> sounds) {
         this(UUID.randomUUID(), name, sounds);
@@ -75,7 +77,8 @@ public class Soundboard implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public @Nonnull
+    String toString() {
         return "Soundboard{" +
                 "id=" + id +
                 ", name='" + name + '\'' +

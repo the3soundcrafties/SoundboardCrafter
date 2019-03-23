@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="toolbar_menu_reset_all">Alles zurücksetzen</string>
-    <string name="context_menu_remve_sound">Entfernen</string>
+    <string name="context_menu_edit_sound">Bearbeiten</string>
+    <string name="context_menu_remove_sound">Entfernen</string>
     <string name="reset_all_title">Alle Sounds löschen?</string>
     <string name="reset_all_message">Alle Sounds werden gelöscht und aus dem Verzeichnis neu
         geladen. Lautstärkeeinstellungen etc. gehen verloren.</string>

@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -16,16 +15,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Adapter for a SoundBoardItem. Display a Button with Text and Icon
  */
-public class SoundboardItemAdapter extends BaseAdapter {
+class SoundboardItemAdapter extends BaseAdapter {
     private Soundboard soundboard;
-    private static String TAG = MediaPlayerManagerService.class.getName();
     private final MediaPlayerManagerService mediaPlayerManagerService;
-    private final Context context;
 
-    SoundboardItemAdapter(@Nonnull Context context, @Nonnull MediaPlayerManagerService mediaPlayerManagerService, @Nonnull Soundboard soundboard) {
+    SoundboardItemAdapter(@Nonnull MediaPlayerManagerService mediaPlayerManagerService, @Nonnull Soundboard soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerManagerService = checkNotNull(mediaPlayerManagerService, "mediaPlayerManagerService!=null");
-        this.context = checkNotNull(context, "context is null");
     }
 
     /**
