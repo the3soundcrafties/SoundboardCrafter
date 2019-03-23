@@ -158,13 +158,6 @@ public class SoundboardFragment extends Fragment {
 
             new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
 
-            // TODO Check, whether this is the last appearance of the sound.
-            // If so, ask the user, whether the sound shall be fully
-            // deleted (from the sounds table).
-            // Problem: That would meany asking the database about other
-            // appearances of the same sound. But database IO
-            // shall only haben in the AsynTasks' thread.
-            // What shall we do?
             return true;
         }
 
@@ -276,6 +269,11 @@ public class SoundboardFragment extends Fragment {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
                 soundboardDao.unlinkSound(soundBoardItemAdapter.getSoundboard(), index);
+
+                // TODO When removing the sound from the soundboard
+                // also check, whether this was the last appearance of the sound.
+                // If so, ask the user in a dialog, whether the sound shall be fully
+                // deleted (from the sounds table) or not.
             }
 
             return null;
