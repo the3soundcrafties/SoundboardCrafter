@@ -43,23 +43,21 @@ public class SoundboardFragment extends Fragment {
     private static final String TAG = SoundboardDao.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
+
     private static final int REQUEST_RESET_ALL = 0;
+    private static final int REQUEST_EDIT_SOUND = 1;
+
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     // TODO Allow for zero or more than one soundboards
     private SoundboardItemAdapter soundBoardItemAdapter;
     private MediaPlayerManagerService mediaPlayerManagerService;
 
-    public SoundboardFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         mediaPlayerManagerService = new MediaPlayerManagerService(getActivity());
-        // Will call setupAdapter() later.
     }
 
     @Override
@@ -154,8 +152,8 @@ public class SoundboardFragment extends Fragment {
 
                 Log.d(TAG, "Editing sound \"" + sound.getName() + "\"");
 
-                Intent intent = new Intent(getActivity(), SoundEditActivity.class);
-                startActivity(intent);
+                Intent intent = SoundEditActivity.newIntent(getActivity(), sound);
+                startActivityForResult(intent, REQUEST_EDIT_SOUND);
                 return true;
             case R.id.context_menu_remove_sound:
                 menuInfo =
@@ -176,10 +174,15 @@ public class SoundboardFragment extends Fragment {
             return;
         }
 
-        if (requestCode == REQUEST_RESET_ALL) {
-            Log.i(TAG, "Resetting sound data");
-            soundBoardItemAdapter.clear();
-            new ResetAllTask(getActivity()).execute();
+        switch (requestCode) {
+            case REQUEST_RESET_ALL:
+                Log.i(TAG, "Resetting sound data");
+                soundBoardItemAdapter.clear();
+                new ResetAllTask(getActivity()).execute();
+                break;
+            case REQUEST_EDIT_SOUND:
+                Log.d(TAG, "Returned from sound edit fragment with OK");
+                break;
         }
     }
 

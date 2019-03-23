@@ -147,8 +147,6 @@ class MediaPlayerManagerService {
 
     public static class MediaPlayerService extends Service {
         private final IBinder binder = new Binder();
-        static final String EXTRA_SOUND = "Sound";
-        static final String EXTRA_SOUNDBOARD = "Soundboard";
         /**
          * pair<SoundboardID, SoundId>
          **/
