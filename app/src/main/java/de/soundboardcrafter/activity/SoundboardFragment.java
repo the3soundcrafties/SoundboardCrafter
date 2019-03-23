@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -152,7 +153,9 @@ public class SoundboardFragment extends Fragment {
                 Sound sound = itemRow.getSound();
 
                 Log.d(TAG, "Editing sound \"" + sound.getName() + "\"");
-                // TODO Open edit Activity
+
+                Intent intent = new Intent(getActivity(), SoundEditActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.context_menu_remove_sound:
                 menuInfo =
