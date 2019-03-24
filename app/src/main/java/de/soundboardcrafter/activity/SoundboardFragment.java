@@ -95,6 +95,49 @@ public class SoundboardFragment extends Fragment {
         inflater.inflate(R.menu.fragment_main, menu);
     }
 
+    
+    @Override
+    // Called especially when the SoundEditActivity returns.
+    public void onResume() {
+        super.onResume();
+
+        updateUI();
+    }
+
+    /**
+     * Starts reading the data for the UI (first time) or
+     * simple ensure that the grid shows the latest information.
+     */
+    private void updateUI() {
+        if (soundboardItemAdapter == null) {
+            initSoundboardItemAdapter();
+            return;
+        }
+
+        soundboardItemAdapter.notifyDataSetChanged();
+    }
+
+    private void initSoundboardItemAdapter() {
+        // TODO Start without any soundboard
+        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
+        soundboardItemAdapter =
+                new SoundboardItemAdapter(mediaPlayerManagerService, dummySoundboard);
+
+        gridView.setAdapter(soundboardItemAdapter);
+
+        // Here, activity is the current activity
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            // From here on see #onRequestPermissionsResult()
+        } else {
+            new FindSoundboardsTask(getActivity()).execute();
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(@Nonnull MenuItem item) {
         switch (item.getItemId()) {
