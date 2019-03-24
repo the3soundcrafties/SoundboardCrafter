@@ -48,7 +48,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundboardFragment.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
+
     private static final int REQUEST_RESET_ALL = 0;
+    private static final int REQUEST_EDIT_SOUND = 1;
+
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     // TODO Allow for zero or more than one soundboards
@@ -249,8 +252,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Log.d(TAG, "Editing sound \"" + sound.getName() + "\"");
 
-                Intent intent = new Intent(getActivity(), SoundEditActivity.class);
-                startActivity(intent);
+                Intent intent = SoundEditActivity.newIntent(getActivity(), sound);
+                startActivityForResult(intent, REQUEST_EDIT_SOUND);
                 return true;
             case R.id.context_menu_remove_sound:
                 menuInfo =
@@ -271,10 +274,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (requestCode == REQUEST_RESET_ALL) {
-            Log.i(TAG, "Resetting sound data");
-            soundBoardItemAdapter.clear();
-            new ResetAllTask(getActivity()).execute();
+        switch (requestCode) {
+            case REQUEST_RESET_ALL:
+                Log.i(TAG, "Resetting sound data");
+                soundBoardItemAdapter.clear();
+                new ResetAllTask(getActivity()).execute();
+                break;
+            case REQUEST_EDIT_SOUND:
+                Log.d(TAG, "Returned from sound edit fragment with OK");
+                break;
         }
     }
 

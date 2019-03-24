@@ -1,15 +1,14 @@
 package de.soundboardcrafter.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-import de.soundboardcrafter.R;
+import androidx.fragment.app.Fragment;
+import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 
-import android.os.Bundle;
-
-public class MainActivity extends AppCompatActivity {
-
+/**
+ * The main activity, showing the soundboards.
+ */
+public class MainActivity extends SingleFragmentActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_soundboard);
+    protected Fragment createFragment() {
+        return new SoundboardFragment();
     }
 }
