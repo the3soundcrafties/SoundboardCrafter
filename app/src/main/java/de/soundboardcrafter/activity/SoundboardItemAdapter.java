@@ -60,8 +60,8 @@ class SoundboardItemAdapter extends BaseAdapter {
         for (int i = 0; i < soundboard.getSounds().size(); i++) {
             final Sound oldSound = soundboard.getSounds().get(i);
             if (update.getId().equals(oldSound.getId())) {
-                if (mediaPlayerManagerService.shouldBePlaying(soundboard, oldSound)) {
-                    mediaPlayerManagerService.stopSound(soundboard, oldSound);
+                if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, oldSound)) {
+                    mediaPlayerServiceCallback.stopPlaying(soundboard, oldSound);
                 }
                 soundboard.setSound(i, update);
 

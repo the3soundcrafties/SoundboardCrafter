@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -33,7 +32,6 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
@@ -125,6 +123,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
         registerForContextMenu(gridView);
 
+        //TODO start without any soundboard
+        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
+        soundboardItemAdapter =
+                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), dummySoundboard);
+        gridView.setAdapter(soundboardItemAdapter);
         return rootView;
     }
 
