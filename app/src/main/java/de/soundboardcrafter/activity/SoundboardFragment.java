@@ -95,7 +95,7 @@ public class SoundboardFragment extends Fragment {
         inflater.inflate(R.menu.fragment_main, menu);
     }
 
-    
+
     @Override
     // Called especially when the SoundEditActivity returns.
     public void onResume() {
