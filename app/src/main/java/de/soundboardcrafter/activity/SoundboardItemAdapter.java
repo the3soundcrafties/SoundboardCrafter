@@ -18,20 +18,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Adapter for a SoundBoardItem. Display a Button with Text and Icon
  */
 class SoundboardItemAdapter extends BaseAdapter {
+    private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private Soundboard soundboard;
-    private final MediaPlayerManagerService mediaPlayerManagerService;
 
-    SoundboardItemAdapter(@Nonnull MediaPlayerManagerService mediaPlayerManagerService, @Nonnull Soundboard soundboard) {
+    SoundboardItemAdapter(@Nonnull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @Nonnull Soundboard soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
-        this.mediaPlayerManagerService = checkNotNull(mediaPlayerManagerService, "mediaPlayerManagerService!=null");
+        this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
     }
+
 
     /**
      * Sets the soundboard.
      */
     public void setSoundboard(Soundboard soundboard) {
         this.soundboard = soundboard;
-
         notifyDataSetChanged();
     }
 
@@ -60,8 +60,8 @@ class SoundboardItemAdapter extends BaseAdapter {
         for (int i = 0; i < soundboard.getSounds().size(); i++) {
             final Sound oldSound = soundboard.getSounds().get(i);
             if (update.getId().equals(oldSound.getId())) {
-                if (mediaPlayerManagerService.shouldBePlaying(soundboard, oldSound)) {
-                    mediaPlayerManagerService.stopSound(soundboard, oldSound);
+                if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, oldSound)) {
+                    mediaPlayerServiceCallback.stopPlaying(soundboard, oldSound);
                 }
                 soundboard.setSound(i, update);
 
@@ -78,13 +78,11 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void clear() {
         for (Sound sound : soundboard.getSounds()) {
-            if (mediaPlayerManagerService.shouldBePlaying(soundboard, sound)) {
-                mediaPlayerManagerService.stopSound(soundboard, sound);
+            if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
+                mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
             }
         }
-
         soundboard.clearSounds();
-
         notifyDataSetChanged();
     }
 
@@ -94,9 +92,8 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void remove(int position) {
         Sound sound = soundboard.getSounds().get(position);
-
-        if (mediaPlayerManagerService.shouldBePlaying(soundboard, sound)) {
-            mediaPlayerManagerService.stopSound(soundboard, sound);
+        if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
+            mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
         }
 
         soundboard.removeSound(position);
@@ -126,11 +123,8 @@ class SoundboardItemAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = new SoundBoardItemRow(parent.getContext());
         }
-
         // We can now safely cast and set the data
-        ((SoundBoardItemRow) convertView).setSound(soundboard, sound, mediaPlayerManagerService);
-
-
+        ((SoundBoardItemRow) convertView).setSound(soundboard, sound, mediaPlayerServiceCallback);
         return convertView;
     }
 }

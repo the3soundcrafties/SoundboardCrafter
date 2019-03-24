@@ -1,12 +1,14 @@
 package de.soundboardcrafter.activity;
 
-import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -30,10 +32,11 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -43,8 +46,8 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Shows Soundboard in a Grid
  */
-public class SoundboardFragment extends Fragment {
-    private static final String TAG = SoundboardDao.class.getName();
+public class SoundboardFragment extends Fragment implements ServiceConnection {
+    private static final String TAG = SoundboardFragment.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
 
@@ -56,13 +59,59 @@ public class SoundboardFragment extends Fragment {
     private GridView gridView;
     // TODO Allow for zero or more than one soundboards
     private SoundboardItemAdapter soundboardItemAdapter;
-    private MediaPlayerManagerService mediaPlayerManagerService;
+    private MediaPlayerService mediaPlayerService;
+
+    public SoundboardFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
+        mediaPlayerService = b.getService();
+        Log.d(TAG, "MediaPlayerService is connected");
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+
+    }
+
+    @Override
+    public void onBindingDied(ComponentName name) {
+
+    }
+
+    @Override
+    public void onNullBinding(ComponentName name) {
+
+    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mediaPlayerManagerService = new MediaPlayerManagerService(getActivity());
+        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        getActivity().startService(intent);
+        bindService();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        bindService();
+    }
+
+    private void bindService() {
+        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unbindService(this);
     }
 
     @Override
@@ -74,7 +123,61 @@ public class SoundboardFragment extends Fragment {
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
         registerForContextMenu(gridView);
 
+        //TODO start without any soundboard
+        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
+        soundboardItemAdapter =
+                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), dummySoundboard);
+        gridView.setAdapter(soundboardItemAdapter);
         return rootView;
+    }
+
+    private SoundBoardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
+        SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback = new SoundBoardItemRow.MediaPlayerServiceCallback() {
+            @Override
+            public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
+                MediaPlayerService service = getService();
+                if (service == null) {
+                    return false;
+                }
+                return service.shouldBePlaying(soundboard, sound);
+            }
+
+            @Override
+            public void initMediaPlayer(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.InitializeCallback initializeCallback,
+                                        SoundboardMediaPlayer.StartPlayCallback playCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+                MediaPlayerService service = getService();
+                if (service != null) {
+                    service.initMediaPlayer(soundboard, sound, initializeCallback, playCallback, stopPlayCallback);
+                }
+            }
+
+            @Override
+            public void startPlaying(Soundboard soundboard, Sound sound) {
+                MediaPlayerService service = getService();
+                if (service != null) {
+                    service.startPlaying(soundboard, sound);
+                }
+            }
+
+            @Override
+            public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.StartPlayCallback startPlayCallback,
+                                                SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+                MediaPlayerService service = getService();
+                if (service != null) {
+                    service.setMediaPlayerCallbacks(soundboard, sound, startPlayCallback, stopPlayCallback);
+                }
+            }
+
+            @Override
+            public void stopPlaying(Soundboard soundboard, Sound sound) {
+                MediaPlayerService service = getService();
+                if (service != null) {
+                    service.stopPlaying(soundboard, sound);
+                }
+
+            }
+        };
+        return mediaPlayerServiceCallback;
     }
 
     @Override
@@ -224,6 +327,14 @@ public class SoundboardFragment extends Fragment {
         super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
     }
+
+    private MediaPlayerService getService() {
+        if (mediaPlayerService == null) {
+            bindService();
+        }
+        return mediaPlayerService;
+    }
+
 
     /**
      * A background task, used to retrieve soundboards from the database.

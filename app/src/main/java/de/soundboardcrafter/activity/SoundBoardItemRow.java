@@ -7,45 +7,62 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
-public class SoundBoardItemRow extends RelativeLayout {
+class SoundBoardItemRow extends RelativeLayout {
     @NonNull
     private final TextView soundItem;
-
     private Sound sound;
 
-    public SoundBoardItemRow(Context context) {
+    SoundBoardItemRow(Context context) {
         super(context);
-
         LayoutInflater inflater = LayoutInflater.from(context);
-
         // Inflate the view into this object
         inflater.inflate(R.layout.soundboard_item, this, true);
 
         soundItem = findViewById(R.id.sound_item);
     }
 
+    public interface MediaPlayerServiceCallback {
+        boolean shouldBePlaying(Soundboard soundboard, Sound sound);
+
+        void initMediaPlayer(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.InitializeCallback initializeCallback,
+                             SoundboardMediaPlayer.StartPlayCallback playCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback);
+
+        void startPlaying(Soundboard soundboard, Sound sound);
+
+        void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound,
+                                     SoundboardMediaPlayer.StartPlayCallback startPlayCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback);
+
+        void stopPlaying(Soundboard soundboard, Sound sound);
+    }
+
     /**
      * Set the data for the view, and populate the
      * children views with the model text.
      */
-    void setSound(Soundboard soundboard, Sound sound, MediaPlayerManagerService service) {
+    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback) {
         this.sound = sound;
         soundItem.setText(this.sound.getName());
-        setPlayStopIcon(soundboard, this.sound, service);
 
+        setPlayStopIcon(soundboard, this.sound, mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound));
+        SoundboardMediaPlayer.InitializeCallback initializeCallback = () -> setImage(R.drawable.ic_init_mediaplayer);
+        SoundboardMediaPlayer.StartPlayCallback startPlayCallback = () -> setImage(R.drawable.ic_stop);
+        SoundboardMediaPlayer.StopPlayCallback stopPlayCallback = () -> setImage(R.drawable.ic_play);
         setOnClickListener(l -> {
-            if (!service.shouldBePlaying(soundboard, this.sound)) {
-                service.playSound(soundboard, this.sound,
-                        () -> setImage(R.drawable.ic_stop),
-                        () -> setImage(R.drawable.ic_play));
+
+            if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, this.sound)) {
+                mediaPlayerServiceCallback.initMediaPlayer(soundboard, sound, initializeCallback,
+                        startPlayCallback, stopPlayCallback);
+                mediaPlayerServiceCallback.startPlaying(soundboard, this.sound);
             } else {
-                service.stopSound(soundboard, this.sound, () -> setImage(R.drawable.ic_play));
+                mediaPlayerServiceCallback.setMediaPlayerCallbacks(soundboard, sound, startPlayCallback, stopPlayCallback);
+                mediaPlayerServiceCallback.stopPlaying(soundboard, this.sound);
             }
         });
 
@@ -56,8 +73,8 @@ public class SoundBoardItemRow extends RelativeLayout {
         });
     }
 
-    private void setPlayStopIcon(Soundboard soundboard, Sound sound, MediaPlayerManagerService service) {
-        if (service.shouldBePlaying(soundboard, sound)) {
+    private void setPlayStopIcon(Soundboard soundboard, Sound sound, boolean isPlaying) {
+        if (isPlaying) {
             setImage(R.drawable.ic_stop);
         } else {
             setImage(R.drawable.ic_play);
