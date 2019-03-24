@@ -4,6 +4,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import java.util.Collection;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -38,6 +40,36 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     public Soundboard getSoundboard() {
         return soundboard;
+    }
+
+    /**
+     * If there are already sounds in the soundboard with one of these IDs, replace
+     * them with the respective updates.
+     */
+    void updateSounds(Collection<Sound> updates) {
+        for (Sound update : updates) {
+            updateSound(update);
+        }
+    }
+
+    /**
+     * If there is already a sound in the soundboard with this ID, replace
+     * it with the given update.
+     */
+    private void updateSound(Sound update) {
+        for (int i = 0; i < soundboard.getSounds().size(); i++) {
+            final Sound oldSound = soundboard.getSounds().get(i);
+            if (update.getId().equals(oldSound.getId())) {
+                if (mediaPlayerManagerService.shouldBePlaying(soundboard, oldSound)) {
+                    mediaPlayerManagerService.stopSound(soundboard, oldSound);
+                }
+                soundboard.setSound(i, update);
+
+                break;
+            }
+        }
+
+        notifyDataSetChanged();
     }
 
     /**

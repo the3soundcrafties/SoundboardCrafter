@@ -11,12 +11,16 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
+
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Database Access Object for accessing Soundboards in the database
@@ -156,6 +160,56 @@ public class SoundboardDao {
         }
     }
 
+    /**
+     * Finds these sounds by their IDs.
+     *
+     * @throws IllegalStateException if for some id, no sound exists (or more than one)
+     */
+    public ImmutableList<Sound> findSounds(UUID... soundIds) {
+        return Stream.of(soundIds)
+                .map(this::findSound)
+                .collect(collectingAndThen(toList(), ImmutableList::copyOf));
+        // TODO Use .collect(ImmutableList::toImmutableList) - why doesn't that work?
+    }
+
+    /**
+     * Finds a sound by ID.
+     *
+     * @throws IllegalStateException if no sound with this ID exists - or more than one
+     */
+    public Sound findSound(UUID soundId) {
+        SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
+                new String[]{soundId.toString()});
+        try {
+            if (!cursor.moveToNext()) {
+                throw new IllegalStateException("No sound with ID " + soundId);
+            }
+
+            Sound res = cursor.getSound();
+            if (cursor.moveToNext()) {
+                throw new IllegalStateException("More than one sound with ID " + soundId);
+            }
+
+            return res;
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
+        final Cursor cursor =
+                database.query(
+                        SoundTable.NAME,
+                        null, // all columns
+                        whereClause, whereArgs,
+                        null,
+                        null,
+                        null
+                );
+
+        return new SoundCursorWrapper(cursor);
+    }
+
     private Cursor rawQueryOrThrow(String queryString) {
         final Cursor cursor = database.rawQuery(queryString, new String[]{});
         if (cursor == null) {
@@ -205,15 +259,7 @@ public class SoundboardDao {
     private void insertSound(Sound sound) {
         // TODO throw exception if sound name already exists
 
-        ContentValues values = new ContentValues();
-        values.put(SoundTable.Cols.ID, sound.getId().toString());
-        values.put(SoundTable.Cols.NAME, sound.getName());
-        // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method-that-supports-boolean
-        values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
-        values.put(SoundTable.Cols.PATH, sound.getPath());
-        values.put(SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
-
-        insertOrThrow(SoundTable.NAME, values);
+        insertOrThrow(SoundTable.NAME, buildContentValues(sound));
     }
 
     /**
@@ -277,6 +323,29 @@ public class SoundboardDao {
 
             i++;
         } while (rowsUpdated > 0);
+    }
+
+
+    public void updateSound(Sound sound) {
+        int rowsUpdated = database.update(SoundTable.NAME,
+                buildContentValues(sound),
+                SoundTable.Cols.ID + " = ?",
+                new String[]{sound.getId().toString()});
+
+        if (rowsUpdated != 1) {
+            throw new RuntimeException("Not exactly one sound with ID + " + sound.getId());
+        }
+    }
+
+    private ContentValues buildContentValues(Sound sound) {
+        ContentValues values = new ContentValues();
+        values.put(SoundTable.Cols.ID, sound.getId().toString());
+        values.put(SoundTable.Cols.NAME, sound.getName());
+        // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method-that-supports-boolean
+        values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
+        values.put(SoundTable.Cols.PATH, sound.getPath());
+        values.put(SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
+        return values;
     }
 
     private void deleteAllSounds() {

@@ -63,6 +63,14 @@ public class Soundboard implements Serializable {
     }
 
     /**
+     * Replaces the sound with this <code>index</code> with the new
+     * <code>sound</code>.
+     */
+    public void setSound(int index, Sound sound) {
+        sounds.set(index, sound);
+    }
+
+    /**
      * Clears all sounds, so the list of sounds is empty afterwards.
      */
     public void clearSounds() {

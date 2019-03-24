@@ -18,10 +18,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -32,6 +35,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
+import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -49,8 +53,9 @@ public class SoundboardFragment extends Fragment {
 
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
+    private GridView gridView;
     // TODO Allow for zero or more than one soundboards
-    private SoundboardItemAdapter soundBoardItemAdapter;
+    private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerManagerService mediaPlayerManagerService;
 
     @Override
@@ -66,27 +71,8 @@ public class SoundboardFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_soundboard,
                 container, false);
 
-        GridView gridView = rootView.findViewById(R.id.grid_view_soundboard);
+        gridView = rootView.findViewById(R.id.grid_view_soundboard);
         registerForContextMenu(gridView);
-
-        // TODO Start without any soundboard
-        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
-        soundBoardItemAdapter =
-                new SoundboardItemAdapter(mediaPlayerManagerService, dummySoundboard);
-
-        gridView.setAdapter(soundBoardItemAdapter);
-
-        // Here, activity is the current activity
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
-            // From here on see #onRequestPermissionsResult()
-        } else {
-            new FindSoundboardsTask(getActivity()).execute();
-        }
 
         return rootView;
     }
@@ -160,7 +146,7 @@ public class SoundboardFragment extends Fragment {
                         (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
                 Log.d(TAG, "Removing sound " + menuInfo.position);
-                soundBoardItemAdapter.remove(menuInfo.position);
+                soundboardItemAdapter.remove(menuInfo.position);
                 new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
                 return true;
             default:
@@ -177,11 +163,15 @@ public class SoundboardFragment extends Fragment {
         switch (requestCode) {
             case REQUEST_RESET_ALL:
                 Log.i(TAG, "Resetting sound data");
-                soundBoardItemAdapter.clear();
+                soundboardItemAdapter.clear();
                 new ResetAllTask(getActivity()).execute();
                 break;
             case REQUEST_EDIT_SOUND:
                 Log.d(TAG, "Returned from sound edit fragment with OK");
+
+                final UUID soundId = UUID.fromString(
+                        data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
+                new UpdateSoundsTask(getActivity()).execute(soundId);
                 break;
         }
     }
@@ -247,7 +237,52 @@ public class SoundboardFragment extends Fragment {
                 return;
             }
 
-            soundBoardItemAdapter.setSoundboard(soundboards.iterator().next());
+            soundboardItemAdapter.setSoundboard(soundboards.iterator().next());
+        }
+    }
+
+    /**
+     * A background task, used to retrieve some sounds from the database and update the GUI.
+     */
+    public class UpdateSoundsTask extends AsyncTask<UUID, Void, ImmutableCollection<Sound>> {
+        private final String TAG = UpdateSoundsTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
+
+        UpdateSoundsTask(Context context) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+        }
+
+        @Override
+        protected ImmutableCollection<Sound> doInBackground(UUID... soundIds) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            Log.d(TAG, "Loading sounds: " + Arrays.toString(soundIds));
+
+            return soundboardDao.findSounds(soundIds);
+        }
+
+        @Override
+        protected void onPostExecute(ImmutableCollection<Sound> sounds) {
+            if (!isAdded()) {
+                // fragment is no longer linked to an activity
+                return;
+            }
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            soundboardItemAdapter.updateSounds(sounds);
         }
     }
 
@@ -276,7 +311,7 @@ public class SoundboardFragment extends Fragment {
             for (int index : indexes) {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
-                soundboardDao.unlinkSound(soundBoardItemAdapter.getSoundboard(), index);
+                soundboardDao.unlinkSound(soundboardItemAdapter.getSoundboard(), index);
             }
 
             return null;
@@ -333,7 +368,7 @@ public class SoundboardFragment extends Fragment {
                 return;
             }
 
-            soundBoardItemAdapter.setSoundboard(soundboards.iterator().next());
+            soundboardItemAdapter.setSoundboard(soundboards.iterator().next());
         }
     }
 }
