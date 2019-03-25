@@ -69,7 +69,6 @@ public class MediaPlayerService extends Service {
             if (key != null) {
                 mediaPlayers.remove(key);
             }
-            mediaPlayer = null;
         }
     }
 
@@ -141,11 +140,18 @@ public class MediaPlayerService extends Service {
         Preconditions.checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         Preconditions.checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
-        mediaPlayer.prepareAsync();
+        if (!mediaPlayer.isPlaying()) {
+            mediaPlayer.prepareAsync();
+        }
+
     }
 
     public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
-        return mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound)) != null;
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
+        if (mediaPlayer != null) {
+            return mediaPlayer.isPlaying();
+        }
+        return false;
     }
 
     /**

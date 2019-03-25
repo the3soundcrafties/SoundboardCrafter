@@ -71,8 +71,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
+        updateUI();
         Log.d(TAG, "MediaPlayerService is connected");
     }
+
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
@@ -310,6 +312,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
                 new UpdateSoundsTask(getActivity()).execute(soundId);
+
                 break;
         }
     }

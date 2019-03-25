@@ -28,6 +28,8 @@ public class SoundboardMediaPlayer extends MediaPlayer {
 
     @Nullable
     private StopPlayCallback stopPlayCallback;
+    @Nullable
+    private OnCompletionListener onCompletionListener;
 
     SoundboardMediaPlayer(@Nullable InitializeCallback initializeCallback, @Nullable StartPlayCallback startPlayCallback, @Nullable StopPlayCallback stopPlayCallback) {
         super();
@@ -41,11 +43,16 @@ public class SoundboardMediaPlayer extends MediaPlayer {
 
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {
+        onCompletionListener = listener;
         super.setOnCompletionListener(event -> {
-            stopPlayCallback.stop();
+            if (stopPlayCallback != null) {
+                stopPlayCallback.stop();
+            }
             listener.onCompletion(this);
         });
+
     }
+
 
     void setStartPlayCallback(@Nullable StartPlayCallback startPlayCallback) {
         this.startPlayCallback = startPlayCallback;
@@ -57,18 +64,18 @@ public class SoundboardMediaPlayer extends MediaPlayer {
 
     @Override
     public void stop() throws IllegalStateException {
+        super.stop();
         if (stopPlayCallback != null) {
             stopPlayCallback.stop();
         }
-        super.stop();
     }
 
     @Override
     public void start() throws IllegalStateException {
+        super.start();
         if (startPlayCallback != null) {
             startPlayCallback.onStartPlaying();
         }
-        super.start();
     }
 }
 

@@ -49,14 +49,18 @@ class SoundBoardItemRow extends RelativeLayout {
     void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback) {
         this.sound = sound;
         soundItem.setText(this.sound.getName());
-
-        setPlayStopIcon(soundboard, this.sound, mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound));
         SoundboardMediaPlayer.InitializeCallback initializeCallback = () -> setImage(R.drawable.ic_init_mediaplayer);
         SoundboardMediaPlayer.StartPlayCallback startPlayCallback = () -> setImage(R.drawable.ic_stop);
         SoundboardMediaPlayer.StopPlayCallback stopPlayCallback = () -> setImage(R.drawable.ic_play);
+        boolean isPlaying = mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound);
+        if (isPlaying) {
+            setImage(R.drawable.ic_stop);
+            mediaPlayerServiceCallback.setMediaPlayerCallbacks(soundboard, sound, startPlayCallback, stopPlayCallback);
+        } else {
+            setImage(R.drawable.ic_play);
+        }
         setOnClickListener(l -> {
-
-            if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, this.sound)) {
+            if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
                 mediaPlayerServiceCallback.initMediaPlayer(soundboard, sound, initializeCallback,
                         startPlayCallback, stopPlayCallback);
                 mediaPlayerServiceCallback.startPlaying(soundboard, this.sound);
@@ -73,13 +77,6 @@ class SoundBoardItemRow extends RelativeLayout {
         });
     }
 
-    private void setPlayStopIcon(Soundboard soundboard, Sound sound, boolean isPlaying) {
-        if (isPlaying) {
-            setImage(R.drawable.ic_stop);
-        } else {
-            setImage(R.drawable.ic_play);
-        }
-    }
 
     private void setImage(int p) {
         soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
