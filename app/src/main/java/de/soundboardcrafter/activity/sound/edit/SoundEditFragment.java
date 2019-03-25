@@ -87,16 +87,18 @@ public class SoundEditFragment extends Fragment {
 
     // TODO Show and edit other parts of the sound
 
-    // TODO How to deal with empty name?!
-
     @Override
     @UiThread
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
 
+        String nameEntered = nameTextView.getText().toString();
+        if (!nameEntered.isEmpty()) {
+            sound.setName(nameEntered);
+        }
+
         // TODO Take other values from the GUI
-        sound.setName(nameTextView.getText().toString());
 
         new SaveSoundTask(getActivity(), sound).execute();
     }
