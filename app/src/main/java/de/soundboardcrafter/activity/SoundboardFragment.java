@@ -33,6 +33,8 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -93,6 +95,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
 
     @Override
+    @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -107,12 +110,14 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onPause() {
         super.onPause();
         getActivity().unbindService(this);
     }
 
     @Override
+    @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard,
@@ -174,6 +179,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
@@ -186,6 +192,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onCreateOptionsMenu(@Nonnull Menu menu, @Nonnull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_main, menu);
@@ -193,6 +200,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
 
     @Override
+    @UiThread
     // Called especially when the SoundEditActivity returns.
     public void onResume() {
         super.onResume();
@@ -205,6 +213,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
      * Starts reading the data for the UI (first time) or
      * simple ensure that the grid shows the latest information.
      */
+    @UiThread
     private void updateUI() {
         if (soundboardItemAdapter == null) {
             initSoundboardItemAdapter();
@@ -214,6 +223,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         soundboardItemAdapter.notifyDataSetChanged();
     }
 
+    @UiThread
     private void initSoundboardItemAdapter() {
         // TODO Start without any soundboard
         Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
@@ -236,6 +246,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public boolean onOptionsItemSelected(@Nonnull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_menu_reset_all:
@@ -246,6 +257,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
+    @UiThread
     private void resetAllOrCancel() {
         FragmentManager manager = getFragmentManager();
         ResetAllDialogFragment dialog = new ResetAllDialogFragment();
@@ -254,6 +266,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -268,6 +281,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.context_menu_edit_sound:
@@ -295,6 +309,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
@@ -318,6 +333,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     @Override
+    @UiThread
     public void onDestroy() {
         super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
@@ -346,6 +362,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @WorkerThread
         protected ImmutableList<Soundboard> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
@@ -373,6 +390,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @UiThread
         protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
@@ -405,6 +423,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @WorkerThread
         protected ImmutableCollection<Sound> doInBackground(UUID... soundIds) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
@@ -418,6 +437,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @UiThread
         protected void onPostExecute(ImmutableCollection<Sound> sounds) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
@@ -450,6 +470,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @WorkerThread
         protected Void doInBackground(Integer... indexes) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
@@ -482,6 +503,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @WorkerThread
         protected ImmutableList<Soundboard> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
@@ -504,6 +526,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         @Override
+        @UiThread
         protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity

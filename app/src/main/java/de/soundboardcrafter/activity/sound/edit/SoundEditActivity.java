@@ -5,6 +5,7 @@ import android.content.Intent;
 
 import java.util.UUID;
 
+import androidx.annotation.UiThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Sound;
@@ -27,6 +28,7 @@ public class SoundEditActivity extends SingleFragmentActivity {
     }
 
     @Override
+    @UiThread
     protected Fragment createFragment() {
         UUID soundId = UUID.fromString(getIntent().getStringExtra(EXTRA_SOUND_ID));
 

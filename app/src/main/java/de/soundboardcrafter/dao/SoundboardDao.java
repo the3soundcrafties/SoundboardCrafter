@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
+import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
@@ -25,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Database Access Object for accessing Soundboards in the database
  */
+@WorkerThread
 public class SoundboardDao {
     private static SoundboardDao instance;
 
@@ -38,7 +42,7 @@ public class SoundboardDao {
         return instance;
     }
 
-    private SoundboardDao(Context context) {
+    private SoundboardDao(@Nonnull Context context) {
         Context appContext = context.getApplicationContext();
         database = new DBHelper(appContext).getWritableDatabase();
     }
@@ -325,7 +329,9 @@ public class SoundboardDao {
         } while (rowsUpdated > 0);
     }
 
-
+    /**
+     * Updates this sound which has to be exist in the database.
+     */
     public void updateSound(Sound sound) {
         int rowsUpdated = database.update(SoundTable.NAME,
                 buildContentValues(sound),

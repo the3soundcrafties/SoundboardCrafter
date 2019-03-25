@@ -5,12 +5,14 @@ import android.database.CursorWrapper;
 
 import java.util.UUID;
 
+import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.model.Sound;
 
 /**
  * Essentially a cursor over sounds.
  */
+@WorkerThread
 class SoundCursorWrapper extends CursorWrapper {
     SoundCursorWrapper(Cursor cursor) {
         super(cursor);

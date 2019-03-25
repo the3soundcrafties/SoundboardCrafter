@@ -4,6 +4,7 @@ import android.database.Cursor;
 
 import java.util.UUID;
 
+import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
@@ -11,6 +12,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 /**
  * Essentially a cursor over a soundboard that's joined with all its sounds.
  */
+@WorkerThread
 class FullJoinSoundboardCursorWrapper {
     private final Cursor cursor;
 

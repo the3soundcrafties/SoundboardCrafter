@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import de.soundboardcrafter.R;
@@ -17,6 +18,7 @@ import de.soundboardcrafter.R;
 public class ResetAllDialogFragment extends DialogFragment {
     @NonNull
     @Override
+    @UiThread
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return
                 new AlertDialog.Builder(getActivity())
@@ -30,6 +32,7 @@ public class ResetAllDialogFragment extends DialogFragment {
     /**
      * Sends the result OK back to the calling Fragment.
      */
+    @UiThread
     private void sendResultOK() {
         if (getTargetFragment() == null) {
             return;
