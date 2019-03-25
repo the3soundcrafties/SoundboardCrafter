@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,6 +33,7 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
@@ -97,12 +99,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         bindService();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        bindService();
-    }
-
     private void bindService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
@@ -123,11 +119,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
         registerForContextMenu(gridView);
 
-        //TODO start without any soundboard
-        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
-        soundboardItemAdapter =
-                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), dummySoundboard);
-        gridView.setAdapter(soundboardItemAdapter);
         return rootView;
     }
 
@@ -205,6 +196,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         super.onResume();
 
         updateUI();
+        bindService();
     }
 
     /**
@@ -224,7 +216,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         // TODO Start without any soundboard
         Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
         soundboardItemAdapter =
-                new SoundboardItemAdapter(mediaPlayerManagerService, dummySoundboard);
+                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), dummySoundboard);
 
         gridView.setAdapter(soundboardItemAdapter);
 
