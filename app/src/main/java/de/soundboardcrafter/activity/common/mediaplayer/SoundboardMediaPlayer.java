@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.mediaplayer;
+package de.soundboardcrafter.activity.common.mediaplayer;
 
 import android.media.MediaPlayer;
 

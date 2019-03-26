@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.mediaplayer;
+package de.soundboardcrafter.activity.common.mediaplayer;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -7,7 +7,7 @@ import java.util.UUID;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
-public class MediaPlayerSearchId implements Serializable {
+class MediaPlayerSearchId implements Serializable {
     private final UUID soundboardId;
     private final UUID soundId;
 

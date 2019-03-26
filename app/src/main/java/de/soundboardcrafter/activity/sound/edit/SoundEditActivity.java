@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Sound;
 
-import static de.soundboardcrafter.common.ActivityConstants.BASE_PACKAGE;
+import static de.soundboardcrafter.activity.common.ActivityConstants.BASE_PACKAGE;
 
 /**
  * Activity for editing a single sound (name, volume etc.).

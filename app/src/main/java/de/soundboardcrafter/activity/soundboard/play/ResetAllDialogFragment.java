@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity;
+package de.soundboardcrafter.activity.soundboard.play;
 
 import android.app.Activity;
 import android.app.Dialog;

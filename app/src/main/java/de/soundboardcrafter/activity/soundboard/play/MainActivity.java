@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity;
+package de.soundboardcrafter.activity.soundboard.play;
 
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;

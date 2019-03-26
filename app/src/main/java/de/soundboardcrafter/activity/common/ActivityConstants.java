@@ -1,4 +1,4 @@
-package de.soundboardcrafter.common;
+package de.soundboardcrafter.activity.common;
 
 /**
  * Common constants that might be useful for all activities.

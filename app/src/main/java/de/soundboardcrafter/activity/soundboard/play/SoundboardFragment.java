@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity;
+package de.soundboardcrafter.activity.soundboard.play;
 
 import android.Manifest;
 import android.app.Activity;
@@ -39,8 +39,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.mediaplayer.MediaPlayerService;
-import de.soundboardcrafter.activity.mediaplayer.SoundboardMediaPlayer;
+import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
 import de.soundboardcrafter.dao.SoundboardDao;

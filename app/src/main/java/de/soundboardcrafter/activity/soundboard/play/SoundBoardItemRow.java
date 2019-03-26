@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity;
+package de.soundboardcrafter.activity.soundboard.play;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.mediaplayer.SoundboardMediaPlayer;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 

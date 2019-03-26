@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.soundboard.play.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,10 +24,10 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".activity.mediaplayer.MediaPlayerService" />
+        <service android:name=".activity.common.mediaplayer.MediaPlayerService" />
         <activity
             android:name=".activity.sound.edit.SoundEditActivity"
-            android:parentActivityName=".activity.MainActivity"></activity>
+            android:parentActivityName=".activity.soundboard.play.MainActivity"></activity>
     </application>
 
 </manifest>
