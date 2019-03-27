@@ -10,11 +10,14 @@ import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
@@ -86,6 +89,8 @@ public class SoundboardDao {
                         rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString()));
         try {
             ImmutableList.Builder<Soundboard> res = ImmutableList.builder();
+            // The same Sound shall result in the same object
+            Map<UUID, Sound> sounds = new HashMap<>();
 
             UUID lastSoundboardId = null;
             String lastSoundboardName = null;
@@ -119,8 +124,12 @@ public class SoundboardDao {
                 }
 
                 if (soundboardId.equals(lastSoundboardId)) {
-                    // FIXME reuse existing sounds!
-                    Sound sound = new Sound(soundId, path, name, volumePercentage, loop);
+                    // Reuse existing sounds.
+                    @Nullable Sound sound = sounds.get(soundId);
+                    if (sound == null) {
+                        sound = new Sound(soundId, path, name, volumePercentage, loop);
+                        sounds.put(soundId, sound);
+                    }
 
                     if (index != lastIndex + 1) {
                         throw new IllegalStateException("Gap in indexes of soundboard " + soundboardId + ". Expected next index " +
