@@ -63,7 +63,7 @@ public class SoundboardDao {
         ArrayList<Sound> soundList = new ArrayList<>();
         int volume = 10;
         for (File file : fList) {
-            volume += 30 % 90 + 10;
+            volume = (volume + 44) % 200;
             final String name;
             if (file.getName().contains("-")) {
                 name = file.getName().substring(file.getName().indexOf("-") + 1, file.getName().indexOf("."));

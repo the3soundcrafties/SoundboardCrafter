@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.NonNull;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -18,6 +19,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <code>Sound</code>s are basically links to some audio file on the device.
  */
 public class Sound implements Serializable {
+    /**
+     * Maximum volume percentage
+     */
+    public static final int MAX_VOLUME_PERCENTAGE = 200;
+
     private final @NonNull
     UUID id;
 
@@ -51,7 +57,7 @@ public class Sound implements Serializable {
         this.id = checkNotNull(id, "id is null");
         this.path = checkNotNull(path, "path is null");
         this.name = checkNotNull(name, "name is null");
-        this.volumePercentage = volumePercentage;
+        setVolumePercentage(volumePercentage);
         this.loop = loop;
     }
 
@@ -88,6 +94,10 @@ public class Sound implements Serializable {
     }
 
     public void setVolumePercentage(int volumePercentage) {
+        checkArgument(volumePercentage >= 0, "volumePercentage < 0");
+        checkArgument(volumePercentage <= MAX_VOLUME_PERCENTAGE,
+                "volumePercentage > " + MAX_VOLUME_PERCENTAGE);
+
         this.volumePercentage = volumePercentage;
     }
 

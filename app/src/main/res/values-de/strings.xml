@@ -9,4 +9,5 @@
     <string name="reset_all_title_cancel">Abbrechen</string>
     <string name="reset_all_title_ok">OK</string>
     <string name="sound_edit_sound_name_hint">Name</string>
+    <string name="sound_edit_volume_label">Lautstärke</string>
 </resources>

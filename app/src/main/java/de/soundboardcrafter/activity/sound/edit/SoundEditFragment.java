@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -35,6 +36,7 @@ public class SoundEditFragment extends Fragment {
     private Sound sound;
 
     private TextView nameTextView;
+    private SeekBar volumePercentageSeekBar;
 
     static SoundEditFragment newInstance(UUID soundId) {
         Bundle args = new Bundle();
@@ -73,6 +75,9 @@ public class SoundEditFragment extends Fragment {
 
         nameTextView = rootView.findViewById(R.id.nameText);
         nameTextView.setEnabled(false);
+        volumePercentageSeekBar = rootView.findViewById(R.id.volumePercentageSeekBar);
+        volumePercentageSeekBar.setMax(Sound.MAX_VOLUME_PERCENTAGE);
+        volumePercentageSeekBar.setEnabled(false);
 
         return rootView;
     }
@@ -83,9 +88,14 @@ public class SoundEditFragment extends Fragment {
 
         nameTextView.setTextKeepState(sound.getName());
         nameTextView.setEnabled(true);
+
+        volumePercentageSeekBar.setProgress(sound.getVolumePercentage());
+        volumePercentageSeekBar.setEnabled(true);
     }
 
     // TODO Show and edit other parts of the sound
+
+    // TODO "When interacting with a slider, changes should be represented immediately."
 
     @Override
     @UiThread
@@ -97,6 +107,8 @@ public class SoundEditFragment extends Fragment {
         if (!nameEntered.isEmpty()) {
             sound.setName(nameEntered);
         }
+
+        sound.setVolumePercentage(volumePercentageSeekBar.getProgress());
 
         // TODO Take other values from the GUI
 
