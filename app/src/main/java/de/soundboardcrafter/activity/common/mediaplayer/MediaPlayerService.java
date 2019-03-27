@@ -92,12 +92,6 @@ public class MediaPlayerService extends Service {
 
     /**
      * adds a MediaPlayer but it is not starting it
-     *
-     * @param soundboard
-     * @param sound
-     * @param initializeCallback
-     * @param startPlayCallback
-     * @param stopPlayCallback
      */
     public void initMediaPlayer(@Nonnull Soundboard soundboard, @Nonnull Sound sound,
                                 @Nullable SoundboardMediaPlayer.InitializeCallback initializeCallback,
@@ -131,9 +125,6 @@ public class MediaPlayerService extends Service {
 
     /**
      * starts to play the song in the Mediaplayer. The Mediaplayer must be initalized
-     *
-     * @param soundboard
-     * @param sound
      */
     public void startPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
         Preconditions.checkNotNull(soundboard, "soundboard is null");

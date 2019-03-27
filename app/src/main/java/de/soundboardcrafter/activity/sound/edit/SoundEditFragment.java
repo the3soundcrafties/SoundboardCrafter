@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -37,6 +38,7 @@ public class SoundEditFragment extends Fragment {
 
     private TextView nameTextView;
     private SeekBar volumePercentageSeekBar;
+    private Switch loopSwitch;
 
     static SoundEditFragment newInstance(UUID soundId) {
         Bundle args = new Bundle();
@@ -75,9 +77,13 @@ public class SoundEditFragment extends Fragment {
 
         nameTextView = rootView.findViewById(R.id.nameText);
         nameTextView.setEnabled(false);
+
         volumePercentageSeekBar = rootView.findViewById(R.id.volumePercentageSeekBar);
         volumePercentageSeekBar.setMax(Sound.MAX_VOLUME_PERCENTAGE);
         volumePercentageSeekBar.setEnabled(false);
+
+        loopSwitch = rootView.findViewById(R.id.loopSwitch);
+        loopSwitch.setEnabled(false);
 
         return rootView;
     }
@@ -91,9 +97,12 @@ public class SoundEditFragment extends Fragment {
 
         volumePercentageSeekBar.setProgress(sound.getVolumePercentage());
         volumePercentageSeekBar.setEnabled(true);
+
+        loopSwitch.setChecked(sound.isLoop());
+        loopSwitch.setEnabled(true);
     }
 
-    // TODO Show and edit other parts of the sound
+    // TODO Show Path
 
     // TODO "When interacting with a slider, changes should be represented immediately."
 
@@ -109,8 +118,7 @@ public class SoundEditFragment extends Fragment {
         }
 
         sound.setVolumePercentage(volumePercentageSeekBar.getProgress());
-
-        // TODO Take other values from the GUI
+        sound.setLoop(loopSwitch.isChecked());
 
         new SaveSoundTask(getActivity(), sound).execute();
     }

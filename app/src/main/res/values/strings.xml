@@ -10,4 +10,5 @@
     <string name="reset_all_title_ok">OK</string>
     <string name="sound_edit_sound_name_hint">Name</string>
     <string name="sound_edit_volume_label">Volume</string>
+    <string name="sound_edit_loopSwitch">Loop</string>
 </resources>
