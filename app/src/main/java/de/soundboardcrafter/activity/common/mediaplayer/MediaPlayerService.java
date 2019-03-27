@@ -8,18 +8,19 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.google.common.base.Preconditions;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
 import androidx.annotation.Nullable;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class MediaPlayerService extends Service {
     private final IBinder binder = new Binder();
@@ -51,9 +52,29 @@ public class MediaPlayerService extends Service {
         }
     }
 
+    /**
+     * Sets the volume for this sound.
+     */
+    public void setVolumePercentage(UUID soundId, int volumePercentage) {
+        checkNotNull(soundId, "soundId is null");
+
+        setVolume(soundId, percentageToVolume(volumePercentage));
+    }
+
+    /**
+     * Sets the volume for this sound.
+     */
+    private void setVolume(UUID soundId, float volume) {
+        checkNotNull(soundId, "soundId is null");
+
+        mediaPlayers.entrySet().stream()
+                .filter(e -> e.getKey().getSoundId().equals(soundId))
+                .forEach(e -> setVolume(e.getValue(), volume));
+    }
+
     public void stopPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        Preconditions.checkNotNull(soundboard, "soundboard is null");
-        Preconditions.checkNotNull(sound, "sound is null");
+        checkNotNull(soundboard, "soundboard is null");
+        checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             player.stop();
@@ -62,7 +83,7 @@ public class MediaPlayerService extends Service {
     }
 
     private void removeMediaPlayer(@Nonnull SoundboardMediaPlayer mediaPlayer) {
-        Preconditions.checkNotNull(mediaPlayer, "mediaPlayer is null");
+        checkNotNull(mediaPlayer, "mediaPlayer is null");
         if (mediaPlayer != null) {
             mediaPlayer.release();
             MediaPlayerSearchId key = findKey(mediaPlayer);
@@ -74,7 +95,7 @@ public class MediaPlayerService extends Service {
 
     @Nullable
     private MediaPlayerSearchId findKey(@Nonnull SoundboardMediaPlayer toBeFound) {
-        Preconditions.checkNotNull(toBeFound, "toBeFound is null");
+        checkNotNull(toBeFound, "toBeFound is null");
         Optional<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> foundPlayer =
                 mediaPlayers.entrySet().stream().filter(mediaPlayer -> mediaPlayer.getValue().equals(toBeFound)).findFirst();
         if (foundPlayer.isPresent()) {
@@ -82,7 +103,6 @@ public class MediaPlayerService extends Service {
         }
         return null;
     }
-
 
     public class Binder extends android.os.Binder {
         public MediaPlayerService getService() {
@@ -109,7 +129,7 @@ public class MediaPlayerService extends Service {
                 throw new RuntimeException(e);
             }
             mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-            mediaPlayer.setVolume((float) sound.getVolumePercentage() / 100f, (float) sound.getVolumePercentage() / 100f);
+            setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
             mediaPlayer.setLooping(sound.isLoop());
             mediaPlayer.setOnPreparedListener(this::onPrepared);
             mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
@@ -120,17 +140,28 @@ public class MediaPlayerService extends Service {
             existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
             mediaPlayers.put(key, existingMediaPlayer);
         }
+    }
 
+    private static final float percentageToVolume(int volumePercentage) {
+        return (float) volumePercentage / 100f;
+    }
+
+    /**
+     * Sets the volume for this <code>mediaPlayer</code>.
+     */
+    private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
+        checkNotNull(mediaPlayer, "mediaPlayer is null");
+        mediaPlayer.setVolume(volume, volume);
     }
 
     /**
      * starts to play the song in the Mediaplayer. The Mediaplayer must be initalized
      */
     public void startPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        Preconditions.checkNotNull(soundboard, "soundboard is null");
-        Preconditions.checkNotNull(sound, "sound is null");
+        checkNotNull(soundboard, "soundboard is null");
+        checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        Preconditions.checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
+        checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.prepareAsync();
         }

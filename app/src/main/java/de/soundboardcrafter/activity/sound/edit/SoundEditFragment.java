@@ -1,10 +1,13 @@
 package de.soundboardcrafter.activity.sound.edit;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,13 +26,16 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 
 /**
  * Activity for editing a single sound (name, volume etc.).
  */
-public class SoundEditFragment extends Fragment {
+public class SoundEditFragment extends Fragment implements ServiceConnection {
+    private static final String TAG = SoundEditFragment.class.getName();
+
     private static final String ARG_SOUND_ID = "soundId";
 
     public static final String EXTRA_SOUND_ID = "soundId";
@@ -39,6 +45,8 @@ public class SoundEditFragment extends Fragment {
     private TextView nameTextView;
     private SeekBar volumePercentageSeekBar;
     private Switch loopSwitch;
+
+    private MediaPlayerService mediaPlayerService;
 
     static SoundEditFragment newInstance(UUID soundId) {
         Bundle args = new Bundle();
@@ -51,11 +59,40 @@ public class SoundEditFragment extends Fragment {
 
     @Override
     @UiThread
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
+        mediaPlayerService = b.getService();
+        Log.d(TAG, "MediaPlayerService is connected");
+    }
+
+    @Override
+    @UiThread
+    public void onServiceDisconnected(ComponentName name) {
+        // TODO What to do on Service Disconnected?
+    }
+
+    @Override
+    @UiThread
+    public void onBindingDied(ComponentName name) {
+        // TODO What to do on Service Died?
+    }
+
+    @Override
+    @UiThread
+    public void onNullBinding(ComponentName name) {
+        // TODO What to do on Null Binding?
+    }
+
+
+    @Override
+    @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final UUID soundId = UUID.fromString(getArguments().getString(ARG_SOUND_ID));
 
         new FindSoundTask(getActivity(), soundId).execute();
+
+        bindService();
 
         // The result will be the sound id, so that the calling
         // activity can update its GUI for this sound.
@@ -66,6 +103,11 @@ public class SoundEditFragment extends Fragment {
                 // There is no cancel button - the result is always OK
                 Activity.RESULT_OK,
                 intent);
+    }
+
+    private void bindService() {
+        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -81,6 +123,7 @@ public class SoundEditFragment extends Fragment {
         volumePercentageSeekBar = rootView.findViewById(R.id.volumePercentageSeekBar);
         volumePercentageSeekBar.setMax(Sound.MAX_VOLUME_PERCENTAGE);
         volumePercentageSeekBar.setEnabled(false);
+        volumePercentageSeekBar.setOnSeekBarChangeListener(new SeekBarVolumeUpdater());
 
         loopSwitch = rootView.findViewById(R.id.loopSwitch);
         loopSwitch.setEnabled(false);
@@ -104,7 +147,20 @@ public class SoundEditFragment extends Fragment {
 
     // TODO Show Path
 
-    // TODO "When interacting with a slider, changes should be represented immediately."
+    private void setVolume(int volumePercentage) {
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+        service.setVolumePercentage(sound.getId(), volumePercentage);
+    }
+
+    private MediaPlayerService getService() {
+        if (mediaPlayerService == null) {
+            bindService();
+        }
+        return mediaPlayerService;
+    }
 
     @Override
     @UiThread
@@ -112,12 +168,16 @@ public class SoundEditFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
+        getActivity().unbindService(this);
+
         String nameEntered = nameTextView.getText().toString();
         if (!nameEntered.isEmpty()) {
             sound.setName(nameEntered);
         }
 
         sound.setVolumePercentage(volumePercentageSeekBar.getProgress());
+        // TODO Scale volume logarithmically
+
         sound.setLoop(loopSwitch.isChecked());
 
         new SaveSoundTask(getActivity(), sound).execute();
@@ -173,6 +233,21 @@ public class SoundEditFragment extends Fragment {
             }
 
             updateUI(sound);
+        }
+    }
+
+    private class SeekBarVolumeUpdater implements SeekBar.OnSeekBarChangeListener {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            setVolume(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
         }
     }
 

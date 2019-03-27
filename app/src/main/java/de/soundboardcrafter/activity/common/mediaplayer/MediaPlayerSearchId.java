@@ -21,6 +21,10 @@ class MediaPlayerSearchId implements Serializable {
         this.soundId = soundId;
     }
 
+    public UUID getSoundId() {
+        return soundId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

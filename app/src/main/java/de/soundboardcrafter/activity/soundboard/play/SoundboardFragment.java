@@ -65,32 +65,33 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
 
-    public SoundboardFragment() {
-        // Required empty public constructor
-    }
-
     @Override
+    @UiThread
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        updateUI();
+
+        updateUI(); // TODO Why this?
+
         Log.d(TAG, "MediaPlayerService is connected");
     }
 
-
     @Override
+    @UiThread
     public void onServiceDisconnected(ComponentName name) {
-
+        // TODO What to do on Service Disconnected?
     }
 
     @Override
+    @UiThread
     public void onBindingDied(ComponentName name) {
-
+        // TODO What to do on Service Died?
     }
 
     @Override
+    @UiThread
     public void onNullBinding(ComponentName name) {
-
+        // TODO What to do on Null Binding?
     }
 
 
@@ -197,7 +198,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_main, menu);
     }
-
 
     @Override
     @UiThread
