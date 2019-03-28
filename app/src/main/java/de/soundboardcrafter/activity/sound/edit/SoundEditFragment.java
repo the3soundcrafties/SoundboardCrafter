@@ -92,6 +92,8 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         new FindSoundTask(getActivity(), soundId).execute();
 
+        startService();
+        // TODO Necessary?! Also done in onResume()
         bindService();
 
         // The result will be the sound id, so that the calling
@@ -103,6 +105,20 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                 // There is no cancel button - the result is always OK
                 Activity.RESULT_OK,
                 intent);
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the SoundEditActivity returns.
+    public void onResume() {
+        super.onResume();
+
+        bindService();
+    }
+
+    private void startService() {
+        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        getActivity().startService(intent);
     }
 
     private void bindService() {
@@ -121,7 +137,8 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         nameTextView.setEnabled(false);
 
         volumePercentageSeekBar = rootView.findViewById(R.id.volumePercentageSeekBar);
-        volumePercentageSeekBar.setMax(Sound.MAX_VOLUME_PERCENTAGE);
+        int maxSeekBar = volumePercentageToSeekBar(Sound.MAX_VOLUME_PERCENTAGE);
+        volumePercentageSeekBar.setMax(maxSeekBar);
         volumePercentageSeekBar.setEnabled(false);
         volumePercentageSeekBar.setOnSeekBarChangeListener(new SeekBarVolumeUpdater());
 
@@ -131,6 +148,36 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         return rootView;
     }
 
+    private static int volumePercentageToSeekBar(int volumePercentage) {
+        if (volumePercentage <= 0) {
+            return 0;
+        }
+
+        // seekBar = log(volume)
+        int res = (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
+
+        return res;
+    }
+
+    private static int seekBarToVolumePercentage(int seekBar) {
+        if (seekBar <= 0) {
+            return 0;
+        }
+
+        // 2 ^ seekBar = volume
+        int res = (int) (Math.pow(10, seekBar / 1000.0) * 100.0) - 100;
+
+        if (res < 0) {
+            return 0;
+        }
+
+        if (res > Sound.MAX_VOLUME_PERCENTAGE) {
+            return Sound.MAX_VOLUME_PERCENTAGE;
+        }
+        return res;
+    }
+
+
     @UiThread
     private void updateUI(Sound sound) {
         this.sound = sound;
@@ -138,7 +185,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         nameTextView.setTextKeepState(sound.getName());
         nameTextView.setEnabled(true);
 
-        volumePercentageSeekBar.setProgress(sound.getVolumePercentage());
+        volumePercentageSeekBar.setProgress(volumePercentageToSeekBar(sound.getVolumePercentage()));
         volumePercentageSeekBar.setEnabled(true);
 
         loopSwitch.setChecked(sound.isLoop());
@@ -147,7 +194,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     // TODO Show Path
 
-    private void setVolume(int volumePercentage) {
+    private void setVolumePercentage(int volumePercentage) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
@@ -175,7 +222,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             sound.setName(nameEntered);
         }
 
-        sound.setVolumePercentage(volumePercentageSeekBar.getProgress());
+        sound.setVolumePercentage(seekBarToVolumePercentage(volumePercentageSeekBar.getProgress()));
         // TODO Scale volume logarithmically
 
         sound.setLoop(loopSwitch.isChecked());
@@ -237,9 +284,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     }
 
     private class SeekBarVolumeUpdater implements SeekBar.OnSeekBarChangeListener {
+        private final String TAG = SeekBarVolumeUpdater.class.getName();
+
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            setVolume(progress);
+            int volumePercentage = seekBarToVolumePercentage(progress);
+            Log.d(TAG, "SeekBar / VolumePercentage: " + progress + "\t" + volumePercentage);
+
+            setVolumePercentage(volumePercentage);
         }
 
         @Override

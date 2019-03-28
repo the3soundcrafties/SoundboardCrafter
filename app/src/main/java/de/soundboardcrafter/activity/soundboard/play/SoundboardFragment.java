@@ -102,6 +102,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         setHasOptionsMenu(true);
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().startService(intent);
+
+        // TODO Necessary?! Also done in onResume()
         bindService();
     }
 
@@ -341,6 +343,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
+            // TODO Necessary?! Also done in onResume()
             bindService();
         }
         return mediaPlayerService;

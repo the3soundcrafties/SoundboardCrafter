@@ -22,7 +22,8 @@ public class Sound implements Serializable {
     /**
      * Maximum volume percentage
      */
-    public static final int MAX_VOLUME_PERCENTAGE = 200;
+    // Changing this might need a database migration! -> DBHelper
+    public static final int MAX_VOLUME_PERCENTAGE = 100;
 
     private final @NonNull
     UUID id;
