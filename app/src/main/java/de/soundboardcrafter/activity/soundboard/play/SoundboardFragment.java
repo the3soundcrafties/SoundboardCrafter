@@ -70,8 +70,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-
-        updateUI(); // TODO Why this?
+        //as soon the mediaplayerservice is connected, the play/stop icons can be set correctly
+        updateUI();
 
         Log.d(TAG, "MediaPlayerService is connected");
     }
@@ -134,6 +134,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private SoundBoardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
         SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback = new SoundBoardItemRow.MediaPlayerServiceCallback() {
+            @Override
+            public boolean isConnected() {
+                return getService() != null;
+            }
+
             @Override
             public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();

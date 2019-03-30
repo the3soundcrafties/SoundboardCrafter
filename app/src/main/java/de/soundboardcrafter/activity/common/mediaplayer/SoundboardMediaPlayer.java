@@ -7,7 +7,6 @@ import java.io.Serializable;
 import androidx.annotation.Nullable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
-
     @FunctionalInterface
     public interface InitializeCallback extends Serializable {
         void initialize();
@@ -43,7 +42,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
 
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {
-        onCompletionListener = listener;
+
         super.setOnCompletionListener(event -> {
             if (stopPlayCallback != null) {
                 stopPlayCallback.stop();
@@ -52,7 +51,6 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         });
 
     }
-
 
     void setStartPlayCallback(@Nullable StartPlayCallback startPlayCallback) {
         this.startPlayCallback = startPlayCallback;

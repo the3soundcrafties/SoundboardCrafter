@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.soundboard.play;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
 import java.util.Collection;
@@ -20,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 class SoundboardItemAdapter extends BaseAdapter {
     private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private Soundboard soundboard;
+    private static String TAG = SoundboardItemAdapter.class.getName();
 
     SoundboardItemAdapter(@Nonnull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @Nonnull Soundboard soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
@@ -120,11 +122,35 @@ class SoundboardItemAdapter extends BaseAdapter {
     @Override
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
         Sound sound = soundboard.getSounds().get(position);
+        AbsListView listView = (AbsListView) parent;
         if (convertView == null) {
-            convertView = new SoundBoardItemRow(parent.getContext());
+            if (listView.getLastVisiblePosition() < position) {
+                convertView = new SoundBoardItemRow(parent.getContext());
+            } else {
+                //Bugfix: The item at the first postion is instanciated two times. But the second one is not visible
+                // So the callbacks from the visible one should go to the new Item.
+                // The new item has to be created because the view needs the measurements
+                SoundBoardItemRow row = (SoundBoardItemRow) getViewByPosition(position, listView);
+                convertView = new SoundBoardItemRow(parent.getContext(), row.getInitializeCallback(), row.getStartPlayCallback(), row.getStopPlayCallback());
+            }
         }
         // We can now safely cast and set the data
         ((SoundBoardItemRow) convertView).setSound(soundboard, sound, mediaPlayerServiceCallback);
         return convertView;
+    }
+
+    /**
+     * gets the item view by position. Source https://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
+     */
+    private View getViewByPosition(int pos, AbsListView listView) {
+        final int firstListItemPosition = listView.getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
+
+        if (pos < firstListItemPosition || pos > lastListItemPosition) {
+            return listView.getAdapter().getView(pos, null, listView);
+        } else {
+            final int childIndex = pos - firstListItemPosition;
+            return listView.getChildAt(childIndex);
+        }
     }
 }
