@@ -330,8 +330,12 @@ public class SoundboardDao {
                 new String[]{soundboard.getId().toString(),
                         Integer.toString(index)});
 
-        if (numDeleted != 1) {
-            throw new RuntimeException("There wasn't exactly one sound at index " + index + ".");
+        if (numDeleted == 0) {
+            throw new RuntimeException("There was no sound at index " + index + ".");
+        }
+
+        if (numDeleted > 1) {
+            throw new RuntimeException("There was more than one sound at index " + index + ".");
         }
 
         fillSoundGap(soundboard, index);

@@ -1,8 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +16,14 @@ import de.soundboardcrafter.R;
  * recreated from the file system using default values.
  */
 public class ResetAllDialogFragment extends DialogFragment {
+    /**
+     * Callback interface, an activity that wants to use this fragment has to
+     * implement this interface
+     */
+    public interface OnOkCallback {
+        void doResetAll();
+    }
+
     private OnOkCallback onOkCallback;
 
     @NonNull
@@ -27,34 +34,35 @@ public class ResetAllDialogFragment extends DialogFragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.reset_all_title)
                         .setMessage(R.string.reset_all_message)
-                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK(onOkCallback))
+                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK())
                         .setNegativeButton(R.string.reset_all_title_cancel, null)
                         .create();
     }
 
-    void setOnOkCallback(OnOkCallback onOkCallback) {
-        this.onOkCallback = onOkCallback;
-    }
-
-    public interface OnOkCallback {
-        void ok(int requestCode, int resultCode, Intent data);
+    // This method is called whenever the fragment is added to
+    // an(other) Activity
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        // Verify that the host activity implements the callback interface
+        try {
+            // Instantiate the NoticeDialogListener so we can send events to the host
+            onOkCallback = (OnOkCallback) context;
+        } catch (ClassCastException e) {
+            // The activity doesn't implement the interface, throw exception
+            throw new ClassCastException(getActivity().toString()
+                    + " must implement OnOkCallback");
+        }
     }
 
     /**
      * Sends the result OK back to the calling Fragment.
-     *
-     * @param onOkCallback
      */
     @UiThread
-    private void sendResultOK(@Nullable OnOkCallback onOkCallback) {
+    private void sendResultOK() {
         if (onOkCallback == null) {
             return;
         }
-        onOkCallback.ok(getTargetRequestCode(), Activity.RESULT_OK, null);
-//        if (getTargetFragment() == null) {
-//            return;
-//        }
-//
-//        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
+        onOkCallback.doResetAll();
     }
 }

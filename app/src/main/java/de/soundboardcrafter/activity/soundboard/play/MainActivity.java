@@ -1,9 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -39,7 +37,7 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * The main activity, showing the soundboards.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ResetAllDialogFragment.OnOkCallback {
     private static final String TAG = MainActivity.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
@@ -77,19 +75,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     @UiThread
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK) {
-            return;
-        }
-
-        switch (requestCode) {
-            case REQUEST_RESET_ALL:
-                Log.i(TAG, "Resetting sound data");
-                pagerAdapter.clear();
-                new ResetAllTask(this).execute();
-                break;
-
-        }
+    public void doResetAll() {
+        Log.i(TAG, "Resetting sound data");
+        pagerAdapter.clear();
+        new ResetAllTask(this).execute();
     }
 
     @Override
@@ -116,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
     @UiThread
     private void resetAllOrCancel() {
         ResetAllDialogFragment dialog = new ResetAllDialogFragment();
-        dialog.setOnOkCallback((requestCode, resultCode, data) -> onActivityResult(requestCode, resultCode, data));
         dialog.show(getSupportFragmentManager(), DIALOG_RESET_ALL);
     }
 
