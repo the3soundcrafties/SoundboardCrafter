@@ -190,6 +190,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         loopSwitch.setChecked(sound.isLoop());
         loopSwitch.setEnabled(true);
+
     }
 
     // TODO Show Path
