@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
             return;
         }
+        pagerAdapter.clear();
         new FindSoundboardsTask(this).execute();
     }
 
