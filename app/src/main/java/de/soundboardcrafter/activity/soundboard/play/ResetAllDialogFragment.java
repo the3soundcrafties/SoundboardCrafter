@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.soundboard.play;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,8 @@ import de.soundboardcrafter.R;
  * recreated from the file system using default values.
  */
 public class ResetAllDialogFragment extends DialogFragment {
+    private OnOkCallback onOkCallback;
+
     @NonNull
     @Override
     @UiThread
@@ -24,20 +27,34 @@ public class ResetAllDialogFragment extends DialogFragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.reset_all_title)
                         .setMessage(R.string.reset_all_message)
-                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK())
+                        .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK(onOkCallback))
                         .setNegativeButton(R.string.reset_all_title_cancel, null)
                         .create();
     }
 
+    void setOnOkCallback(OnOkCallback onOkCallback) {
+        this.onOkCallback = onOkCallback;
+    }
+
+    public interface OnOkCallback {
+        void ok(int requestCode, int resultCode, Intent data);
+    }
+
     /**
      * Sends the result OK back to the calling Fragment.
+     *
+     * @param onOkCallback
      */
     @UiThread
-    private void sendResultOK() {
-        if (getTargetFragment() == null) {
+    private void sendResultOK(@Nullable OnOkCallback onOkCallback) {
+        if (onOkCallback == null) {
             return;
         }
-
-        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
+        onOkCallback.ok(getTargetRequestCode(), Activity.RESULT_OK, null);
+//        if (getTargetFragment() == null) {
+//            return;
+//        }
+//
+//        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
     }
 }

@@ -1,19 +1,16 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,8 +19,6 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -31,13 +26,10 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -53,17 +45,21 @@ import de.soundboardcrafter.model.Soundboard;
 public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundboardFragment.class.getName();
 
-    private static final String DIALOG_RESET_ALL = "DialogResetAll";
-
-    private static final int REQUEST_RESET_ALL = 0;
     private static final int REQUEST_EDIT_SOUND = 1;
-
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     private GridView gridView;
     // TODO Allow for zero or more than one soundboards
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
+    private Soundboard soundboard;
+
+    static SoundboardFragment createTab(Soundboard soundboard) {
+        Bundle thisTabArguments = new Bundle();
+        thisTabArguments.putSerializable("Soundboard", soundboard);
+        SoundboardFragment thisTab = new SoundboardFragment();
+        thisTab.setArguments(thisTabArguments);
+        return thisTab;
+    }
 
     @Override
     @UiThread
@@ -100,11 +96,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        soundboard = (Soundboard) getArguments().getSerializable("Soundboard");
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().startService(intent);
-
         // TODO Necessary?! Also done in onResume()
         bindService();
+
+
     }
 
     private void bindService() {
@@ -119,6 +117,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         getActivity().unbindService(this);
     }
 
+
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
@@ -127,8 +126,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 container, false);
 
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
+        initSoundboardItemAdapter();
         registerForContextMenu(gridView);
-
         return rootView;
     }
 
@@ -186,32 +185,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerServiceCallback;
     }
 
-    @Override
-    @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // User denied. Stop the app.
-                getActivity().finishAndRemoveTask();
-            } else {
-                new FindSoundboardsTask(getActivity()).execute();
-            }
-        }
-    }
-
-    @Override
-    @UiThread
-    public void onCreateOptionsMenu(@Nonnull Menu menu, @Nonnull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.fragment_main, menu);
-    }
 
     @Override
     @UiThread
     // Called especially when the SoundEditActivity returns.
     public void onResume() {
         super.onResume();
-
         updateUI();
         bindService();
     }
@@ -222,55 +201,20 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
      */
     @UiThread
     private void updateUI() {
-        if (soundboardItemAdapter == null) {
-            initSoundboardItemAdapter();
-            return;
+        if (soundboardItemAdapter != null) {
+            soundboardItemAdapter.notifyDataSetChanged();
         }
-
-        soundboardItemAdapter.notifyDataSetChanged();
     }
 
     @UiThread
     private void initSoundboardItemAdapter() {
         // TODO Start without any soundboard
-        Soundboard dummySoundboard = new Soundboard("Dummy", Lists.newArrayList());
         soundboardItemAdapter =
-                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), dummySoundboard);
-
+                new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
         gridView.setAdapter(soundboardItemAdapter);
-
-        // Here, activity is the current activity
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
-            // From here on see #onRequestPermissionsResult()
-        } else {
-            new FindSoundboardsTask(getActivity()).execute();
-        }
+        updateUI();
     }
 
-    @Override
-    @UiThread
-    public boolean onOptionsItemSelected(@Nonnull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_menu_reset_all:
-                resetAllOrCancel();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @UiThread
-    private void resetAllOrCancel() {
-        FragmentManager manager = getFragmentManager();
-        ResetAllDialogFragment dialog = new ResetAllDialogFragment();
-        dialog.setTargetFragment(this, REQUEST_RESET_ALL);
-        dialog.show(manager, DIALOG_RESET_ALL);
-    }
 
     @Override
     @UiThread
@@ -323,11 +267,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         switch (requestCode) {
-            case REQUEST_RESET_ALL:
-                Log.i(TAG, "Resetting sound data");
-                soundboardItemAdapter.clear();
-                new ResetAllTask(getActivity()).execute();
-                break;
             case REQUEST_EDIT_SOUND:
                 Log.d(TAG, "Returned from sound edit fragment with OK");
 
@@ -354,67 +293,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerService;
     }
 
-
-    /**
-     * A background task, used to retrieve soundboards from the database.
-     */
-    public class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
-        private final String TAG = FindSoundboardsTask.class.getName();
-
-        private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
-
-        FindSoundboardsTask(Context context) {
-            super();
-            appContextRef = new WeakReference<>(context.getApplicationContext());
-        }
-
-        @Override
-        @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
-            Context appContext = appContextRef.get();
-            if (appContext == null) {
-                cancel(true);
-                return null;
-            }
-
-            Log.d(TAG, "Loading soundboards...");
-
-            ImmutableList<Soundboard> res = soundboardDao.findAll();
-
-            if (res.isEmpty()) {
-                Log.d(TAG, "No soundboards found.");
-                Log.d(TAG, "Insert some dummy data...");
-
-                soundboardDao.insertDummyData();
-
-                Log.d(TAG, "...and load the soundboards again");
-                res = soundboardDao.findAll();
-            }
-
-            Log.d(TAG, "Soundboards loaded.");
-
-            return res;
-        }
-
-        @Override
-        @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
-            if (!isAdded()) {
-                // fragment is no longer linked to an activity
-                return;
-            }
-            Context appContext = appContextRef.get();
-
-            if (appContext == null) {
-                // application context no longer available, I guess that result
-                // will be of no use to anyone
-                return;
-            }
-
-            soundboardItemAdapter.setSoundboard(soundboards.iterator().next());
-        }
-    }
 
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.
@@ -496,59 +374,5 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
-    /**
-     * A background task, used to reset the soundboards and retrieve them from the database.
-     */
-    public class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
-        private final String TAG = ResetAllTask.class.getName();
 
-        private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
-
-        ResetAllTask(Context context) {
-            super();
-            appContextRef = new WeakReference<>(context.getApplicationContext());
-        }
-
-        @Override
-        @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
-            Context appContext = appContextRef.get();
-            if (appContext == null) {
-                cancel(true);
-                return null;
-            }
-
-            Log.d(TAG, "Resetting soundboards.");
-
-            soundboardDao.clearDatabase();
-            soundboardDao.insertDummyData();
-
-            Log.d(TAG, "Loading soundboards...");
-
-            final ImmutableList<Soundboard> res = soundboardDao.findAll();
-
-            Log.d(TAG, "Soundboards loaded.");
-
-            return res;
-        }
-
-        @Override
-        @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
-            if (!isAdded()) {
-                // fragment is no longer linked to an activity
-                return;
-            }
-            Context appContext = appContextRef.get();
-
-            if (appContext == null) {
-                // application context no longer available, I guess that result
-                // will be of no use to anyone
-                return;
-            }
-
-            soundboardItemAdapter.setSoundboard(soundboards.iterator().next());
-        }
-    }
 }

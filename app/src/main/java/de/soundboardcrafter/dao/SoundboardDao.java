@@ -11,7 +11,9 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -34,7 +36,7 @@ import static java.util.stream.Collectors.toList;
 @WorkerThread
 public class SoundboardDao {
     private static SoundboardDao instance;
-
+    private final static String TAG = SoundboardDao.class.getName();
     private final SQLiteDatabase database;
 
     public static SoundboardDao getInstance(final Context context) {
@@ -63,24 +65,48 @@ public class SoundboardDao {
         File directory = new File("/storage/emulated/0/soundboard crafter test songs");
         // get all the files from a directory
         File[] fList = directory.listFiles();
-        ArrayList<Sound> soundList = new ArrayList<>();
-        int volume = 10;
-        for (File file : fList) {
-            volume = (volume + 22) % Sound.MAX_VOLUME_PERCENTAGE;
-            final String name;
-            if (file.getName().contains("-")) {
-                name = file.getName().substring(file.getName().indexOf("-") + 1, file.getName().indexOf("."));
+
+        List<File> notInSubdirectory = new ArrayList<>();
+        for (File firstLevelFile : fList) {
+            if (firstLevelFile.isDirectory()) {
+                ArrayList<Sound> soundList = new ArrayList<>();
+                File[] soundFiles = firstLevelFile.listFiles();
+                for (File soundFile : soundFiles) {
+                    Sound newSound = createSound(soundFile);
+                    soundList.add(newSound);
+                }
+                Soundboard soundboard = new Soundboard(firstLevelFile.getName(), soundList);
+                insert(soundboard);
             } else {
-                name = file.getName().substring(0, file.getName().indexOf("."));
+                notInSubdirectory.add(firstLevelFile);
             }
 
-            Sound newSound = new Sound(file.getAbsolutePath(), name, volume, false);
-            soundList.add(newSound);
+        }
+        if (!notInSubdirectory.isEmpty()) {
+            ArrayList<Sound> sounds = new ArrayList<>();
+            File automaticCreatedDir = new File(directory.getAbsolutePath() + "/automatic_created_dir");
+            automaticCreatedDir.mkdir();
+            for (File notInSubdirectoryFile : notInSubdirectory) {
+                File to = new File(automaticCreatedDir.getAbsolutePath() + "/" + notInSubdirectoryFile.getName());
+                notInSubdirectoryFile.renameTo(to);
+                sounds.add(createSound(to));
+            }
+            Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds);
+            insert(soundboard);
         }
 
-        Soundboard soundboard = new Soundboard("my new Soundboard", soundList);
+    }
 
-        insert(soundboard);
+    private Sound createSound(File soundFile) {
+        int volume = (new Random().nextInt(22) + 22) % Sound.MAX_VOLUME_PERCENTAGE;
+        final String name;
+        if (soundFile.getName().contains("-")) {
+            name = soundFile.getName().substring(soundFile.getName().indexOf("-") + 1, soundFile.getName().indexOf("."));
+        } else {
+            name = soundFile.getName().substring(0, soundFile.getName().indexOf("."));
+        }
+
+        return new Sound(soundFile.getAbsolutePath(), name, volume, false);
     }
 
     public ImmutableList<Soundboard> findAll() {
