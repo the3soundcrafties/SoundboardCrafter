@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     }
 
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        private final List<Fragment> fragmentList = new ArrayList<>();
+        private final List<SoundboardFragment> fragmentList = new ArrayList<>();
         private final List<String> fragmentTitleList = new ArrayList<>();
 
         ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
             return fragmentList.get(position);
         }
 
-        void addFragment(Fragment fragment, String title) {
+        void addFragment(SoundboardFragment fragment, String title) {
             fragmentList.add(fragment);
             fragmentTitleList.add(title);
             notifyDataSetChanged();
@@ -139,6 +139,10 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
         }
 
         void clear() {
+            for (SoundboardFragment fragment : fragmentList) {
+                fragment.clearSounds();
+            }
+
             fragmentList.clear();
             fragmentTitleList.clear();
             notifyDataSetChanged();

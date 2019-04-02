@@ -259,6 +259,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
+    void clearSounds() {
+        soundboardItemAdapter.clear();
+    }
+
+
     @Override
     @UiThread
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -292,7 +297,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
         return mediaPlayerService;
     }
-
 
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.
