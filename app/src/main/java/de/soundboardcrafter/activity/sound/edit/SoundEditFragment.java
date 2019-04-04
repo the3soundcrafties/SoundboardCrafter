@@ -27,6 +27,7 @@ import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.soundboard.play.MainActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 
@@ -37,8 +38,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundEditFragment.class.getName();
 
     private static final String ARG_SOUND_ID = "soundId";
+    private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     public static final String EXTRA_SOUND_ID = "soundId";
+    public static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
 
     private Sound sound;
 
@@ -48,9 +51,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     private MediaPlayerService mediaPlayerService;
 
-    static SoundEditFragment newInstance(UUID soundId) {
+    static SoundEditFragment newInstance(UUID soundId, UUID soundboardId) {
         Bundle args = new Bundle();
         args.putString(ARG_SOUND_ID, soundId.toString());
+        args.putString(ARG_SOUNDBOARD_ID, soundboardId.toString());
 
         SoundEditFragment fragment = new SoundEditFragment();
         fragment.setArguments(args);
@@ -89,6 +93,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final UUID soundId = UUID.fromString(getArguments().getString(ARG_SOUND_ID));
+        final UUID soundboardId = UUID.fromString(getArguments().getString(ARG_SOUNDBOARD_ID));
 
         new FindSoundTask(getActivity(), soundId).execute();
 
@@ -98,13 +103,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         // The result will be the sound id, so that the calling
         // activity can update its GUI for this sound.
-        Intent intent = new Intent();
+        Intent intent = new Intent(getActivity(), MainActivity.class);
         intent.putExtra(EXTRA_SOUND_ID, soundId.toString());
-
+        intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboardId.toString());
         getActivity().setResult(
                 // There is no cancel button - the result is always OK
                 Activity.RESULT_OK,
                 intent);
+
     }
 
     @Override
@@ -112,7 +118,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     // Called especially when the SoundEditActivity returns.
     public void onResume() {
         super.onResume();
-
         bindService();
     }
 

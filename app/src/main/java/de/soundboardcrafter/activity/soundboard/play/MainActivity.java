@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     private static final String TAG = MainActivity.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
-    private static final int REQUEST_RESET_ALL = 0;
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
     private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -109,8 +108,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     }
 
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        private final List<Fragment> fragmentList = new ArrayList<>();
-        private final List<String> fragmentTitleList = new ArrayList<>();
+        private final List<Soundboard> soundboardList = new ArrayList<>();
 
         ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
             super(fm);
@@ -118,29 +116,27 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
 
         @Override
         public Fragment getItem(int position) {
-            return fragmentList.get(position);
+            return SoundboardFragment.createTab(soundboardList.get(position));
         }
 
-        void addFragment(Fragment fragment, String title) {
-            fragmentList.add(fragment);
-            fragmentTitleList.add(title);
+        void addSoundboard(Soundboard soundboard) {
+            soundboardList.add(soundboard);
             notifyDataSetChanged();
         }
 
         @Nullable
         @Override
         public CharSequence getPageTitle(int position) {
-            return fragmentTitleList.get(position);
+            return soundboardList.get(position).getName();
         }
 
         @Override
         public int getCount() {
-            return fragmentList.size();
+            return soundboardList.size();
         }
 
         void clear() {
-            fragmentList.clear();
-            fragmentTitleList.clear();
+            soundboardList.clear();
             notifyDataSetChanged();
         }
     }
@@ -210,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
                 return;
             }
             for (Soundboard soundboard : soundboards) {
-                pagerAdapter.addFragment(SoundboardFragment.createTab(soundboard), soundboard.getName());
+                pagerAdapter.addSoundboard(soundboard);
             }
 
         }
@@ -267,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
             }
 
             for (Soundboard soundboard : soundboards) {
-                pagerAdapter.addFragment(SoundboardFragment.createTab(soundboard), soundboard.getName());
+                pagerAdapter.addSoundboard(soundboard);
             }
         }
 
