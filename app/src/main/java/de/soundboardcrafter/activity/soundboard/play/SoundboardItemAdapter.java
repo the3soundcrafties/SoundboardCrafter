@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -50,6 +51,7 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void updateSounds(Collection<Sound> updates) {
         for (Sound update : updates) {
+            Log.d(TAG, "Edit sound: updateSounds " + update + " this " + this);
             updateSound(update);
         }
     }
@@ -122,6 +124,7 @@ class SoundboardItemAdapter extends BaseAdapter {
     @Override
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
         Sound sound = soundboard.getSounds().get(position);
+        Log.d(TAG, "getView " + sound.getName() + " " + this);
         AbsListView listView = (AbsListView) parent;
         if (convertView == null) {
             if (listView.getLastVisiblePosition() < position) {
