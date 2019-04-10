@@ -64,9 +64,7 @@ class SoundboardItemAdapter extends BaseAdapter {
         for (int i = 0; i < soundboard.getSounds().size(); i++) {
             final Sound oldSound = soundboard.getSounds().get(i);
             if (update.getId().equals(oldSound.getId())) {
-                if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, oldSound)) {
-                    mediaPlayerServiceCallback.stopPlaying(soundboard, oldSound);
-                }
+                mediaPlayerServiceCallback.stopPlaying(soundboard, oldSound);
                 soundboard.setSound(i, update);
 
                 break;
@@ -82,9 +80,7 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void clear() {
         for (Sound sound : soundboard.getSounds()) {
-            if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
-                mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
-            }
+            mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
         }
         soundboard.clearSounds();
         notifyDataSetChanged();
@@ -96,9 +92,7 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void remove(int position) {
         Sound sound = soundboard.getSounds().get(position);
-        if (mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
-            mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
-        }
+        mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
 
         soundboard.removeSound(position);
 

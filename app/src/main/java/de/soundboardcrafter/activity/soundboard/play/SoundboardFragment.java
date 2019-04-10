@@ -234,6 +234,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     @Override
     @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
+        if (!getUserVisibleHint()) {
+            // The wrong fragment got the event.
+            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
+            return false; // Pass the event to the next fragment
+        }
+
         switch (item.getItemId()) {
             case R.id.context_menu_edit_sound:
                 AdapterView.AdapterContextMenuInfo menuInfo =

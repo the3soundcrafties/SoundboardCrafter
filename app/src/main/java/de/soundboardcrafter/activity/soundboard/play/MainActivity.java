@@ -135,6 +135,12 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
             return soundboardList.size();
         }
 
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            // https://medium.com/inloopx/adventures-with-fragmentstatepageradapter-4f56a643f8e0
+            return POSITION_NONE;
+        }
+
         void clear() {
             soundboardList.clear();
             notifyDataSetChanged();
