@@ -41,7 +41,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     public static final String EXTRA_SOUND_ID = "soundId";
-    public static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
+    private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
 
     private Sound sound;
 
@@ -205,6 +205,12 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         if (service == null) {
             return;
         }
+
+        if (!service.shouldBePlaying(sound)) {
+            service.initMediaPlayer(null, sound, null, null, null);
+            service.startPlaying(null, sound);
+        }
+
         service.setVolumePercentage(sound.getId(), volumePercentage);
     }
 
@@ -221,6 +227,13 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        service.stopPlaying(null, sound);
+
         getActivity().unbindService(this);
 
         String nameEntered = nameTextView.getText().toString();
@@ -229,8 +242,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         sound.setVolumePercentage(seekBarToVolumePercentage(volumePercentageSeekBar.getProgress()));
-        // TODO Scale volume logarithmically
-
         sound.setLoop(loopSwitch.isChecked());
 
         new SaveSoundTask(getActivity(), sound).execute();

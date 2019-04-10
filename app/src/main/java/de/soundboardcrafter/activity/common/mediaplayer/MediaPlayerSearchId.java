@@ -4,24 +4,26 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import androidx.annotation.Nullable;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
 class MediaPlayerSearchId implements Serializable {
-    private final UUID soundboardId;
+    private final @Nullable
+    UUID soundboardId;
+
     private final UUID soundId;
 
-    MediaPlayerSearchId(Soundboard soundboard, Sound sound) {
-        soundboardId = soundboard.getId();
-        soundId = sound.getId();
+    MediaPlayerSearchId(@Nullable Soundboard soundboard, Sound sound) {
+        this(soundboard != null ? soundboard.getId() : null, sound.getId());
     }
 
-    MediaPlayerSearchId(UUID soundboardId, UUID soundId) {
+    MediaPlayerSearchId(@Nullable UUID soundboardId, UUID soundId) {
         this.soundboardId = soundboardId;
         this.soundId = soundId;
     }
 
-    public UUID getSoundId() {
+    UUID getSoundId() {
         return soundId;
     }
 

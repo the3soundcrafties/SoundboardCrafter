@@ -17,6 +17,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * ever-repeated song.
  * <p></p>
  * <code>Sound</code>s are basically links to some audio file on the device.
+ * <p></p>
+ * <code>Sound</code>s are not thread-safe. So it might be necessary to use
+ * appropriate synchronization.
  */
 public class Sound implements Serializable {
     /**

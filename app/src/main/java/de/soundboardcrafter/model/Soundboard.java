@@ -15,6 +15,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * A soundboard, that is a keyboard you can play sounds with.
  * The application supports several soundboards.
+ * <p></p>
+ * <code>Games</code>s are not thread-safe. So it might be necessary to use
+ * appropriate synchronization.
  */
 public class Soundboard implements Serializable {
     private final @NonNull

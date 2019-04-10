@@ -72,9 +72,9 @@ public class MediaPlayerService extends Service {
                 .forEach(e -> setVolume(e.getValue(), volume));
     }
 
-    public void stopPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        checkNotNull(soundboard, "soundboard is null");
+    public void stopPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
         checkNotNull(sound, "sound is null");
+
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             player.stop();
@@ -111,9 +111,9 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * adds a MediaPlayer but it is not starting it
+     * Adds a media player without yet starting it
      */
-    public void initMediaPlayer(@Nonnull Soundboard soundboard, @Nonnull Sound sound,
+    public void initMediaPlayer(@Nullable Soundboard soundboard, @Nonnull Sound sound,
                                 @Nullable SoundboardMediaPlayer.InitializeCallback initializeCallback,
                                 @Nullable SoundboardMediaPlayer.StartPlayCallback startPlayCallback,
                                 @Nullable SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
@@ -121,25 +121,33 @@ public class MediaPlayerService extends Service {
         SoundboardMediaPlayer existingMediaPlayer = mediaPlayers.get(key);
         if (existingMediaPlayer == null) {
             SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer(initializeCallback, startPlayCallback, stopPlayCallback);
-            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-            mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
-            try {
-                mediaPlayer.setDataSource(sound.getPath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-            setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
-            mediaPlayer.setLooping(sound.isLoop());
-            mediaPlayer.setOnPreparedListener(this::onPrepared);
-            mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
+            initMediaPlayer(sound, mediaPlayer);
             mediaPlayers.put(key, mediaPlayer);
         } else {
-            //it should be set here one mre time
+            // update the callbacks
             existingMediaPlayer.setStartPlayCallback(startPlayCallback);
             existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
-            mediaPlayers.put(key, existingMediaPlayer);
+            existingMediaPlayer.reset();
+            initMediaPlayer(sound, existingMediaPlayer);
         }
+    }
+
+    /**
+     * Initializes this mediaPlayer for this sound. Does not start playing yet.
+     */
+    private void initMediaPlayer(@Nonnull Sound sound, SoundboardMediaPlayer mediaPlayer) {
+        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
+        try {
+            mediaPlayer.setDataSource(sound.getPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
+        setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
+        mediaPlayer.setLooping(sound.isLoop());
+        mediaPlayer.setOnPreparedListener(this::onPrepared);
+        mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
     private static final float percentageToVolume(int volumePercentage) {
@@ -155,10 +163,9 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * starts to play the song in the Mediaplayer. The Mediaplayer must be initalized
+     * Starts to play the song in the Mediaplayer. The Mediaplayer must have been initalized.
      */
-    public void startPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        checkNotNull(soundboard, "soundboard is null");
+    public void startPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
         checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
@@ -168,8 +175,34 @@ public class MediaPlayerService extends Service {
 
     }
 
-    public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
+    public boolean shouldBePlaying(@Nonnull Sound sound) {
+        checkNotNull(sound, "sound is null");
+
+        for (Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry : mediaPlayers.entrySet()) {
+            // TODO Refactor to stream API?
+
+            if (entry.getKey().getSoundId().equals(sound.getId())) {
+                @Nullable SoundboardMediaPlayer mediaPlayer = entry.getValue();
+                if (mediaPlayer != null) {
+                    if (mediaPlayer.isPlaying()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
+        checkNotNull(soundboard, "soundboard is null");
+        checkNotNull(sound, "sound is null");
+
+        return shouldBePlaying(soundboard, sound.getId());
+    }
+
+    private boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull UUID soundId) {
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
+                new MediaPlayerSearchId(soundboard.getId(), soundId));
         if (mediaPlayer != null) {
             return mediaPlayer.isPlaying();
         }
