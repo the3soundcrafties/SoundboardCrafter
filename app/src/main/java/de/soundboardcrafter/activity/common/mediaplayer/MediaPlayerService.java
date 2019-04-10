@@ -121,24 +121,33 @@ public class MediaPlayerService extends Service {
         SoundboardMediaPlayer existingMediaPlayer = mediaPlayers.get(key);
         if (existingMediaPlayer == null) {
             SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer(initializeCallback, startPlayCallback, stopPlayCallback);
-            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-            mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
-            try {
-                mediaPlayer.setDataSource(sound.getPath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-            setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
-            mediaPlayer.setLooping(sound.isLoop());
-            mediaPlayer.setOnPreparedListener(this::onPrepared);
-            mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
+            initMediaPlayer(sound, mediaPlayer);
             mediaPlayers.put(key, mediaPlayer);
         } else {
             // update the callbacks
             existingMediaPlayer.setStartPlayCallback(startPlayCallback);
             existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
+            existingMediaPlayer.reset();
+            initMediaPlayer(sound, existingMediaPlayer);
         }
+    }
+
+    /**
+     * Initializes this mediaPlayer for this sound. Does not start playing yet.
+     */
+    private void initMediaPlayer(@Nonnull Sound sound, SoundboardMediaPlayer mediaPlayer) {
+        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
+        try {
+            mediaPlayer.setDataSource(sound.getPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
+        setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
+        mediaPlayer.setLooping(sound.isLoop());
+        mediaPlayer.setOnPreparedListener(this::onPrepared);
+        mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
     private static final float percentageToVolume(int volumePercentage) {
