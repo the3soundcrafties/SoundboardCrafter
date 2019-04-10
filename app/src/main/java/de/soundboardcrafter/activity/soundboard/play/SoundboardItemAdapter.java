@@ -124,30 +124,27 @@ class SoundboardItemAdapter extends BaseAdapter {
             if (listView.getLastVisiblePosition() < position) {
                 convertView = new SoundBoardItemRow(parent.getContext());
             } else {
-                //Bugfix: The item at the first postion is instanciated two times. But the second one is not visible
+                //Bugfix: The item at the first position is instantiated two times. But the second one is not visible
                 // So the callbacks from the visible one should go to the new Item.
                 // The new item has to be created because the view needs the measurements
-                SoundBoardItemRow row = (SoundBoardItemRow) getViewByPosition(position, listView);
+
+                // https://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
+                final int firstListItemPosition = listView.getFirstVisiblePosition();
+                final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
+
+                SoundBoardItemRow row;
+                if (position < firstListItemPosition || position > lastListItemPosition) {
+                    row = new SoundBoardItemRow(parent.getContext());
+                } else {
+                    final int childIndex = position - firstListItemPosition;
+                    row = (SoundBoardItemRow) listView.getChildAt(childIndex);
+                }
+
                 convertView = new SoundBoardItemRow(parent.getContext(), row.getInitializeCallback(), row.getStartPlayCallback(), row.getStopPlayCallback());
             }
         }
         // We can now safely cast and set the data
         ((SoundBoardItemRow) convertView).setSound(soundboard, sound, mediaPlayerServiceCallback);
         return convertView;
-    }
-
-    /**
-     * gets the item view by position. Source https://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
-     */
-    private View getViewByPosition(int pos, AbsListView listView) {
-        final int firstListItemPosition = listView.getFirstVisiblePosition();
-        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
-
-        if (pos < firstListItemPosition || pos > lastListItemPosition) {
-            return listView.getAdapter().getView(pos, null, listView);
-        } else {
-            final int childIndex = pos - firstListItemPosition;
-            return listView.getChildAt(childIndex);
-        }
     }
 }
