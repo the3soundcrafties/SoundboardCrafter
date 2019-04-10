@@ -10,6 +10,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A game to which a soundboard might be linked.
+ * <p></p>
+ * <code>Games</code>s are not thread-safe. So it might be necessary to use
+ * appropriate synchronization.
  */
 public class Game {
     @NonNull

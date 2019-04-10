@@ -241,9 +241,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 SoundBoardItemRow itemRow = (SoundBoardItemRow) menuInfo.targetView;
                 Sound sound = itemRow.getSound();
 
-                Log.d(TAG, "Editing sound \"" + sound.getName() + "\"");
+                Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
 
-                Intent intent = SoundEditActivity.newIntent(getActivity(), sound);
+                Intent intent = SoundEditActivity.newIntent(getActivity(), sound, soundboard);
                 startActivityForResult(intent, REQUEST_EDIT_SOUND);
                 return true;
             case R.id.context_menu_remove_sound:
@@ -259,11 +259,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
-    void clearSounds() {
-        soundboardItemAdapter.clear();
-    }
-
-
     @Override
     @UiThread
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -273,7 +268,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         switch (requestCode) {
             case REQUEST_EDIT_SOUND:
-                Log.d(TAG, "Returned from sound edit fragment with OK");
+                Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
 
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
@@ -297,6 +292,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
         return mediaPlayerService;
     }
+
+    public Soundboard getSoundboard() {
+        return soundboard;
+    }
+
 
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.

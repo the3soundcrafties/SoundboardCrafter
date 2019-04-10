@@ -111,9 +111,9 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * adds a MediaPlayer but it is not starting it
+     * Adds a media player without yet starting it
      */
-    public void initMediaPlayer(@Nonnull Soundboard soundboard, @Nonnull Sound sound,
+    public void initMediaPlayer(@Nullable Soundboard soundboard, @Nonnull Sound sound,
                                 @Nullable SoundboardMediaPlayer.InitializeCallback initializeCallback,
                                 @Nullable SoundboardMediaPlayer.StartPlayCallback startPlayCallback,
                                 @Nullable SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
@@ -135,10 +135,9 @@ public class MediaPlayerService extends Service {
             mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
             mediaPlayers.put(key, mediaPlayer);
         } else {
-            //it should be set here one mre time
+            // update the callbacks
             existingMediaPlayer.setStartPlayCallback(startPlayCallback);
             existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
-            mediaPlayers.put(key, existingMediaPlayer);
         }
     }
 
@@ -155,10 +154,9 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * starts to play the song in the Mediaplayer. The Mediaplayer must be initalized
+     * Starts to play the song in the Mediaplayer. The Mediaplayer must have been initalized.
      */
-    public void startPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        checkNotNull(soundboard, "soundboard is null");
+    public void startPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
         checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
@@ -168,8 +166,34 @@ public class MediaPlayerService extends Service {
 
     }
 
-    public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
+    public boolean shouldBePlaying(@Nonnull Sound sound) {
+        checkNotNull(sound, "sound is null");
+
+        for (Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry : mediaPlayers.entrySet()) {
+            // TODO Refactor to stream API?
+
+            if (entry.getKey().getSoundId().equals(sound.getId())) {
+                @Nullable SoundboardMediaPlayer mediaPlayer = entry.getValue();
+                if (mediaPlayer != null) {
+                    if (mediaPlayer.isPlaying()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
+        checkNotNull(soundboard, "soundboard is null");
+        checkNotNull(sound, "sound is null");
+
+        return shouldBePlaying(soundboard, sound.getId());
+    }
+
+    private boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull UUID soundId) {
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
+                new MediaPlayerSearchId(soundboard.getId(), soundId));
         if (mediaPlayer != null) {
             return mediaPlayer.isPlaying();
         }
