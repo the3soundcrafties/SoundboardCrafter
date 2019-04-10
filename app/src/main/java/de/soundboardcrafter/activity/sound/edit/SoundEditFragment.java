@@ -209,7 +209,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         if (!service.shouldBePlaying(sound)) {
             service.initMediaPlayer(null, sound, null, null, null);
             service.startPlaying(null, sound);
-            // TODO STOP PLAYING ON BACK
         }
 
         service.setVolumePercentage(sound.getId(), volumePercentage);
@@ -228,6 +227,13 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        service.stopPlaying(null, sound);
+
         getActivity().unbindService(this);
 
         String nameEntered = nameTextView.getText().toString();
@@ -236,8 +242,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         sound.setVolumePercentage(seekBarToVolumePercentage(volumePercentageSeekBar.getProgress()));
-        // TODO Scale volume logarithmically
-
         sound.setLoop(loopSwitch.isChecked());
 
         new SaveSoundTask(getActivity(), sound).execute();

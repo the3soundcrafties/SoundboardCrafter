@@ -72,9 +72,9 @@ public class MediaPlayerService extends Service {
                 .forEach(e -> setVolume(e.getValue(), volume));
     }
 
-    public void stopPlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
-        checkNotNull(soundboard, "soundboard is null");
+    public void stopPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
         checkNotNull(sound, "sound is null");
+
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             player.stop();
