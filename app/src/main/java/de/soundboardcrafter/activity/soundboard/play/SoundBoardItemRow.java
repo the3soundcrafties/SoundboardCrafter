@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -30,11 +31,12 @@ class SoundBoardItemRow extends RelativeLayout {
     public interface MediaPlayerServiceCallback {
         boolean isConnected();
 
-        boolean shouldBePlaying(Soundboard soundboard, Sound sound);
+        boolean isPlaying(Soundboard soundboard, Sound sound);
 
         void play(Soundboard soundboard, Sound sound);
 
-        void setOnPlayingStopped(Soundboard soundboard, Sound sound);
+        void setOnPlayingStopped(Soundboard soundboard, Sound sound,
+                                 SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
 
         void stopPlaying(Soundboard soundboard, Sound sound);
     }
@@ -48,16 +50,14 @@ class SoundBoardItemRow extends RelativeLayout {
             return;
         }
 
-        mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
-
         this.sound = sound;
         soundItem.setText(this.sound.getName());
 
-        boolean isPlaying = mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound);
-        setImage(isPlaying ? R.drawable.ic_stop : R.drawable.ic_play);
+        setImage(mediaPlayerServiceCallback.isPlaying(soundboard, sound) ?
+                R.drawable.ic_stop : R.drawable.ic_play);
 
         setOnClickListener(l -> {
-            if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
+            if (!mediaPlayerServiceCallback.isPlaying(soundboard, sound)) {
                 setImage(R.drawable.ic_stop);
                 mediaPlayerServiceCallback.play(soundboard, sound);
             } else {

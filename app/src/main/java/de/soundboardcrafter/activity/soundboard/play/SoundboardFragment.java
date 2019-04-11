@@ -32,6 +32,7 @@ import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -138,12 +139,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public boolean shouldBePlaying(Soundboard soundboard, Sound sound) {
+            public boolean isPlaying(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();
                 if (service == null) {
                     return false;
                 }
-                return service.shouldBePlaying(soundboard, sound);
+                return service.isPlaying(soundboard, sound);
             }
 
             @Override
@@ -155,10 +156,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void setOnPlayingStopped(Soundboard soundboard, Sound sound) {
+            public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
+                                            SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.setOnPlayingStopped(soundboard, sound, soundboardItemAdapter::notifyDataSetChanged);
+                    service.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
                 }
             }
 

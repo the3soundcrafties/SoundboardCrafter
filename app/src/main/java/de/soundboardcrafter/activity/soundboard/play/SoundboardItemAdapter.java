@@ -112,6 +112,9 @@ class SoundboardItemAdapter extends BaseAdapter {
 
         Sound sound = soundboard.getSounds().get(position);
 
+        mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound,
+                this::notifyDataSetChanged);
+
         itemRow.setSound(soundboard, sound, mediaPlayerServiceCallback);
 
         return convertView;

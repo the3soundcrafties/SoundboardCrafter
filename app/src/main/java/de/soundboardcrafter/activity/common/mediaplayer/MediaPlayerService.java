@@ -52,7 +52,8 @@ public class MediaPlayerService extends Service {
 
 
     @UiThread
-    public void setOnPlayingStopped(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+    public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
+                                    SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             player.setOnPlayingStopped(onPlayingStopped);
@@ -180,7 +181,7 @@ public class MediaPlayerService extends Service {
     }
 
     @UiThread // TODO Or any thread?!
-    public boolean shouldBePlaying(@NonNull Sound sound) {
+    public boolean isPlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
         for (Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry : mediaPlayers.entrySet()) {
@@ -198,16 +199,16 @@ public class MediaPlayerService extends Service {
         return false;
     }
 
-    @UiThread // TODO Or any thread?!
-    public boolean shouldBePlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
+    @UiThread
+    public boolean isPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
 
-        return shouldBePlaying(soundboard, sound.getId());
+        return isPlaying(soundboard, sound.getId());
     }
 
-    @UiThread // TODO Or any thread?!
-    private boolean shouldBePlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
+    @UiThread
+    private boolean isPlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
                 new MediaPlayerSearchId(soundboard.getId(), soundId));
         if (mediaPlayer != null) {

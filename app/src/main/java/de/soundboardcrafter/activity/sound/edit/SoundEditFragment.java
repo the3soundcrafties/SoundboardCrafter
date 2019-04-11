@@ -204,7 +204,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (playIfNotPlaying && !service.shouldBePlaying(sound)) {
+        if (playIfNotPlaying && !service.isPlaying(sound)) {
             service.play(null, sound, null);
         }
 
