@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -45,6 +47,9 @@ public class SoundboardDao {
 
         return instance;
     }
+
+    private static final Pattern ONLY_THE_INTERESTING_PARTS = Pattern.compile(".*\\s.*\\-(.*)");
+
 
     private SoundboardDao(@Nonnull Context context) {
         Context appContext = context.getApplicationContext();
@@ -100,12 +105,15 @@ public class SoundboardDao {
 
     private Sound createSound(File soundFile) {
         int volume = (new Random().nextInt(22) + 22) % Sound.MAX_VOLUME_PERCENTAGE;
-        final String name;
-        if (soundFile.getName().contains("-")) {
-            name = soundFile.getName().substring(soundFile.getName().indexOf("-") + 1, soundFile.getName().indexOf("."));
-        } else {
-            name = soundFile.getName().substring(0, soundFile.getName().indexOf("."));
+
+        String name = soundFile.getName();
+
+        Matcher matcher = ONLY_THE_INTERESTING_PARTS.matcher(soundFile.getName());
+        if (matcher.matches()) {
+            name = matcher.group(1);
         }
+
+        name = name.substring(0, name.indexOf("."));
 
         return new Sound(soundFile.getAbsolutePath(), name, volume, false);
     }
