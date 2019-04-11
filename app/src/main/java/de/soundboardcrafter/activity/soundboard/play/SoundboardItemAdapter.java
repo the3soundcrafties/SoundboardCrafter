@@ -124,7 +124,7 @@ class SoundboardItemAdapter extends BaseAdapter {
             if (listView.getLastVisiblePosition() < position) {
                 convertView = new SoundBoardItemRow(parent.getContext());
             } else {
-                //Bugfix: The item at the first position is instantiated two times. But the second one is not visible
+                //Bugfix: The item at the first position is instantiated twice. But the second one is not visible
                 // So the callbacks from the visible one should go to the new Item.
                 // The new item has to be created because the view needs the measurements
 
