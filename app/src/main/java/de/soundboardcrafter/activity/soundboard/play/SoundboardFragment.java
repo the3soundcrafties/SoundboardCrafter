@@ -148,11 +148,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void initMediaPlayer(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.InitializeCallback initializeCallback,
-                                        SoundboardMediaPlayer.StartPlayCallback playCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+            public void initMediaPlayer(Soundboard soundboard, Sound sound,
+                                        SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.initMediaPlayer(soundboard, sound, initializeCallback, playCallback, stopPlayCallback);
+                    service.initMediaPlayer(soundboard, sound, stopPlayCallback);
                 }
             }
 
@@ -165,11 +165,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.StartPlayCallback startPlayCallback,
+            public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound,
                                                 SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.setMediaPlayerCallbacks(soundboard, sound, startPlayCallback, stopPlayCallback);
+                    service.setMediaPlayerCallbacks(soundboard, sound, stopPlayCallback);
                 }
             }
 

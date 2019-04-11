@@ -159,9 +159,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         // seekBar = log(volume)
-        int res = (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
-
-        return res;
+        return (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
     }
 
     private static int seekBarToVolumePercentage(int seekBar) {
@@ -200,14 +198,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     // TODO Show Path
 
-    private void setVolumePercentage(int volumePercentage) {
+    private void setVolumePercentage(int volumePercentage, boolean playIfNotPlaying) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
 
-        if (!service.shouldBePlaying(sound)) {
-            service.initMediaPlayer(null, sound, null, null, null);
+        if (playIfNotPlaying && !service.shouldBePlaying(sound)) {
+            service.initMediaPlayer(null, sound, null);
             service.startPlaying(null, sound);
         }
 
@@ -308,7 +306,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             int volumePercentage = seekBarToVolumePercentage(progress);
             Log.d(TAG, "SeekBar / VolumePercentage: " + progress + "\t" + volumePercentage);
 
-            setVolumePercentage(volumePercentage);
+            setVolumePercentage(volumePercentage, fromUser);
         }
 
         @Override

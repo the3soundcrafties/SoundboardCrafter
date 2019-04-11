@@ -3,14 +3,13 @@ package de.soundboardcrafter.activity.soundboard.play;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
 import java.util.Collection;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -24,7 +23,7 @@ class SoundboardItemAdapter extends BaseAdapter {
     private Soundboard soundboard;
     private static String TAG = SoundboardItemAdapter.class.getName();
 
-    SoundboardItemAdapter(@Nonnull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @Nonnull Soundboard soundboard) {
+    SoundboardItemAdapter(@NonNull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @NonNull Soundboard soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
     }
@@ -74,18 +73,6 @@ class SoundboardItemAdapter extends BaseAdapter {
     }
 
     /**
-     * Removes all sounds from the adapter. Should a sound currently be playing,
-     * stop it before the sound is removed.
-     */
-    void clear() {
-        for (Sound sound : soundboard.getSounds()) {
-            mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
-        }
-        soundboard.clearSounds();
-        notifyDataSetChanged();
-    }
-
-    /**
      * Removes the sound from the adapter. Should the sound currently be playing,
      * stop it before the sound is removed.
      */
@@ -115,36 +102,18 @@ class SoundboardItemAdapter extends BaseAdapter {
     }
 
     @Override
+    @UiThread
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
-        Sound sound = soundboard.getSounds().get(position);
-        Log.d(TAG, "getView " + sound.getName() + " " + this);
-        AbsListView listView = (AbsListView) parent;
-        if (convertView == null) {
-            if (listView.getLastVisiblePosition() < position) {
-                convertView = new SoundBoardItemRow(parent.getContext());
-            } else {
-                //Bugfix: The item at the first position is instantiated twice. But the second one is not visible
-                // So the callbacks from the visible one should go to the new Item.
-                // The new item has to be created because the view needs the measurements
-
-                // https://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
-                final int firstListItemPosition = listView.getFirstVisiblePosition();
-                final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
-
-                SoundBoardItemRow row;
-                if (position < firstListItemPosition || position > lastListItemPosition) {
-                    row = new SoundBoardItemRow(parent.getContext());
-                } else {
-                    final int childIndex = position - firstListItemPosition;
-                    row = (SoundBoardItemRow) listView.getChildAt(childIndex);
-                }
-
-                convertView = new SoundBoardItemRow(parent.getContext(), row.getInitializeCallback(), row.getStartPlayCallback());
-            }
+        if (!(convertView instanceof SoundBoardItemRow)) {
+            convertView = new SoundBoardItemRow(parent.getContext());
         }
-        // We can now safely cast and set the data
+
         SoundBoardItemRow itemRow = (SoundBoardItemRow) convertView;
-        itemRow.setSound(soundboard, sound, mediaPlayerServiceCallback, () -> notifyDataSetChanged());
+
+        Sound sound = soundboard.getSounds().get(position);
+
+        itemRow.setSound(soundboard, sound, mediaPlayerServiceCallback, this::notifyDataSetChanged);
+
         return convertView;
     }
 }

@@ -14,40 +14,47 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.annotation.Nonnull;
-
+import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Service used for playing media (sounds, actually).
+ */
 public class MediaPlayerService extends Service {
+    private static final String TAG = MediaPlayerService.class.getName();
+
     private final IBinder binder = new Binder();
-    static final String EXTRA_SOUND = "Sound";
-    static final String EXTRA_SOUNDBOARD = "Soundboard";
     private HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
 
+    @MainThread
     public MediaPlayerService() {
-        Log.d(getClass().getName(), "MediaPlayerService is created");
+        Log.d(TAG, "MediaPlayerService is created");
     }
 
     @Override
+    @UiThread // TODO Or any thread?!
     public int onStartCommand(Intent intent, int flags, int startId) {
         return Service.START_NOT_STICKY;
     }
 
     @Nullable
     @Override
+    @UiThread
     public IBinder onBind(Intent intent) {
         return binder;
     }
 
 
-    public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.StartPlayCallback startPlayCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+    @UiThread // TODO Or any thread?!
+    public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
-            player.setStartPlayCallback(startPlayCallback);
             player.setStopPlayCallback(stopPlayCallback);
         }
     }
@@ -55,6 +62,7 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this sound.
      */
+    @UiThread // TODO Or any thread?!
     public void setVolumePercentage(UUID soundId, int volumePercentage) {
         checkNotNull(soundId, "soundId is null");
 
@@ -64,6 +72,7 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this sound.
      */
+    @UiThread // TODO Or any thread?!
     private void setVolume(UUID soundId, float volume) {
         checkNotNull(soundId, "soundId is null");
 
@@ -72,7 +81,8 @@ public class MediaPlayerService extends Service {
                 .forEach(e -> setVolume(e.getValue(), volume));
     }
 
-    public void stopPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
+    @UiThread // TODO Or any thread?!
+    public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
@@ -82,29 +92,31 @@ public class MediaPlayerService extends Service {
         }
     }
 
-    private void removeMediaPlayer(@Nonnull SoundboardMediaPlayer mediaPlayer) {
-        checkNotNull(mediaPlayer, "mediaPlayer is null");
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            MediaPlayerSearchId key = findKey(mediaPlayer);
-            if (key != null) {
-                mediaPlayers.remove(key);
-            }
+    @UiThread // TODO Or any thread?!
+    private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        MediaPlayerSearchId key = findKey(mediaPlayer);
+        if (key != null) {
+            mediaPlayers.remove(key);
         }
     }
 
     @Nullable
-    private MediaPlayerSearchId findKey(@Nonnull SoundboardMediaPlayer toBeFound) {
+    private MediaPlayerSearchId findKey(@NonNull SoundboardMediaPlayer toBeFound) {
         checkNotNull(toBeFound, "toBeFound is null");
         Optional<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> foundPlayer =
                 mediaPlayers.entrySet().stream().filter(mediaPlayer -> mediaPlayer.getValue().equals(toBeFound)).findFirst();
-        if (foundPlayer.isPresent()) {
-            return foundPlayer.get().getKey();
-        }
-        return null;
+
+        return foundPlayer.map(Map.Entry::getKey).orElse(null);
+
+        //if (foundPlayer.isPresent()) {
+        //    return foundPlayer.get().getKey();
+        //}
+        //return null;
     }
 
     public class Binder extends android.os.Binder {
+        @UiThread
         public MediaPlayerService getService() {
             return MediaPlayerService.this;
         }
@@ -113,19 +125,17 @@ public class MediaPlayerService extends Service {
     /**
      * Adds a media player without yet starting it
      */
-    public void initMediaPlayer(@Nullable Soundboard soundboard, @Nonnull Sound sound,
-                                @Nullable SoundboardMediaPlayer.InitializeCallback initializeCallback,
-                                @Nullable SoundboardMediaPlayer.StartPlayCallback startPlayCallback,
+    @UiThread
+    public void initMediaPlayer(@Nullable Soundboard soundboard, @NonNull Sound sound,
                                 @Nullable SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
         MediaPlayerSearchId key = new MediaPlayerSearchId(soundboard, sound);
         SoundboardMediaPlayer existingMediaPlayer = mediaPlayers.get(key);
         if (existingMediaPlayer == null) {
-            SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer(initializeCallback, startPlayCallback, stopPlayCallback);
+            SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer(stopPlayCallback);
             initMediaPlayer(sound, mediaPlayer);
             mediaPlayers.put(key, mediaPlayer);
         } else {
             // update the callbacks
-            existingMediaPlayer.setStartPlayCallback(startPlayCallback);
             existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
             existingMediaPlayer.reset();
             initMediaPlayer(sound, existingMediaPlayer);
@@ -135,7 +145,8 @@ public class MediaPlayerService extends Service {
     /**
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
      */
-    private void initMediaPlayer(@Nonnull Sound sound, SoundboardMediaPlayer mediaPlayer) {
+    @UiThread // TODO Or any thread?!
+    private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
         try {
@@ -150,13 +161,14 @@ public class MediaPlayerService extends Service {
         mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
-    private static final float percentageToVolume(int volumePercentage) {
+    private static float percentageToVolume(int volumePercentage) {
         return (float) volumePercentage / 100f;
     }
 
     /**
      * Sets the volume for this <code>mediaPlayer</code>.
      */
+    @UiThread // TODO Or any thread?!
     private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
         checkNotNull(mediaPlayer, "mediaPlayer is null");
         mediaPlayer.setVolume(volume, volume);
@@ -165,7 +177,8 @@ public class MediaPlayerService extends Service {
     /**
      * Starts to play the song in the Mediaplayer. The Mediaplayer must have been initalized.
      */
-    public void startPlaying(@Nullable Soundboard soundboard, @Nonnull Sound sound) {
+    @UiThread // TODO Or any thread?!
+    public void startPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
@@ -175,7 +188,8 @@ public class MediaPlayerService extends Service {
 
     }
 
-    public boolean shouldBePlaying(@Nonnull Sound sound) {
+    @UiThread // TODO Or any thread?!
+    public boolean shouldBePlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
         for (Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry : mediaPlayers.entrySet()) {
@@ -193,14 +207,16 @@ public class MediaPlayerService extends Service {
         return false;
     }
 
-    public boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull Sound sound) {
+    @UiThread // TODO Or any thread?!
+    public boolean shouldBePlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
 
         return shouldBePlaying(soundboard, sound.getId());
     }
 
-    private boolean shouldBePlaying(@Nonnull Soundboard soundboard, @Nonnull UUID soundId) {
+    @UiThread // TODO Or any thread?!
+    private boolean shouldBePlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
                 new MediaPlayerSearchId(soundboard.getId(), soundId));
         if (mediaPlayer != null) {
@@ -212,15 +228,20 @@ public class MediaPlayerService extends Service {
     /**
      * Called when MediaPlayer is ready
      */
+    @UiThread // TODO Or any thread?!
     private void onPrepared(MediaPlayer player) {
         player.start();
     }
 
+    @UiThread // TODO Or any thread?!
     private boolean onError(SoundboardMediaPlayer player, int what, int extra) {
+        Log.e(TAG, "Error in media player: what: " + what + " extra: " + extra);
+
         removeMediaPlayer(player);
         return true;
     }
 
+    @UiThread // TODO Or any thread?!
     private void onCompletion(SoundboardMediaPlayer player) {
         removeMediaPlayer(player);
     }
