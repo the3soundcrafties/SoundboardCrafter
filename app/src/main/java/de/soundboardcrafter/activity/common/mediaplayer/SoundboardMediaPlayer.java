@@ -27,7 +27,6 @@ public class SoundboardMediaPlayer extends MediaPlayer {
             }
             listener.onCompletion(this);
         });
-
     }
 
     void setOnPlayingStopped(@Nullable OnPlayingStopped onPlayingStopped) {

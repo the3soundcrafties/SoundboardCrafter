@@ -24,7 +24,7 @@ import de.soundboardcrafter.model.Soundboard;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Service used for playing media (sounds, actually).
+ * Android service that keeps track off all the media players that are playing sounds in the app.
  */
 public class MediaPlayerService extends Service {
     private static final String TAG = MediaPlayerService.class.getName();
@@ -51,7 +51,7 @@ public class MediaPlayerService extends Service {
     }
 
 
-    @UiThread // TODO Or any thread?!
+    @UiThread
     public void setOnPlayingStopped(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {

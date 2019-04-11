@@ -32,7 +32,6 @@ import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
-import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -148,11 +147,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void initMediaPlayer(Soundboard soundboard, Sound sound,
-                                        SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+            public void initMediaPlayer(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.initMediaPlayer(soundboard, sound, onPlayingStopped);
+                    service.initMediaPlayer(soundboard, sound, soundboardItemAdapter::notifyDataSetChanged);
                 }
             }
 
@@ -165,11 +163,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                            SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+            public void setOnPlayingStopped(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
+                    service.setOnPlayingStopped(soundboard, sound, soundboardItemAdapter::notifyDataSetChanged);
                 }
             }
 
@@ -206,7 +203,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     @UiThread
     private void initSoundboardItemAdapter() {
-        // TODO Start without any soundboard
         soundboardItemAdapter =
                 new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
         gridView.setAdapter(soundboardItemAdapter);

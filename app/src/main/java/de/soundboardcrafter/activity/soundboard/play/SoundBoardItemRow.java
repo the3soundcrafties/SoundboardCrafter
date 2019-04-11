@@ -8,7 +8,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -33,23 +32,20 @@ class SoundBoardItemRow extends RelativeLayout {
 
         boolean shouldBePlaying(Soundboard soundboard, Sound sound);
 
-        void initMediaPlayer(Soundboard soundboard, Sound sound,
-                             SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
+        void initMediaPlayer(Soundboard soundboard, Sound sound);
 
         void startPlaying(Soundboard soundboard, Sound sound);
 
-        void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                 SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
+        void setOnPlayingStopped(Soundboard soundboard, Sound sound);
 
         void stopPlaying(Soundboard soundboard, Sound sound);
     }
 
     /**
-     * Set the data for the view, and populate the
-     * children views with the model text.
+     * Set the data for the view.
      */
     @UiThread
-    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback, SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback) {
         if (!mediaPlayerServiceCallback.isConnected()) {
             return;
         }
@@ -59,7 +55,7 @@ class SoundBoardItemRow extends RelativeLayout {
         boolean isPlaying = mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound);
         if (isPlaying) {
             setImage(R.drawable.ic_stop);
-            mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
+            mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
         } else {
             setImage(R.drawable.ic_play);
         }
@@ -67,10 +63,10 @@ class SoundBoardItemRow extends RelativeLayout {
         setOnClickListener(l -> {
             if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
                 setImage(R.drawable.ic_stop);
-                mediaPlayerServiceCallback.initMediaPlayer(soundboard, sound, onPlayingStopped);
+                mediaPlayerServiceCallback.initMediaPlayer(soundboard, sound);
                 mediaPlayerServiceCallback.startPlaying(soundboard, this.sound);
             } else {
-                mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
+                mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
                 mediaPlayerServiceCallback.stopPlaying(soundboard, this.sound);
             }
         });
