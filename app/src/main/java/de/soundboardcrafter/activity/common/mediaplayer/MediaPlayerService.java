@@ -52,10 +52,10 @@ public class MediaPlayerService extends Service {
 
 
     @UiThread // TODO Or any thread?!
-    public void setMediaPlayerCallbacks(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+    public void setOnPlayingStopped(Soundboard soundboard, Sound sound, SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
-            player.setStopPlayCallback(stopPlayCallback);
+            player.setOnPlayingStopped(onPlayingStopped);
         }
     }
 
@@ -127,16 +127,17 @@ public class MediaPlayerService extends Service {
      */
     @UiThread
     public void initMediaPlayer(@Nullable Soundboard soundboard, @NonNull Sound sound,
-                                @Nullable SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+                                @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         MediaPlayerSearchId key = new MediaPlayerSearchId(soundboard, sound);
         SoundboardMediaPlayer existingMediaPlayer = mediaPlayers.get(key);
         if (existingMediaPlayer == null) {
-            SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer(stopPlayCallback);
+            SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
+            mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             initMediaPlayer(sound, mediaPlayer);
             mediaPlayers.put(key, mediaPlayer);
         } else {
             // update the callbacks
-            existingMediaPlayer.setStopPlayCallback(stopPlayCallback);
+            existingMediaPlayer.setOnPlayingStopped(onPlayingStopped);
             existingMediaPlayer.reset();
             initMediaPlayer(sound, existingMediaPlayer);
         }

@@ -8,38 +8,37 @@ import androidx.annotation.Nullable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
     @FunctionalInterface
-    public interface StopPlayCallback extends Serializable {
+    public interface OnPlayingStopped extends Serializable {
         void stop();
     }
 
     @Nullable
-    private StopPlayCallback stopPlayCallback;
+    private OnPlayingStopped onPlayingStopped;
 
-    SoundboardMediaPlayer(@Nullable StopPlayCallback stopPlayCallback) {
+    SoundboardMediaPlayer() {
         super();
-        this.stopPlayCallback = stopPlayCallback;
     }
 
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {
         super.setOnCompletionListener(event -> {
-            if (stopPlayCallback != null) {
-                stopPlayCallback.stop();
+            if (onPlayingStopped != null) {
+                onPlayingStopped.stop();
             }
             listener.onCompletion(this);
         });
 
     }
 
-    void setStopPlayCallback(@Nullable StopPlayCallback stopPlayCallback) {
-        this.stopPlayCallback = stopPlayCallback;
+    void setOnPlayingStopped(@Nullable OnPlayingStopped onPlayingStopped) {
+        this.onPlayingStopped = onPlayingStopped;
     }
 
     @Override
     public void stop() throws IllegalStateException {
         super.stop();
-        if (stopPlayCallback != null) {
-            stopPlayCallback.stop();
+        if (onPlayingStopped != null) {
+            onPlayingStopped.stop();
         }
     }
 }
