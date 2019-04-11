@@ -22,10 +22,26 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {
         super.setOnCompletionListener(event -> {
-            if (onPlayingStopped != null) {
-                onPlayingStopped.stop();
+            try {
+                if (onPlayingStopped != null) {
+                    onPlayingStopped.stop();
+                }
+            } finally {
+                listener.onCompletion(this);
             }
-            listener.onCompletion(this);
+        });
+    }
+
+    @Override
+    public void setOnErrorListener(OnErrorListener listener) {
+        super.setOnErrorListener((mp, what, extra) -> {
+            try {
+                if (onPlayingStopped != null) {
+                    onPlayingStopped.stop();
+                }
+            } finally {
+                return listener.onError(mp, what, extra);
+            }
         });
     }
 
