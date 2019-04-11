@@ -8,6 +8,9 @@ import androidx.annotation.Nullable;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
+/**
+ * ID for storing media players by soundboard and sound id.
+ */
 class MediaPlayerSearchId implements Serializable {
     private final @Nullable
     UUID soundboardId;
