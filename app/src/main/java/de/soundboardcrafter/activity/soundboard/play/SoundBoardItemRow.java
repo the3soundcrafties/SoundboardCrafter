@@ -21,7 +21,6 @@ class SoundBoardItemRow extends RelativeLayout {
     private Sound sound;
     private SoundboardMediaPlayer.InitializeCallback initializeCallback;
     private SoundboardMediaPlayer.StartPlayCallback startPlayCallback;
-    private SoundboardMediaPlayer.StopPlayCallback stopPlayCallback;
 
     SoundBoardItemRow(Context context) {
         super(context);
@@ -31,16 +30,12 @@ class SoundBoardItemRow extends RelativeLayout {
         soundItem = findViewById(R.id.sound_item);
         initializeCallback = () -> setImage(R.drawable.ic_init_mediaplayer);
         startPlayCallback = () -> setImage(R.drawable.ic_stop);
-        stopPlayCallback = () -> {
-            setImage(R.drawable.ic_play);
-        };
     }
 
-    SoundBoardItemRow(Context context, SoundboardMediaPlayer.InitializeCallback initializeCallback, SoundboardMediaPlayer.StartPlayCallback startPlayCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
+    SoundBoardItemRow(Context context, SoundboardMediaPlayer.InitializeCallback initializeCallback, SoundboardMediaPlayer.StartPlayCallback startPlayCallback) {
         this(context);
         this.initializeCallback = initializeCallback;
         this.startPlayCallback = startPlayCallback;
-        this.stopPlayCallback = stopPlayCallback;
     }
 
     SoundboardMediaPlayer.InitializeCallback getInitializeCallback() {
@@ -50,11 +45,6 @@ class SoundBoardItemRow extends RelativeLayout {
     SoundboardMediaPlayer.StartPlayCallback getStartPlayCallback() {
         return startPlayCallback;
     }
-
-    SoundboardMediaPlayer.StopPlayCallback getStopPlayCallback() {
-        return stopPlayCallback;
-    }
-
 
     public interface MediaPlayerServiceCallback {
         boolean isConnected();
@@ -76,7 +66,7 @@ class SoundBoardItemRow extends RelativeLayout {
      * Set the data for the view, and populate the
      * children views with the model text.
      */
-    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback) {
+    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback, SoundboardMediaPlayer.StopPlayCallback stopPlayCallback) {
         if (!mediaPlayerServiceCallback.isConnected()) {
             return;
         }

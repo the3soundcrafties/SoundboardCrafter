@@ -29,7 +29,6 @@ class SoundboardItemAdapter extends BaseAdapter {
         this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
     }
 
-
     /**
      * Sets the soundboard.
      */
@@ -140,11 +139,12 @@ class SoundboardItemAdapter extends BaseAdapter {
                     row = (SoundBoardItemRow) listView.getChildAt(childIndex);
                 }
 
-                convertView = new SoundBoardItemRow(parent.getContext(), row.getInitializeCallback(), row.getStartPlayCallback(), row.getStopPlayCallback());
+                convertView = new SoundBoardItemRow(parent.getContext(), row.getInitializeCallback(), row.getStartPlayCallback());
             }
         }
         // We can now safely cast and set the data
-        ((SoundBoardItemRow) convertView).setSound(soundboard, sound, mediaPlayerServiceCallback);
+        SoundBoardItemRow itemRow = (SoundBoardItemRow) convertView;
+        itemRow.setSound(soundboard, sound, mediaPlayerServiceCallback, () -> notifyDataSetChanged());
         return convertView;
     }
 }
