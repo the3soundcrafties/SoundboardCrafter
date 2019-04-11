@@ -26,6 +26,11 @@ class MediaPlayerSearchId implements Serializable {
         this.soundId = soundId;
     }
 
+    @Nullable
+    UUID getSoundboardId() {
+        return soundboardId;
+    }
+
     UUID getSoundId() {
         return soundId;
     }
@@ -47,4 +52,5 @@ class MediaPlayerSearchId implements Serializable {
     public int hashCode() {
         return Objects.hash(soundboardId, soundId);
     }
+
 }

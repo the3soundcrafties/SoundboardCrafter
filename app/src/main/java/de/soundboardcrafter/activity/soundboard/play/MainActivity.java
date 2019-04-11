@@ -1,10 +1,14 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,13 +33,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
  * The main activity, showing the soundboards.
  */
-public class MainActivity extends AppCompatActivity implements ResetAllDialogFragment.OnOkCallback {
+public class MainActivity extends AppCompatActivity
+        implements ServiceConnection, ResetAllDialogFragment.OnOkCallback {
     private static final String TAG = MainActivity.class.getName();
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
@@ -43,10 +49,47 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     private ScreenSlidePagerAdapter pagerAdapter;
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
+    private MediaPlayerService mediaPlayerService;
+
+    @Override
+    @UiThread
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
+        mediaPlayerService = b.getService();
+
+        Log.d(TAG, "MediaPlayerService is connected");
+    }
+
+    @Override
+    @UiThread
+    public void onServiceDisconnected(ComponentName name) {
+        // TODO What to do on Service Disconnected?
+    }
+
+    @Override
+    @UiThread
+    public void onBindingDied(ComponentName name) {
+        // TODO What to do on Service Died?
+    }
+
+    @Override
+    @UiThread
+    public void onNullBinding(ComponentName name) {
+        // TODO What to do on Null Binding?
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_soundboards);
+
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        startService(intent);
+        // TODO Necessary?! Also done in onResume()
+        bindService();
+
+
         ViewPager pager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
@@ -56,6 +99,11 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
         toolbar.setTitle("");
     }
 
+    private void bindService() {
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -63,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
             return;
         }
-        pagerAdapter.clear();
+        pagerAdapter.clear(false);
         new FindSoundboardsTask(this).execute();
     }
 
@@ -71,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     @UiThread
     public void doResetAll() {
         Log.i(TAG, "Resetting sound data");
-        pagerAdapter.clear();
+        pagerAdapter.clear(true);
         new ResetAllTask(this).execute();
     }
 
@@ -137,9 +185,21 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
             return POSITION_NONE;
         }
 
-        void clear() {
+        void clear(boolean stopPlayingAllSoundboards) {
+            if (stopPlayingAllSoundboards) {
+                stopPlayingAllSoundboards();
+            }
+
             soundboardList.clear();
             notifyDataSetChanged();
+        }
+
+        private void stopPlayingAllSoundboards() {
+            MediaPlayerService service = getService();
+            if (service == null) {
+                return;
+            }
+            service.stopPlaying(soundboardList);
         }
     }
 
@@ -152,6 +212,27 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
                 finishAndRemoveTask();
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unbindService(this);
+    }
+
+    @Override
+    @UiThread
+    public void onResume() {
+        super.onResume();
+        bindService();
+    }
+
+    private MediaPlayerService getService() {
+        if (mediaPlayerService == null) {
+            // TODO Necessary?! Also done in onResume()
+            bindService();
+        }
+        return mediaPlayerService;
     }
 
     /**
