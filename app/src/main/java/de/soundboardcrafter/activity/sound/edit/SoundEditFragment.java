@@ -205,8 +205,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         if (playIfNotPlaying && !service.shouldBePlaying(sound)) {
-            service.initMediaPlayer(null, sound, null);
-            service.startPlaying(null, sound);
+            service.play(null, sound, null);
         }
 
         service.setVolumePercentage(sound.getId(), volumePercentage);

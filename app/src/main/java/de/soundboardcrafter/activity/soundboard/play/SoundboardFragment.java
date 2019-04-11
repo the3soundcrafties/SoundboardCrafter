@@ -147,18 +147,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void initMediaPlayer(Soundboard soundboard, Sound sound) {
+            public void play(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.initMediaPlayer(soundboard, sound, soundboardItemAdapter::notifyDataSetChanged);
-                }
-            }
-
-            @Override
-            public void startPlaying(Soundboard soundboard, Sound sound) {
-                MediaPlayerService service = getService();
-                if (service != null) {
-                    service.startPlaying(soundboard, sound);
+                    service.play(soundboard, sound, soundboardItemAdapter::notifyDataSetChanged);
                 }
             }
 

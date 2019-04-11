@@ -32,9 +32,7 @@ class SoundBoardItemRow extends RelativeLayout {
 
         boolean shouldBePlaying(Soundboard soundboard, Sound sound);
 
-        void initMediaPlayer(Soundboard soundboard, Sound sound);
-
-        void startPlaying(Soundboard soundboard, Sound sound);
+        void play(Soundboard soundboard, Sound sound);
 
         void setOnPlayingStopped(Soundboard soundboard, Sound sound);
 
@@ -49,24 +47,20 @@ class SoundBoardItemRow extends RelativeLayout {
         if (!mediaPlayerServiceCallback.isConnected()) {
             return;
         }
+
+        mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
+
         this.sound = sound;
         soundItem.setText(this.sound.getName());
 
         boolean isPlaying = mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound);
-        if (isPlaying) {
-            setImage(R.drawable.ic_stop);
-            mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
-        } else {
-            setImage(R.drawable.ic_play);
-        }
+        setImage(isPlaying ? R.drawable.ic_stop : R.drawable.ic_play);
 
         setOnClickListener(l -> {
             if (!mediaPlayerServiceCallback.shouldBePlaying(soundboard, sound)) {
                 setImage(R.drawable.ic_stop);
-                mediaPlayerServiceCallback.initMediaPlayer(soundboard, sound);
-                mediaPlayerServiceCallback.startPlaying(soundboard, this.sound);
+                mediaPlayerServiceCallback.play(soundboard, sound);
             } else {
-                mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound);
                 mediaPlayerServiceCallback.stopPlaying(soundboard, this.sound);
             }
         });

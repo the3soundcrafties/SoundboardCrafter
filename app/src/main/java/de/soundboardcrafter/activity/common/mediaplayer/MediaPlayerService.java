@@ -123,24 +123,28 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * Adds a media player without yet starting it
+     * Adds a media player and starts playing.
      */
     @UiThread
-    public void initMediaPlayer(@Nullable Soundboard soundboard, @NonNull Sound sound,
-                                @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+    public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
+                     @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+        checkNotNull(sound, "sound is null");
+
         MediaPlayerSearchId key = new MediaPlayerSearchId(soundboard, sound);
-        SoundboardMediaPlayer existingMediaPlayer = mediaPlayers.get(key);
-        if (existingMediaPlayer == null) {
-            SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(key);
+        if (mediaPlayer == null) {
+            mediaPlayer = new SoundboardMediaPlayer();
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             initMediaPlayer(sound, mediaPlayer);
             mediaPlayers.put(key, mediaPlayer);
         } else {
             // update the callbacks
-            existingMediaPlayer.setOnPlayingStopped(onPlayingStopped);
-            existingMediaPlayer.reset();
-            initMediaPlayer(sound, existingMediaPlayer);
+            mediaPlayer.setOnPlayingStopped(onPlayingStopped);
+            mediaPlayer.reset();
+            initMediaPlayer(sound, mediaPlayer);
         }
+
+        mediaPlayer.prepareAsync();
     }
 
     /**
@@ -173,20 +177,6 @@ public class MediaPlayerService extends Service {
     private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
         checkNotNull(mediaPlayer, "mediaPlayer is null");
         mediaPlayer.setVolume(volume, volume);
-    }
-
-    /**
-     * Starts to play the song in the Mediaplayer. The Mediaplayer must have been initalized.
-     */
-    @UiThread // TODO Or any thread?!
-    public void startPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
-        checkNotNull(sound, "sound is null");
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        checkNotNull(mediaPlayer, "there is no mediaplayer for Soundboard %s and Sound %s", soundboard, sound);
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.prepareAsync();
-        }
-
     }
 
     @UiThread // TODO Or any thread?!
