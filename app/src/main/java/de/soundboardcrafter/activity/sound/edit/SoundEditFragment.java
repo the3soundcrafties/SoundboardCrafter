@@ -247,12 +247,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to load the sound from the database.
      */
-    public class FindSoundTask extends AsyncTask<Void, Void, Sound> {
+    class FindSoundTask extends AsyncTask<Void, Void, Sound> {
         private final String TAG = FindSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
         private final UUID soundId;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         FindSoundTask(Context context, UUID soundId) {
             super();
@@ -271,7 +270,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Loading sound....");
 
-            Sound sound = soundboardDao.getInstance(getActivity()).findSound(soundId);
+            Sound sound = SoundboardDao.getInstance(appContext).findSound(soundId);
 
             Log.d(TAG, "Sound loaded.");
 
@@ -320,12 +319,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to save the sound
      */
-    public class SaveSoundTask extends AsyncTask<Void, Void, Void> {
+    class SaveSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
         private final Sound sound;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         SaveSoundTask(Context context, Sound sound) {
             super();
@@ -344,7 +342,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Saving sound " + sound);
 
-            soundboardDao.updateSound(sound);
+            SoundboardDao.getInstance(appContext).updateSound(sound);
 
             return null;
         }

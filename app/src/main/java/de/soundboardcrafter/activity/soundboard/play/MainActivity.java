@@ -17,10 +17,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,22 +40,19 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
-    private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
-    private TabLayout tabLayout;
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
-    private ArrayList<Soundboard> soundboardList = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_soundboards);
-        pager = (ViewPager) findViewById(R.id.viewPager);
-        tabLayout = (TabLayout) findViewById(R.id.tabLayout);
+        ViewPager pager = findViewById(R.id.viewPager);
+        TabLayout tabLayout = findViewById(R.id.tabLayout);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(pager);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
     }
 
@@ -82,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
 
     @Override
     @UiThread
-    public boolean onCreateOptionsMenu(@Nonnull Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.fragment_main, menu);
@@ -91,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
 
 
     @Override
-    public boolean onOptionsItemSelected(@Nonnull MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_menu_reset_all:
                 resetAllOrCancel();
@@ -115,7 +110,8 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
         }
 
         @Override
-        public Fragment getItem(int position) {
+        public @NonNull
+        Fragment getItem(int position) {
             return SoundboardFragment.createTab(soundboardList.get(position));
         }
 
@@ -161,15 +157,13 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     /**
      * A background task, used to retrieve soundboards from the database.
      */
-    public class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
+    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
         private final String TAG = FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao;
 
         FindSoundboardsTask(Context context) {
             super();
-            soundboardDao = SoundboardDao.getInstance(context);
             appContextRef = new WeakReference<>(context.getApplicationContext());
         }
 
@@ -181,6 +175,8 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
                 cancel(true);
                 return null;
             }
+
+            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
 
             Log.d(TAG, "Loading soundboards...");
 
@@ -221,15 +217,14 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
     /**
      * A background task, used to reset the soundboards and retrieve them from the database.
      */
-    public class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
+    class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
         private final String TAG = ResetAllTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao;
 
         ResetAllTask(Context context) {
             super();
-            soundboardDao = SoundboardDao.getInstance(context);
+
             appContextRef = new WeakReference<>(context.getApplicationContext());
         }
 
@@ -244,6 +239,7 @@ public class MainActivity extends AppCompatActivity implements ResetAllDialogFra
 
             Log.d(TAG, "Resetting soundboards.");
 
+            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
             soundboardDao.clearDatabase();
             soundboardDao.insertDummyData();
 

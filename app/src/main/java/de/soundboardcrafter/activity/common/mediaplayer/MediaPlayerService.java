@@ -30,7 +30,7 @@ public class MediaPlayerService extends Service {
     private static final String TAG = MediaPlayerService.class.getName();
 
     private final IBinder binder = new Binder();
-    private HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
+    private final HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
 
     @MainThread
     public MediaPlayerService() {

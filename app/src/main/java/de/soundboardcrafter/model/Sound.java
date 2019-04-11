@@ -75,12 +75,6 @@ public class Sound implements Serializable {
         return path;
     }
 
-    public void setPath(@NonNull String path) {
-        checkNotNull(path,
-                "path is null");
-        this.path = path;
-    }
-
     @NonNull
     public String getName() {
         return name;

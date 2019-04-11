@@ -42,7 +42,7 @@ public class ResetAllDialogFragment extends DialogFragment {
     // This method is called whenever the fragment is added to
     // an(other) Activity
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         // Verify that the host activity implements the callback interface
         try {

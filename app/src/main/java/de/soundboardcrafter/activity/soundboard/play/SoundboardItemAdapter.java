@@ -21,19 +21,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 class SoundboardItemAdapter extends BaseAdapter {
     private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private Soundboard soundboard;
-    private static String TAG = SoundboardItemAdapter.class.getName();
+    private static final String TAG = SoundboardItemAdapter.class.getName();
 
     SoundboardItemAdapter(@NonNull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @NonNull Soundboard soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
-    }
-
-    /**
-     * Sets the soundboard.
-     */
-    public void setSoundboard(Soundboard soundboard) {
-        this.soundboard = soundboard;
-        notifyDataSetChanged();
     }
 
     /**

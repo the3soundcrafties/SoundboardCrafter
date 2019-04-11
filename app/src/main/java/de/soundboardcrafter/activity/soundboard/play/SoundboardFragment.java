@@ -66,7 +66,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        //as soon the mediaplayerservice is connected, the play/stop icons can be set correctly
+        //as soon the media player service is connected, the play/stop icons can be set correctly
         updateUI();
 
         Log.d(TAG, "MediaPlayerService is connected");
@@ -287,19 +287,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerService;
     }
 
-    public Soundboard getSoundboard() {
-        return soundboard;
-    }
-
-
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.
      */
-    public class UpdateSoundsTask extends AsyncTask<UUID, Void, ImmutableCollection<Sound>> {
+    class UpdateSoundsTask extends AsyncTask<UUID, Void, ImmutableCollection<Sound>> {
         private final String TAG = UpdateSoundsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         UpdateSoundsTask(Context context) {
             super();
@@ -317,7 +311,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Loading sounds: " + Arrays.toString(soundIds));
 
-            return soundboardDao.findSounds(soundIds);
+            return SoundboardDao.getInstance(appContext).findSounds(soundIds);
         }
 
         @Override
@@ -342,11 +336,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to remove sounds with the given indexes from the soundboard
      */
-    public class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
+    class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
         private final String TAG = RemoveSoundsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final SoundboardDao soundboardDao = SoundboardDao.getInstance(getActivity());
 
         RemoveSoundsTask(Context context) {
             super();
@@ -362,6 +355,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 return null;
             }
 
+            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
+
             for (int index : indexes) {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
@@ -371,6 +366,4 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return null;
         }
     }
-
-
 }

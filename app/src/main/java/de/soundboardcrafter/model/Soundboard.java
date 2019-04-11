@@ -74,13 +74,6 @@ public class Soundboard implements Serializable {
     }
 
     /**
-     * Clears all sounds, so the list of sounds is empty afterwards.
-     */
-    public void clearSounds() {
-        sounds.clear();
-    }
-
-    /**
      * Removes this sound from the soundboard.
      */
     public void removeSound(int index) {

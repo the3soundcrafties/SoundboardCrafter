@@ -36,7 +36,6 @@ import static java.util.stream.Collectors.toList;
 @WorkerThread
 public class SoundboardDao {
     private static SoundboardDao instance;
-    private final static String TAG = SoundboardDao.class.getName();
     private final SQLiteDatabase database;
 
     public static SoundboardDao getInstance(final Context context) {
@@ -86,9 +85,11 @@ public class SoundboardDao {
             ArrayList<Sound> sounds = new ArrayList<>();
             File automaticCreatedDir = new File(directory.getAbsolutePath() + "/automatic_created_dir");
             automaticCreatedDir.mkdir();
+            // TODO What if mkdir did not succeed?
             for (File notInSubdirectoryFile : notInSubdirectory) {
                 File to = new File(automaticCreatedDir.getAbsolutePath() + "/" + notInSubdirectoryFile.getName());
                 notInSubdirectoryFile.renameTo(to);
+                // TODO What if renameTo did not succeed?
                 sounds.add(createSound(to));
             }
             Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds);
@@ -217,9 +218,8 @@ public class SoundboardDao {
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
     public Sound findSound(UUID soundId) {
-        SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
-                new String[]{soundId.toString()});
-        try {
+        try (SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
+                new String[]{soundId.toString()})) {
             if (!cursor.moveToNext()) {
                 throw new IllegalStateException("No sound with ID " + soundId);
             }
@@ -230,8 +230,6 @@ public class SoundboardDao {
             }
 
             return res;
-        } finally {
-            cursor.close();
         }
     }
 

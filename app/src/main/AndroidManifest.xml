@@ -28,7 +28,7 @@
         <service android:name=".activity.common.mediaplayer.MediaPlayerService" />
         <activity
             android:name=".activity.sound.edit.SoundEditActivity"
-            android:parentActivityName=".activity.soundboard.play.MainActivity"></activity>
+            android:parentActivityName=".activity.soundboard.play.MainActivity" />
     </application>
 
 </manifest>
