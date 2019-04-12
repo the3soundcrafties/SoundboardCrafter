@@ -29,7 +29,7 @@ class FullJoinSoundboardCursorWrapper {
                 + "FROM " + SoundboardTable.NAME + " sb "
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
                 + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " "
-                + "JOIN " + SoundTable.NAME + " s "
+                + "LEFT JOIN " + SoundTable.NAME + " s "
                 + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID + " " //
                 + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX;
     }
