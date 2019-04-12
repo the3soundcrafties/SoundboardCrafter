@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,15 +101,25 @@ public class MainActivity extends AppCompatActivity
         pager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(pager);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("");
-
         if (savedInstanceState != null) {
             @Nullable String selectedSoundboardIdString = savedInstanceState.getString(KEY_SELECTED_SOUNDBOARD_ID);
 
             selectedSoundboardId = selectedSoundboardIdString != null ?
                     UUID.fromString(selectedSoundboardIdString) : null;
         }
+
+        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                @Nullable UUID tmp = pagerAdapter.getSoundboardId(position);
+                if (tmp != null) {
+                    selectedSoundboardId = tmp;
+                }
+            }
+        });
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("");
     }
 
     private void bindService() {
@@ -175,8 +186,8 @@ public class MainActivity extends AppCompatActivity
             return SoundboardFragment.createTab(soundboardList.get(position));
         }
 
-        void addSoundboard(Soundboard soundboard) {
-            soundboardList.add(soundboard);
+        void addSoundboards(Collection<Soundboard> soundboards) {
+            soundboardList.addAll(soundboards);
             notifyDataSetChanged();
         }
 
@@ -199,6 +210,20 @@ public class MainActivity extends AppCompatActivity
             }
 
             return null;
+        }
+
+        /**
+         * Returns the soundboard ID at this index - or <code>null</code>, if the index
+         * was invalid.
+         */
+        @Nullable
+        UUID getSoundboardId(int index) {
+            @Nullable Soundboard soundboard = getSoundboard(index);
+            if (soundboard == null) {
+                return null;
+            }
+
+            return soundboard.getId();
         }
 
         /**
@@ -280,9 +305,9 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
 
         int selectedTab = pager.getCurrentItem();
-        @Nullable Soundboard selectedSoundboard = pagerAdapter.getSoundboard(selectedTab);
-        @Nullable String selectedSoundboardIdString = selectedSoundboard != null ?
-                selectedSoundboard.getId().toString() : null;
+        @Nullable UUID selectedSoundboardId = pagerAdapter.getSoundboardId(selectedTab);
+        @Nullable String selectedSoundboardIdString = selectedSoundboardId != null ?
+                selectedSoundboardId.toString() : null;
 
         outState.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardIdString);
     }
@@ -340,9 +365,7 @@ public class MainActivity extends AppCompatActivity
                 // will be of no use to anyone
                 return;
             }
-            for (Soundboard soundboard : soundboards) {
-                pagerAdapter.addSoundboard(soundboard);
-            }
+            pagerAdapter.addSoundboards(soundboards);
 
             @Nullable Integer index = null;
             if (selectedSoundboardId != null) {
@@ -403,9 +426,14 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
 
-            for (Soundboard soundboard : soundboards) {
-                pagerAdapter.addSoundboard(soundboard);
+            pagerAdapter.addSoundboards(soundboards);
+
+            @Nullable Integer index = null;
+            if (selectedSoundboardId != null) {
+                index = pagerAdapter.getIndex(selectedSoundboardId);
             }
+
+            pager.setCurrentItem(index != null ? index : 0, false);
         }
 
     }
