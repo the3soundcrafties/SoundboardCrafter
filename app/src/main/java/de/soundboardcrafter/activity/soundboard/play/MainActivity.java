@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,6 +44,7 @@ import de.soundboardcrafter.model.Soundboard;
 public class MainActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback {
     private static final String TAG = MainActivity.class.getName();
+    private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
@@ -50,6 +52,9 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     private MediaPlayerService mediaPlayerService;
+    private ViewPager pager;
+    private @Nullable
+    UUID selectedSoundboardId;
 
     @Override
     @UiThread
@@ -89,14 +94,21 @@ public class MainActivity extends AppCompatActivity
         // TODO Necessary?! Also done in onResume()
         bindService();
 
-
-        ViewPager pager = findViewById(R.id.viewPager);
+        pager = findViewById(R.id.viewPager);
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(pager);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
+
+        if (savedInstanceState != null) {
+            @Nullable String selectedSoundboardIdString = savedInstanceState.getString(KEY_SELECTED_SOUNDBOARD_ID);
+
+            selectedSoundboardId = selectedSoundboardIdString != null ?
+                    UUID.fromString(selectedSoundboardIdString) : null;
+        }
     }
 
     private void bindService() {
@@ -174,6 +186,34 @@ public class MainActivity extends AppCompatActivity
             return soundboardList.get(position).getName();
         }
 
+        /**
+         * Returns the index of the soundboard with the given ID - or <code>null</code>,
+         * if no soundboard with this ID exists.
+         */
+        @Nullable
+        Integer getIndex(UUID soundboardId) {
+            for (int index = 0; index < getCount(); index++) {
+                if (soundboardList.get(index).getId().equals(soundboardId)) {
+                    return index;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Returns the soundboard at this index - or <code>null</code>, if the index
+         * was invalid.
+         */
+        @Nullable
+        Soundboard getSoundboard(int index) {
+            if (index >= getCount()) {
+                return null;
+            }
+
+            return soundboardList.get(index);
+        }
+
         @Override
         public int getCount() {
             return soundboardList.size();
@@ -235,6 +275,18 @@ public class MainActivity extends AppCompatActivity
         return mediaPlayerService;
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        int selectedTab = pager.getCurrentItem();
+        @Nullable Soundboard selectedSoundboard = pagerAdapter.getSoundboard(selectedTab);
+        @Nullable String selectedSoundboardIdString = selectedSoundboard != null ?
+                selectedSoundboard.getId().toString() : null;
+
+        outState.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardIdString);
+    }
+
     /**
      * A background task, used to retrieve soundboards from the database.
      */
@@ -292,6 +344,12 @@ public class MainActivity extends AppCompatActivity
                 pagerAdapter.addSoundboard(soundboard);
             }
 
+            @Nullable Integer index = null;
+            if (selectedSoundboardId != null) {
+                index = pagerAdapter.getIndex(selectedSoundboardId);
+            }
+
+            pager.setCurrentItem(index != null ? index : 0, false);
         }
     }
 
