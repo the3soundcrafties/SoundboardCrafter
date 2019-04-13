@@ -192,6 +192,7 @@ public class MainActivity extends AppCompatActivity
 
         void addSoundboards(Collection<Soundboard> soundboards) {
             soundboardList.addAll(soundboards);
+            soundboardList.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
             notifyDataSetChanged();
         }
 
