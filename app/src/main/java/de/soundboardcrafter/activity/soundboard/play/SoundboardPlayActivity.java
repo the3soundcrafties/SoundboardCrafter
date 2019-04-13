@@ -43,9 +43,9 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * The main activity, showing the soundboards.
  */
-public class MainActivity extends AppCompatActivity
+public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback {
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
 
     private static final String DIALOG_RESET_ALL = "DialogResetAll";

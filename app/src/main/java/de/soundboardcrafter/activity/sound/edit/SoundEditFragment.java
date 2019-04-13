@@ -27,7 +27,7 @@ import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
-import de.soundboardcrafter.activity.soundboard.play.MainActivity;
+import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 
@@ -103,7 +103,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         // The result will be the sound id, so that the calling
         // activity can update its GUI for this sound.
-        Intent intent = new Intent(getActivity(), MainActivity.class);
+        Intent intent = new Intent(getActivity(), SoundboardPlayActivity.class);
         intent.putExtra(EXTRA_SOUND_ID, soundId.toString());
         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboardId.toString());
         getActivity().setResult(
