@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.common.collect.ImmutableList;
@@ -96,6 +97,17 @@ public class MainActivity extends AppCompatActivity
         bindService();
 
         pager = findViewById(R.id.viewPager);
+        pager.clearOnPageChangeListeners();
+        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                @Nullable UUID tmp = pagerAdapter.getSoundboardId(position);
+                if (tmp != null) {
+                    selectedSoundboardId = tmp;
+                }
+            }
+        });
+
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
@@ -108,18 +120,10 @@ public class MainActivity extends AppCompatActivity
                     UUID.fromString(selectedSoundboardIdString) : null;
         }
 
-        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                @Nullable UUID tmp = pagerAdapter.getSoundboardId(position);
-                if (tmp != null) {
-                    selectedSoundboardId = tmp;
-                }
-            }
-        });
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void bindService() {
