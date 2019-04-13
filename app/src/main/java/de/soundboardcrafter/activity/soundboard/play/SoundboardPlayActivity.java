@@ -190,6 +190,11 @@ public class SoundboardPlayActivity extends AppCompatActivity
             return SoundboardFragment.createTab(soundboardList.get(position));
         }
 
+        /**
+         * add Soundboards to the soundboardlist and refreshes the soundboardplaylistview
+         *
+         * @param soundboards
+         */
         void addSoundboards(Collection<Soundboard> soundboards) {
             soundboardList.addAll(soundboards);
             soundboardList.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
