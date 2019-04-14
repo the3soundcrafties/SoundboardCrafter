@@ -212,9 +212,14 @@ public class MediaPlayerService extends Service {
         Intent notificationIntent =
                 new Intent(this, MainActivity.class);
 
-        // TODO Klick on the notification returns to the main activity -
+        // TODO Click on the notification returns to the main activity -
         // even if the user is currently in a different activity.
         // How can we just return TO THE APP?
+
+        // notificationIntent.setFlags( ?!
+        // PendingIntent.FLAG?!
+        //Intent.FLAG?!
+
 
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this, 0, notificationIntent, 0);
