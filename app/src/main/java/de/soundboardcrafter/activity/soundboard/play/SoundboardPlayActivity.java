@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -47,7 +49,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback {
     private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
-
+    private static final String SHARED_PREFERENCES = SoundboardPlayActivity.class.getName() + "_Prefs";
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -115,14 +117,27 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         if (savedInstanceState != null) {
             @Nullable String selectedSoundboardIdString = savedInstanceState.getString(KEY_SELECTED_SOUNDBOARD_ID);
-
             selectedSoundboardId = selectedSoundboardIdString != null ?
                     UUID.fromString(selectedSoundboardIdString) : null;
         }
-
+        if (selectedSoundboardId == null && getIntent() != null) {
+            String selectedSoundboardIdIntent = getIntent().getStringExtra(SoundboardListItemRow.EXTRA_SOUNDBOARD_ID);
+            if (selectedSoundboardIdIntent != null) {
+                selectedSoundboardId = UUID.fromString(selectedSoundboardIdIntent);
+            }
+        }
+        if (selectedSoundboardId == null) {
+            SharedPreferences pref = getApplicationContext().getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+            String selectedSoundboardIdPref = pref.getString(KEY_SELECTED_SOUNDBOARD_ID, null);
+            if (selectedSoundboardIdPref != null) {
+                selectedSoundboardId = UUID.fromString(selectedSoundboardIdPref);
+                pref.edit().remove(KEY_SELECTED_SOUNDBOARD_ID);
+            }
+        }
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
-
+        Intent parent = getParentActivityIntent();
+        String par = parent.toString();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -311,14 +326,23 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        if (selectedSoundboardId != null) {
+            editor.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId.toString());
+        }
+        editor.commit();
+    }
+
+    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
         int selectedTab = pager.getCurrentItem();
         @Nullable UUID selectedSoundboardId = pagerAdapter.getSoundboardId(selectedTab);
         @Nullable String selectedSoundboardIdString = selectedSoundboardId != null ?
                 selectedSoundboardId.toString() : null;
-
         outState.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardIdString);
     }
 

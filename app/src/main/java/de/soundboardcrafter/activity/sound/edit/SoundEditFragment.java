@@ -41,7 +41,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     public static final String EXTRA_SOUND_ID = "soundId";
-    private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
+    public static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
 
     private Sound sound;
 
