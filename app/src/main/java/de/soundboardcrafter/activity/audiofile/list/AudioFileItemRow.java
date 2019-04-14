@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.sound.list;
+package de.soundboardcrafter.activity.audiofile.list;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -39,8 +39,8 @@ class AudioFileItemRow extends RelativeLayout {
     void setAudioFile(AudioModel audioFile) {
         this.audioFile = audioFile;
         String name = audioFile.getName();
-        if (name.length() > 40) {
-            name = audioFile.getName().substring(0, 40) + "...";
+        if (name.length() > 35) {
+            name = audioFile.getName().substring(0, 35) + "...";
         }
         audioName.setText(name);
         audioArtist.setText(audioFile.getArtist());

@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.sound.list;
+package de.soundboardcrafter.activity.audiofile.list;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,15 +16,15 @@ import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
  */
 class AudioFileListItemAdapter extends BaseAdapter {
     private static final String TAG = AudioFileListItemAdapter.class.getName();
-    private List<AudioModel> sounds = new ArrayList<>();
+    private List<AudioModel> audioFiles = new ArrayList<>();
 
-    AudioFileListItemAdapter(List<AudioModel> sounds) {
-        this.sounds = sounds;
+    AudioFileListItemAdapter(List<AudioModel> audioFiles) {
+        this.audioFiles = audioFiles;
     }
 
     @Override
     public int getCount() {
-        return sounds.size();
+        return audioFiles.size();
     }
 
     @Override
@@ -34,7 +34,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
 
     @Override
     public AudioModel getItem(int position) {
-        return sounds.get(position);
+        return audioFiles.get(position);
     }
 
     @Override
@@ -44,7 +44,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
             convertView = new AudioFileItemRow(parent.getContext());
         }
         AudioFileItemRow itemRow = (AudioFileItemRow) convertView;
-        itemRow.setAudioFile(sounds.get(position));
+        itemRow.setAudioFile(audioFiles.get(position));
         return convertView;
     }
 }

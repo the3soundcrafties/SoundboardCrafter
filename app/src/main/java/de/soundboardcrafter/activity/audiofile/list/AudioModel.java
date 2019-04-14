@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.sound.list;
+package de.soundboardcrafter.activity.audiofile.list;
 
 public class AudioModel {
 
@@ -27,15 +27,15 @@ public class AudioModel {
         return album;
     }
 
-    public void setAlbum(String album) {
+    void setAlbum(String album) {
         this.album = album;
     }
 
-    public String getArtist() {
+    String getArtist() {
         return artist;
     }
 
-    public void setArtist(String artist) {
+    void setArtist(String artist) {
         this.artist = artist;
     }
 }

@@ -20,8 +20,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
-import de.soundboardcrafter.activity.sound.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**

@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.sound.list;
+package de.soundboardcrafter.activity.audiofile.list;
 
 import android.content.Context;
 import android.database.Cursor;
