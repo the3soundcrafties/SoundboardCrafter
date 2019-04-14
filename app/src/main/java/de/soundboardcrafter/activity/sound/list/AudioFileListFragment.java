@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.soundboard.list;
+package de.soundboardcrafter.activity.sound.list;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -22,40 +22,38 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.dao.SoundboardDao;
-import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Shows Soundboard in a Grid
  */
-public class SoundboardListFragment extends Fragment {
-    private static final String TAG = SoundboardListFragment.class.getName();
+public class AudioFileListFragment extends Fragment {
+    private static final String TAG = AudioFileListFragment.class.getName();
     private ListView listView;
-    private SoundboardListItemAdapter adapter;
+    private AudioFileListItemAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+        new FindAudioFileTask(getContext()).execute();
     }
 
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_soundboard_list,
+        View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
-        listView = rootView.findViewById(R.id.listview_soundboard);
+        listView = rootView.findViewById(R.id.listview_audiofile);
 
         return rootView;
     }
 
 
     @UiThread
-    private void initSoundboardItemAdapter(ImmutableList<Soundboard> soundboards) {
-        List<Soundboard> list = Lists.newArrayList(soundboards);
+    private void initAudioFileListItemAdapter(ImmutableList<AudioModel> audioFiles) {
+        List<AudioModel> list = Lists.newArrayList(audioFiles);
         list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
-        adapter = new SoundboardListItemAdapter(list);
+        adapter = new AudioFileListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();
     }
@@ -71,49 +69,39 @@ public class SoundboardListFragment extends Fragment {
     /**
      * A background task, used to retrieve soundboards from the database.
      */
-    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
-        private final String TAG = SoundboardListFragment.FindSoundboardsTask.class.getName();
+    class FindAudioFileTask extends AsyncTask<Void, Void, ImmutableList<AudioModel>> {
+        private final String TAG = FindAudioFileTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
 
-        FindSoundboardsTask(Context context) {
+        FindAudioFileTask(Context context) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
         }
 
         @Override
         @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
+        protected ImmutableList<AudioModel> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
 
-            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
+            AudioLoader audioLoader = new AudioLoader();
 
-            Log.d(TAG, "Loading soundboards...");
+            Log.d(TAG, "Loading sounds...");
 
-            ImmutableList<Soundboard> res = soundboardDao.findAll();
+            ImmutableList<AudioModel> res = audioLoader.getAllAudioFromDevice(appContext);
 
-            if (res.isEmpty()) {
-                Log.d(TAG, "No soundboards found.");
-                Log.d(TAG, "Insert some dummy data...");
-
-                soundboardDao.insertDummyData();
-
-                Log.d(TAG, "...and load the soundboards again");
-                res = soundboardDao.findAll();
-            }
-
-            Log.d(TAG, "Soundboards loaded.");
+            Log.d(TAG, "Sounds loaded.");
 
             return res;
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
+        protected void onPostExecute(ImmutableList<AudioModel> audioFiles) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -121,7 +109,7 @@ public class SoundboardListFragment extends Fragment {
                 // will be of no use to anyone
                 return;
             }
-            initSoundboardItemAdapter(soundboards);
+            initAudioFileListItemAdapter(audioFiles);
         }
     }
 

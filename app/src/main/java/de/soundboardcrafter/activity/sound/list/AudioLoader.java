@@ -6,16 +6,20 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class AudioLoader {
-    public List<AudioModel> getAllAudioFromDevice(final Context context) {
+class AudioLoader {
+    ImmutableList<AudioModel> getAllAudioFromDevice(final Context context) {
 
         final List<AudioModel> tempAudioList = new ArrayList<>();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.AudioColumns.DATA, MediaStore.Audio.AudioColumns.ALBUM, MediaStore.Audio.ArtistColumns.ARTIST,};
+        String[] projection = {MediaStore.Audio.AudioColumns.DATA,
+                MediaStore.Audio.AudioColumns.TITLE,
+                MediaStore.Audio.AudioColumns.ALBUM, MediaStore.Audio.ArtistColumns.ARTIST,};
 //        Cursor c = context.getContentResolver().query(uri, projection, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%yourFolderName%"}, null);
         Cursor c = context.getContentResolver().query(uri,
                 projection,
@@ -27,10 +31,9 @@ public class AudioLoader {
 
                 AudioModel audioModel = new AudioModel();
                 String path = c.getString(0);
-                String album = c.getString(1);
-                String artist = c.getString(2);
-
-                String name = path.substring(path.lastIndexOf("/") + 1);
+                String name = c.getString(1);
+                String album = c.getString(2);
+                String artist = c.getString(3);
 
                 audioModel.setName(name);
                 audioModel.setAlbum(album);
@@ -45,6 +48,6 @@ public class AudioLoader {
             c.close();
         }
 
-        return tempAudioList;
+        return ImmutableList.copyOf(tempAudioList);
     }
 }

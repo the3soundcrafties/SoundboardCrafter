@@ -21,7 +21,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
-import de.soundboardcrafter.activity.sound.list.SoundListFragment;
+import de.soundboardcrafter.activity.sound.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     public enum Page {
         GAMES(R.string.games_tab_title, GameListFragment::new),
         SOUNDBOARDS(R.string.soundboards_tab_title, SoundboardListFragment::new),
-        SOUNDS(R.string.sounds_tab_title, SoundListFragment::new);
+        SOUNDS(R.string.sounds_tab_title, AudioFileListFragment::new);
 
         public final int title;
         public final Supplier<Fragment> createNew;
