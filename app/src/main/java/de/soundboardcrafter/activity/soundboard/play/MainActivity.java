@@ -70,18 +70,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     @UiThread
     public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "MediaPlayerService is disconnected");
+
         // TODO What to do on Service Disconnected?
     }
 
     @Override
     @UiThread
     public void onBindingDied(ComponentName name) {
+        Log.d(TAG, "MediaPlayerService is has died");
+
         // TODO What to do on Service Died?
     }
 
     @Override
     @UiThread
     public void onNullBinding(ComponentName name) {
+        Log.d(TAG, "MediaPlayerService has null binding");
+
         // TODO What to do on Null Binding?
     }
 

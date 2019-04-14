@@ -31,6 +31,10 @@ public class MediaPlayerService extends Service {
 
     private final IBinder binder = new Binder();
     private final HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
+    private @Nullable
+    PowerManager.WakeLock wakeLock;
+
+    private static final String WAKE_LOG_TAG = "SoundboardCrafter:MediaPlayerService.playing";
 
     @MainThread
     public MediaPlayerService() {
@@ -40,7 +44,7 @@ public class MediaPlayerService extends Service {
     @Override
     @UiThread
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return Service.START_NOT_STICKY;
+        return Service.START_STICKY;
     }
 
     @Nullable
@@ -108,6 +112,8 @@ public class MediaPlayerService extends Service {
                 entryIt.remove();
             }
         }
+
+        releaseWakeLockIfLastPlayingHasStopped();
     }
 
     /**
@@ -120,6 +126,7 @@ public class MediaPlayerService extends Service {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             stop(player);
+            releaseWakeLockIfLastPlayingHasStopped();
         }
     }
 
@@ -135,6 +142,20 @@ public class MediaPlayerService extends Service {
     private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
         mediaPlayer.release();
         mediaPlayers.values().remove(mediaPlayer);
+        releaseWakeLockIfLastPlayingHasStopped();
+    }
+
+    private void releaseWakeLockIfLastPlayingHasStopped() {
+        if (mediaPlayers.isEmpty()) {
+            releaseWakeLock();
+        }
+    }
+
+    private void releaseWakeLock() {
+        if (wakeLock != null) {
+            wakeLock.release();
+            wakeLock = null;
+        }
     }
 
     public class Binder extends android.os.Binder {
@@ -167,6 +188,14 @@ public class MediaPlayerService extends Service {
         }
 
         mediaPlayer.prepareAsync();
+
+        // Keep CPU up as long as something is playing
+        if (wakeLock == null) {
+            PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    WAKE_LOG_TAG);
+            wakeLock.acquire();
+        }
     }
 
     /**
@@ -260,6 +289,9 @@ public class MediaPlayerService extends Service {
             player.release();
             playerIt.remove();
         }
+
+        releaseWakeLock();
+
         super.onDestroy();
     }
 }
