@@ -42,7 +42,7 @@ public class MediaPlayerService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "mediaPlayerNotificationChannel";
 
     private static final int ONGOING_NOTIFICATION_ID = 1;
-    private static final int MAX_NOTIFICATION_LENGTH = 40;
+    private static final int MAX_NOTIFICATION_LENGTH = 60;
 
     /**
      * The interface through which other components can interact with the service
