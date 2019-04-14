@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     @UiThread
     public void onBindingDied(ComponentName name) {
-        Log.d(TAG, "MediaPlayerService is has died");
+        Log.d(TAG, "MediaPlayerService binding has died");
 
         // TODO What to do on Service Died?
     }

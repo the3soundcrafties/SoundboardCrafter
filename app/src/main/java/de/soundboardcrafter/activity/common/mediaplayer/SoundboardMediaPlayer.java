@@ -7,6 +7,12 @@ import java.io.Serializable;
 import androidx.annotation.Nullable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
+    /**
+     * Name of the sound that's currently played - or the last sound played.
+     */
+    private @Nullable
+    String soundName;
+
     @FunctionalInterface
     public interface OnPlayingStopped extends Serializable {
         void stop();
@@ -17,6 +23,21 @@ public class SoundboardMediaPlayer extends MediaPlayer {
 
     SoundboardMediaPlayer() {
         super();
+    }
+
+    /**
+     * Sets the name of the sound that's currently played - or the last sound played.
+     */
+    void setSoundName(String soundName) {
+        this.soundName = soundName;
+    }
+
+    /**
+     * Returns the name of the sound that's currently played - or the last sound played.
+     */
+    @Nullable
+    String getSoundName() {
+        return soundName;
     }
 
     @Override

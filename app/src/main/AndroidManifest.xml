@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -25,7 +26,10 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".activity.common.mediaplayer.MediaPlayerService" />
+        <service
+            android:name=".activity.common.mediaplayer.MediaPlayerService"
+            android:exported="false"
+            android:description="@string/media_player_service_description" />
         <activity
             android:name=".activity.sound.edit.SoundEditActivity"
             android:parentActivityName=".activity.soundboard.play.MainActivity" />

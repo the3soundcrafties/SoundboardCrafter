@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name" translatable="false">Soundboard Crafter</string>
+    <string name="media_player_service_description">Plays sounds for the Soundboard Crafter</string>
+    <string name="media_player_notification_channel_name">Soundboard Crafter Sounds</string>
+    <string name="media_player_notification_channel_description">Sounds played by the Soundboard Crafter</string>
+    <string name="media_player_notification_title">Playing</string>
+    <plurals name="media_player_notification_default_text">
+        <item quantity="one">1 sound</item>
+        <item quantity="other">%d sounds</item>
+    </plurals>
     <string name="toolbar_menu_reset_all">Reset all</string>
     <string name="context_menu_edit_sound">Edit</string>
     <string name="context_menu_remove_sound">Remove</string>
