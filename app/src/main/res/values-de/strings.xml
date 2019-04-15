@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="media_player_service_description">Spielt die Sounds für den Soundboard Crafter ab</string>
+    <string name="media_player_notification_channel_name">Soundboard Crafter: Sounds</string>
+    <string name="media_player_notification_channel_description">Sounds, die der Soundboard Crafter abspielt</string>
+    <string name="media_player_notification_title">Spielt</string>
+    <plurals name="media_player_notification_default_text">
+        <item quantity="one">1 Sound</item>
+        <item quantity="other">%d Sounds</item>
+    </plurals>
     <string name="toolbar_menu_reset_all">Alles zurücksetzen</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>

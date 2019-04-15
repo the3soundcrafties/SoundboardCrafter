@@ -1,9 +1,14 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -18,6 +23,10 @@ import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.soundboard.play.MainActivity;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -26,32 +35,56 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Android service that keeps track off all the media players that are playing sounds in the app.
  */
+@MainThread
 public class MediaPlayerService extends Service {
     private static final String TAG = MediaPlayerService.class.getName();
 
+    private static final String NOTIFICATION_CHANNEL_ID = "mediaPlayerNotificationChannel";
+
+    private static final int ONGOING_NOTIFICATION_ID = 1;
+    private static final int MAX_NOTIFICATION_LENGTH = 60;
+
+    /**
+     * The interface through which other components can interact with the service
+     */
     private final IBinder binder = new Binder();
+
     private final HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
 
-    @MainThread
     public MediaPlayerService() {
         Log.d(TAG, "MediaPlayerService is created");
     }
 
     @Override
-    @UiThread
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return Service.START_NOT_STICKY;
+        createNotificationChanel();
+
+        return Service.START_STICKY;
+    }
+
+    private void createNotificationChanel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+                    getString(R.string.media_player_notification_channel_name),
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(getString(R.string.media_player_notification_channel_description));
+            /*
+            NotificationManager notificationManager =
+                    getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+            */
+
+            NotificationManagerCompat.from(this)
+                    .createNotificationChannel(channel);
+        }
     }
 
     @Nullable
     @Override
-    @UiThread
     public IBinder onBind(Intent intent) {
         return binder;
     }
 
-
-    @UiThread
     public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
                                     SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
@@ -63,7 +96,6 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this sound.
      */
-    @UiThread
     public void setVolumePercentage(UUID soundId, int volumePercentage) {
         checkNotNull(soundId, "soundId is null");
 
@@ -73,7 +105,6 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this sound.
      */
-    @UiThread
     private void setVolume(UUID soundId, float volume) {
         checkNotNull(soundId, "soundId is null");
 
@@ -86,7 +117,6 @@ public class MediaPlayerService extends Service {
     /**
      * Stops all playing sounds in these soundboards
      */
-    @UiThread
     public void stopPlaying(Iterable<Soundboard> soundboards) {
         for (Soundboard soundboard : soundboards) {
             stopPlaying(soundboard);
@@ -96,7 +126,6 @@ public class MediaPlayerService extends Service {
     /**
      * Stops all playing sounds in this soundboard
      */
-    @UiThread
     private void stopPlaying(@NonNull Soundboard soundboard) {
         for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
              mediaPlayers.entrySet().iterator(); entryIt.hasNext(); ) {
@@ -108,12 +137,13 @@ public class MediaPlayerService extends Service {
                 entryIt.remove();
             }
         }
+
+        updateNotificationAndForegroundService();
     }
 
     /**
      * Stops this sound when it's played in this soundboard
      */
-    @UiThread
     public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
@@ -131,12 +161,15 @@ public class MediaPlayerService extends Service {
         removeMediaPlayer(player);
     }
 
-    @UiThread
     private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
         mediaPlayer.release();
         mediaPlayers.values().remove(mediaPlayer);
+        updateNotificationAndForegroundService();
     }
 
+    /**
+     * The interface through which other components can interact with the service.
+     */
     public class Binder extends android.os.Binder {
         @UiThread
         public MediaPlayerService getService() {
@@ -147,7 +180,6 @@ public class MediaPlayerService extends Service {
     /**
      * Adds a media player and starts playing.
      */
-    @UiThread
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         checkNotNull(sound, "sound is null");
@@ -167,13 +199,74 @@ public class MediaPlayerService extends Service {
         }
 
         mediaPlayer.prepareAsync();
+
+        updateNotificationAndForegroundService();
+    }
+
+    private void updateNotificationAndForegroundService() {
+        if (mediaPlayers.isEmpty()) {
+            stopForeground(true);
+            return;
+        }
+
+        Intent notificationIntent =
+                new Intent(this, MainActivity.class);
+
+        // TODO Click on the notification returns to the main activity -
+        // even if the user is currently in a different activity.
+        // How can we just return TO THE APP?
+
+        // notificationIntent.setFlags( ?!
+        // PendingIntent.FLAG?!
+        //Intent.FLAG?!
+
+
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        CharSequence summary = buildSummaryForNotification();
+
+        Notification notification =
+                new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                        .setSmallIcon(R.drawable.ic_media_player_notification_icon)
+                        .setContentTitle(getString(R.string.media_player_notification_title))
+                        .setContentText(summary)
+                        .setContentIntent(pendingIntent)
+                        .setChannelId(NOTIFICATION_CHANNEL_ID)
+                        .setPriority(NotificationCompat.PRIORITY_LOW)
+                        .setTicker(summary)
+                        .build();
+
+        // Without this, the service will be killed shortly when the
+        // user leaves the app and closes the devices
+        startForeground(ONGOING_NOTIFICATION_ID, notification);
+    }
+
+    private CharSequence buildSummaryForNotification() {
+        StringBuilder res = new StringBuilder();
+        for (SoundboardMediaPlayer player : mediaPlayers.values()) {
+            if (res.length() > 0) {
+                res.append(", ");
+            }
+
+            res.append(player.getSoundName());
+
+            if (res.length() > MAX_NOTIFICATION_LENGTH) {
+                int numSoundsPlaying = mediaPlayers.size();
+                return getResources().getQuantityString(
+                        R.plurals.media_player_notification_default_text,
+                        numSoundsPlaying, numSoundsPlaying);
+            }
+        }
+
+        return res;
     }
 
     /**
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
      */
-    @UiThread
     private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
+        mediaPlayer.setSoundName(sound.getName());
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
         try {
@@ -195,13 +288,11 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this <code>mediaPlayer</code>.
      */
-    @UiThread
     private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
         checkNotNull(mediaPlayer, "mediaPlayer is null");
         mediaPlayer.setVolume(volume, volume);
     }
 
-    @UiThread
     public boolean isPlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
@@ -211,7 +302,6 @@ public class MediaPlayerService extends Service {
                 .anyMatch(SoundboardMediaPlayer::isPlaying);
     }
 
-    @UiThread
     public boolean isPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
@@ -219,7 +309,6 @@ public class MediaPlayerService extends Service {
         return isPlaying(soundboard, sound.getId());
     }
 
-    @UiThread
     private boolean isPlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
                 new MediaPlayerSearchId(soundboard.getId(), soundId));
@@ -232,12 +321,10 @@ public class MediaPlayerService extends Service {
     /**
      * Called when MediaPlayer is ready
      */
-    @UiThread
     private void onPrepared(MediaPlayer player) {
         player.start();
     }
 
-    @UiThread
     private boolean onError(SoundboardMediaPlayer player, int what, int extra) {
         Log.e(TAG, "Error in media player: what: " + what + " extra: " + extra);
 
@@ -245,13 +332,11 @@ public class MediaPlayerService extends Service {
         return true;
     }
 
-    @UiThread
     private void onCompletion(SoundboardMediaPlayer player) {
         removeMediaPlayer(player);
     }
 
     @Override
-    @UiThread
     public void onDestroy() {
         for (Iterator<SoundboardMediaPlayer> playerIt =
              mediaPlayers.values().iterator(); playerIt.hasNext(); ) {
@@ -260,6 +345,9 @@ public class MediaPlayerService extends Service {
             player.release();
             playerIt.remove();
         }
+
+        updateNotificationAndForegroundService();
+
         super.onDestroy();
     }
 }
