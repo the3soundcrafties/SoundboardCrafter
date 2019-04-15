@@ -26,7 +26,7 @@ import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.soundboard.play.MainActivity;
+import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -210,7 +210,7 @@ public class MediaPlayerService extends Service {
         }
 
         Intent notificationIntent =
-                new Intent(this, MainActivity.class);
+                new Intent(this, SoundboardPlayActivity.class);
 
         // TODO Click on the notification returns to the main activity -
         // even if the user is currently in a different activity.
