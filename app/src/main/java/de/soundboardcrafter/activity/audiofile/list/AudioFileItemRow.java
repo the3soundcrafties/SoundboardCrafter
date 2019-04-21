@@ -19,7 +19,7 @@ class AudioFileItemRow extends RelativeLayout {
     private static final String TAG = AudioFileItemRow.class.getName();
 
     public interface Callback {
-        public void onEditAudioFile(AudioModel audioFile);
+        public void onEditAudioFile(AudioModelAndSound audioModelAndSound);
     }
 
     @NonNull
@@ -27,7 +27,7 @@ class AudioFileItemRow extends RelativeLayout {
     @Nonnull
     private final TextView audioArtist;
 
-    private AudioModel audioFile;
+    private AudioModelAndSound audioModelAndSound;
 
     AudioFileItemRow(Context context) {
         super(context);
@@ -43,10 +43,10 @@ class AudioFileItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setAudioFile(AudioModel audioFile, Callback callback) {
-        this.audioFile = audioFile;
-        audioName.setText(abbreviateName(audioFile.getName()));
-        audioArtist.setText(audioFile.getArtist());
+    void setAudioFile(AudioModelAndSound audioFileAndSound, Callback callback) {
+        audioModelAndSound = audioFileAndSound;
+        audioName.setText(abbreviateName(audioModelAndSound));
+        audioArtist.setText(audioModelAndSound.getAudioModel().getArtist());
 
         // TODO Choose appropriate image: + or - ?!
         /*
@@ -54,7 +54,15 @@ class AudioFileItemRow extends RelativeLayout {
         */
 
         ImageView iconAdd = findViewById(R.id.icon_add);
-        iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioFile));
+        iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
+    }
+
+    private static String abbreviateName(AudioModelAndSound audioModelAndSound) {
+        if (audioModelAndSound.getSound() == null) {
+            return abbreviateName(audioModelAndSound.getAudioModel().getName());
+        }
+
+        return abbreviateName(audioModelAndSound.getSound().getName());
     }
 
     private static String abbreviateName(String name) {

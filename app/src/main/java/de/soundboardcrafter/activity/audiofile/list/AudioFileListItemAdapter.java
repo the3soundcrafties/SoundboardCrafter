@@ -18,17 +18,17 @@ class AudioFileListItemAdapter extends BaseAdapter {
     private static final String TAG = AudioFileListItemAdapter.class.getName();
 
     private final AudioFileItemRow.Callback callback;
-    private List<AudioModel> audioFiles = new ArrayList<>();
+    private List<AudioModelAndSound> audioModelAndSounds = new ArrayList<>();
 
-    AudioFileListItemAdapter(List<AudioModel> audioFiles,
+    AudioFileListItemAdapter(List<AudioModelAndSound> audioFiles,
                              AudioFileItemRow.Callback callback) {
-        this.audioFiles = audioFiles;
+        audioModelAndSounds = audioFiles;
         this.callback = callback;
     }
 
     @Override
     public int getCount() {
-        return audioFiles.size();
+        return audioModelAndSounds.size();
     }
 
     @Override
@@ -37,8 +37,8 @@ class AudioFileListItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public AudioModel getItem(int position) {
-        return audioFiles.get(position);
+    public AudioModelAndSound getItem(int position) {
+        return audioModelAndSounds.get(position);
     }
 
     @Override
@@ -48,7 +48,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
             convertView = new AudioFileItemRow(parent.getContext());
         }
         AudioFileItemRow itemRow = (AudioFileItemRow) convertView;
-        itemRow.setAudioFile(audioFiles.get(position), callback);
+        itemRow.setAudioFile(audioModelAndSounds.get(position), callback);
         return convertView;
     }
 }

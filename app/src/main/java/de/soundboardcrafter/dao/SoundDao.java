@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -37,6 +38,22 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
+     * Finds all sounds, mapped on their respective path.
+     */
+    public ImmutableMap<String, Sound> findAllByPath() {
+        ImmutableMap.Builder<String, Sound> res = ImmutableMap.builder();
+
+        try (SoundCursorWrapper cursor = querySounds(null, new String[]{})) {
+            while (cursor.moveToNext()) {
+                Sound sound = cursor.getSound();
+                res.put(sound.getPath(), sound);
+            }
+        }
+
+        return res.build();
+    }
+
+    /**
      * Finds these sounds by their IDs.
      *
      * @throws IllegalStateException if for some id, no sound exists (or more than one)
@@ -46,20 +63,6 @@ public class SoundDao extends AbstractDao {
                 .map(this::findSound)
                 .collect(collectingAndThen(toList(), ImmutableList::copyOf));
         // TODO Use .collect(ImmutableList::toImmutableList) - why doesn't that work?
-    }
-
-    private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
-        final Cursor cursor =
-                getDatabase().query(
-                        DBSchema.SoundTable.NAME,
-                        null, // all columns
-                        whereClause, whereArgs,
-                        null,
-                        null,
-                        null
-                );
-
-        return new SoundCursorWrapper(cursor);
     }
 
     /**
@@ -81,6 +84,20 @@ public class SoundDao extends AbstractDao {
 
             return res;
         }
+    }
+
+    private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
+        final Cursor cursor =
+                getDatabase().query(
+                        DBSchema.SoundTable.NAME,
+                        null, // all columns
+                        whereClause, whereArgs,
+                        null,
+                        null,
+                        null
+                );
+
+        return new SoundCursorWrapper(cursor);
     }
 
     /**

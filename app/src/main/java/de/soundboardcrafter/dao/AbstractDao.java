@@ -41,5 +41,4 @@ abstract class AbstractDao {
             throw new RuntimeException("Could not insert into database: " + values);
         }
     }
-
 }

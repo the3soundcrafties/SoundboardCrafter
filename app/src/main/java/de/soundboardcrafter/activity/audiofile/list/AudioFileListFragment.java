@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -60,12 +61,20 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
 
     @Override
     @UiThread
-    public void onEditAudioFile(AudioModel audioFile) {
-        final Sound sound = new Sound(audioFile.getPath(), audioFile.getName());
-        new AudioFileListFragment.SaveNewSoundTask(getActivity(), sound).execute();
-        // TODO Or use existing sound, previously read from the database
+    public void onEditAudioFile(AudioModelAndSound audioModelAndSound) {
+        final Sound sound;
+        if (audioModelAndSound.getSound() == null) {
+            // Create and safe new sound
+            sound = new Sound(audioModelAndSound.getAudioModel().getPath(),
+                    audioModelAndSound.getAudioModel().getName());
+            new AudioFileListFragment.SaveNewSoundTask(getActivity(), sound).execute();
+        } else {
+            // Use existing sound
+            sound = audioModelAndSound.getSound();
+        }
 
-        Log.d(TAG, "Editing sound for audio file " + audioFile.getName());
+        Log.d(TAG, "Editing sound for audio file " +
+                audioModelAndSound.getAudioModel().getPath());
 
         Intent intent = AudiofileListSoundEditActivity.newIntent(getContext(), sound);
         startActivityForResult(intent, REQUEST_EDIT_SOUND);
@@ -91,9 +100,10 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
     }
 
     @UiThread
-    private void initAudioFileListItemAdapter(ImmutableList<AudioModel> audioFiles) {
-        List<AudioModel> list = Lists.newArrayList(audioFiles);
-        list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
+    private void initAudioFileListItemAdapter(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
+        List<AudioModelAndSound> list = Lists.newArrayList(audioFilesAndSounds);
+        list.sort((s1, s2) ->
+                s1.getAudioModel().getName().compareTo(s2.getAudioModel().getName()));
         adapter = new AudioFileListItemAdapter(list, this);
         listView.setAdapter(adapter);
         updateUI();
@@ -108,9 +118,10 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
 
 
     /**
-     * A background task, used to retrieve soundboards from the database.
+     * A background task, used to retrieve audio files from the file system
+     * and corresponding sounds from the database.
      */
-    class FindAudioFileTask extends AsyncTask<Void, Void, ImmutableList<AudioModel>> {
+    class FindAudioFileTask extends AsyncTask<Void, Void, ImmutableList<AudioModelAndSound>> {
         private final String TAG = FindAudioFileTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -122,7 +133,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
 
         @Override
         @WorkerThread
-        protected ImmutableList<AudioModel> doInBackground(Void... voids) {
+        protected ImmutableList<AudioModelAndSound> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -131,18 +142,30 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
 
             AudioLoader audioLoader = new AudioLoader();
 
-            Log.d(TAG, "Loading sounds...");
+            Log.d(TAG, "Loading audio files from file system...");
 
-            ImmutableList<AudioModel> res = audioLoader.getAllAudioFromDevice(appContext);
+            ImmutableList<AudioModel> audioModels = audioLoader.getAllAudioFromDevice(appContext);
+
+            Log.d(TAG, "Audio files loaded.");
+
+            Log.d(TAG, "Loading sounds from database...");
+
+            SoundDao soundDao = SoundDao.getInstance(appContext);
+            Map<String, Sound> soundMap = soundDao.findAllByPath();
 
             Log.d(TAG, "Sounds loaded.");
 
-            return res;
+            ImmutableList.Builder<AudioModelAndSound> res = ImmutableList.builder();
+            for (AudioModel audioModel : audioModels) {
+                res.add(new AudioModelAndSound(audioModel, soundMap.get(audioModel.getPath())));
+            }
+
+            return res.build();
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<AudioModel> audioFiles) {
+        protected void onPostExecute(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -150,7 +173,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 // will be of no use to anyone
                 return;
             }
-            initAudioFileListItemAdapter(audioFiles);
+            initAudioFileListItemAdapter(audioFilesAndSounds);
         }
     }
 
