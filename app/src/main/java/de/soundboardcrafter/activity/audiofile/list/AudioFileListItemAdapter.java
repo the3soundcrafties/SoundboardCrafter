@@ -16,10 +16,14 @@ import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
  */
 class AudioFileListItemAdapter extends BaseAdapter {
     private static final String TAG = AudioFileListItemAdapter.class.getName();
+
+    private final AudioFileItemRow.Callback callback;
     private List<AudioModel> audioFiles = new ArrayList<>();
 
-    AudioFileListItemAdapter(List<AudioModel> audioFiles) {
+    AudioFileListItemAdapter(List<AudioModel> audioFiles,
+                             AudioFileItemRow.Callback callback) {
         this.audioFiles = audioFiles;
+        this.callback = callback;
     }
 
     @Override
@@ -44,7 +48,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
             convertView = new AudioFileItemRow(parent.getContext());
         }
         AudioFileItemRow itemRow = (AudioFileItemRow) convertView;
-        itemRow.setAudioFile(audioFiles.get(position));
+        itemRow.setAudioFile(audioFiles.get(position), callback);
         return convertView;
     }
 }

@@ -33,8 +33,9 @@ import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
-import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
-import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
+import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
+import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
+import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -175,15 +176,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
 
-    @Override
-    @UiThread
-    // Called especially when the SoundEditActivity returns.
-    public void onResume() {
-        super.onResume();
-        updateUI();
-        bindService();
-    }
-
     /**
      * Starts reading the data for the UI (first time) or
      * simple ensure that the grid shows the latest information.
@@ -193,6 +185,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         if (soundboardItemAdapter != null) {
             soundboardItemAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the SoundboardPlaySoundEditActivity returns.
+    public void onResume() {
+        super.onResume();
+        updateUI();
+        bindService();
     }
 
     @UiThread
@@ -237,7 +238,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
 
-                Intent intent = SoundEditActivity.newIntent(getActivity(), sound, soundboard);
+                Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
                 startActivityForResult(intent, REQUEST_EDIT_SOUND);
                 return true;
             case R.id.context_menu_remove_sound:
@@ -311,7 +312,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Loading sounds: " + Arrays.toString(soundIds));
 
-            return SoundboardDao.getInstance(appContext).findSounds(soundIds);
+            return SoundDao.getInstance(appContext).findSounds(soundIds);
         }
 
         @Override

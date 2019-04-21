@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -15,6 +16,12 @@ import de.soundboardcrafter.R;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 class AudioFileItemRow extends RelativeLayout {
+    private static final String TAG = AudioFileItemRow.class.getName();
+
+    public interface Callback {
+        public void onEditAudioFile(AudioModel audioFile);
+    }
+
     @NonNull
     private final TextView audioName;
     @Nonnull
@@ -36,22 +43,25 @@ class AudioFileItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setAudioFile(AudioModel audioFile) {
+    void setAudioFile(AudioModel audioFile, Callback callback) {
         this.audioFile = audioFile;
-        String name = audioFile.getName();
-        if (name.length() > 35) {
-            name = audioFile.getName().substring(0, 35) + "...";
-        }
-        audioName.setText(name);
+        audioName.setText(abbreviateName(audioFile.getName()));
         audioArtist.setText(audioFile.getArtist());
 
+        // TODO Choose appropriate image: + or - ?!
+        /*
+        setImage(is...() ? R.drawable.... : R.drawable....);
+        */
 
-        setOnLongClickListener(l -> {
-            // Do NOT consume long clicks.
-            // Without this, this context menu on the list view won't work
-            return false;
-        });
+        ImageView iconAdd = findViewById(R.id.icon_add);
+        iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioFile));
     }
 
+    private static String abbreviateName(String name) {
+        if (name.length() > 35) {
+            return name.substring(0, 35) + "...";
+        }
 
+        return name;
+    }
 }

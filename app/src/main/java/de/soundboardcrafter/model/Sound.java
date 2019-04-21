@@ -53,6 +53,10 @@ public class Sound implements Serializable {
      */
     private boolean loop;
 
+    public Sound(@NonNull String path, @NonNull String name) {
+        this(UUID.randomUUID(), path, name, 100, false);
+    }
+
     public Sound(@NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
         this(UUID.randomUUID(), path, name, volumePercentage, loop);
     }

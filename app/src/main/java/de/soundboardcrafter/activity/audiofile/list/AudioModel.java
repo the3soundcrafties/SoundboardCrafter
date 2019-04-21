@@ -1,7 +1,9 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+/**
+ * An audio file data / metadata.
+ */
 public class AudioModel {
-
     private String path;
     private String name;
     private String album;
