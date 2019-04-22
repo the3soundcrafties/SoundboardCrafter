@@ -12,9 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.UUID;
@@ -41,11 +38,9 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     public static final String EXTRA_SOUND_ID = "soundId";
 
-    private Sound sound;
+    private SoundEditView soundEditView;
 
-    private TextView nameTextView;
-    private SeekBar volumePercentageSeekBar;
-    private Switch loopSwitch;
+    private Sound sound;
 
     private MediaPlayerService mediaPlayerService;
 
@@ -133,66 +128,29 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         View rootView = inflater.inflate(R.layout.fragment_sound_edit,
                 container, false);
 
-        nameTextView = rootView.findViewById(R.id.nameText);
-        nameTextView.setEnabled(false);
+        soundEditView = rootView.findViewById(R.id.edit_view);
 
-        volumePercentageSeekBar = rootView.findViewById(R.id.volumePercentageSeekBar);
-        int maxSeekBar = volumePercentageToSeekBar(Sound.MAX_VOLUME_PERCENTAGE);
-        volumePercentageSeekBar.setMax(maxSeekBar);
-        volumePercentageSeekBar.setEnabled(false);
-        volumePercentageSeekBar.setOnSeekBarChangeListener(new SeekBarVolumeUpdater());
-
-        loopSwitch = rootView.findViewById(R.id.loopSwitch);
-        loopSwitch.setEnabled(false);
+        soundEditView.setMaxVolumePercentage(Sound.MAX_VOLUME_PERCENTAGE);
+        soundEditView.setOnVolumePercentageChangeListener(new VolumeUpdater());
+        soundEditView.setEnabled(false);
 
         return rootView;
     }
-
-    private static int volumePercentageToSeekBar(int volumePercentage) {
-        if (volumePercentage <= 0) {
-            return 0;
-        }
-
-        // seekBar = log(volume)
-        return (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
-    }
-
-    private static int seekBarToVolumePercentage(int seekBar) {
-        if (seekBar <= 0) {
-            return 0;
-        }
-
-        // 2 ^ seekBar = volume
-        int res = (int) (Math.pow(10, seekBar / 1000.0) * 100.0) - 100;
-
-        if (res < 0) {
-            return 0;
-        }
-
-        if (res > Sound.MAX_VOLUME_PERCENTAGE) {
-            return Sound.MAX_VOLUME_PERCENTAGE;
-        }
-        return res;
-    }
-
 
     @UiThread
     private void updateUI(Sound sound) {
         this.sound = sound;
 
-        nameTextView.setTextKeepState(sound.getName());
-        nameTextView.setEnabled(true);
+        soundEditView.setName(sound.getName());
+        soundEditView.setVolumePercentage(sound.getVolumePercentage());
+        soundEditView.setLoop(sound.isLoop());
 
-        volumePercentageSeekBar.setProgress(volumePercentageToSeekBar(sound.getVolumePercentage()));
-        volumePercentageSeekBar.setEnabled(true);
-
-        loopSwitch.setChecked(sound.isLoop());
-        loopSwitch.setEnabled(true);
-
+        soundEditView.setEnabled(true);
     }
 
-    // TODO Show Path
-
+    /**
+     * Sets the volume; also starts the sound is so desired.
+     */
     private void setVolumePercentage(int volumePercentage, boolean playIfNotPlaying) {
         MediaPlayerService service = getService();
         if (service == null) {
@@ -228,15 +186,26 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         getActivity().unbindService(this);
 
-        String nameEntered = nameTextView.getText().toString();
+        String nameEntered = soundEditView.getName();
         if (!nameEntered.isEmpty()) {
             sound.setName(nameEntered);
         }
 
-        sound.setVolumePercentage(seekBarToVolumePercentage(volumePercentageSeekBar.getProgress()));
-        sound.setLoop(loopSwitch.isChecked());
+        sound.setVolumePercentage(soundEditView.getVolumePercentage());
+        sound.setLoop(soundEditView.isLoop());
 
         new SaveSoundTask(getActivity(), sound).execute();
+    }
+
+    /**
+     * Callback to set the volume when the volume slider ist change; also starts the sound is
+     * so desired.
+     */
+    private class VolumeUpdater implements SoundEditView.OnVolumePercentageChangeListener {
+        @Override
+        public void onVolumePercentageChanged(int volumePercentage, boolean fromUser) {
+            setVolumePercentage(volumePercentage, fromUser);
+        }
     }
 
     /**
@@ -288,26 +257,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             }
 
             updateUI(sound);
-        }
-    }
-
-    private class SeekBarVolumeUpdater implements SeekBar.OnSeekBarChangeListener {
-        private final String TAG = SeekBarVolumeUpdater.class.getName();
-
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            int volumePercentage = seekBarToVolumePercentage(progress);
-            Log.d(TAG, "SeekBar / VolumePercentage: " + progress + "\t" + volumePercentage);
-
-            setVolumePercentage(volumePercentage, fromUser);
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
         }
     }
 
