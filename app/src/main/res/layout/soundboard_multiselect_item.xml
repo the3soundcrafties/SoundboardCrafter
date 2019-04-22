@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="55dp"
+    android:orientation="vertical">
+
+    <CheckBox
+        android:id="@+id/checkbox_soundboard"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_marginLeft="13dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        android:contentDescription="Soundboard name" />
+</LinearLayout>

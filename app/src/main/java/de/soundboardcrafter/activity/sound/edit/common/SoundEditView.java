@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.sound.edit.common;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -17,6 +18,9 @@ public class SoundEditView extends ConstraintLayout {
     private TextView nameTextView;
     private Switch loopSwitch;
     private SeekBar volumePercentageSeekBar;
+
+    private ListView soundboardsListView;
+
 
     // TODO Show Path
 
@@ -69,6 +73,8 @@ public class SoundEditView extends ConstraintLayout {
         volumePercentageSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
         loopSwitch = findViewById(R.id.loopSwitch);
+
+        soundboardsListView = findViewById(R.id.soundboardsList);
 
         setEnabled(false);
     }

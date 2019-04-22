@@ -19,6 +19,7 @@
     <string name="sound_edit_sound_name_hint">Name</string>
     <string name="sound_edit_volume_label">Volume</string>
     <string name="sound_edit_loopSwitch">Loop</string>
+    <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
     <string name="games_tab_title">Games</string>

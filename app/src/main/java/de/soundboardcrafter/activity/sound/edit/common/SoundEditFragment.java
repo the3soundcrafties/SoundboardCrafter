@@ -13,7 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.common.collect.ImmutableList;
+
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -26,7 +30,9 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
+import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Activity for editing a single sound (name, volume etc.).
@@ -138,12 +144,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     }
 
     @UiThread
-    private void updateUI(Sound sound) {
-        this.sound = sound;
+    private void updateUI(SoundEditModel soundEditModel) {
+        sound = soundEditModel.getSound();
 
-        soundEditView.setName(sound.getName());
-        soundEditView.setVolumePercentage(sound.getVolumePercentage());
-        soundEditView.setLoop(sound.isLoop());
+        soundEditView.setName(soundEditModel.getSound().getName());
+        soundEditView.setVolumePercentage(soundEditModel.getSound().getVolumePercentage());
+        soundEditView.setLoop(soundEditModel.getSound().isLoop());
+
+        // TODO soundEditView. list adapter... soundEditModel...
 
         soundEditView.setEnabled(true);
     }
@@ -211,7 +219,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to load the sound from the database.
      */
-    class FindSoundTask extends AsyncTask<Void, Void, Sound> {
+    class FindSoundTask extends AsyncTask<Void, Void, SoundEditModel> {
         private final String TAG = FindSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -225,7 +233,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         @Override
         @WorkerThread
-        protected Sound doInBackground(Void... voids) {
+        protected SoundEditModel doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -236,14 +244,34 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Sound sound = SoundDao.getInstance(appContext).findSound(soundId);
 
+            // TODO We do not need all sounds here!
+            // findAllWithoutSounds()?!
+            ImmutableList<Soundboard> allSoundboards =
+                    SoundboardDao.getInstance(appContext).findAll();
+
+            Collection<UUID> mySoundboardsIds =
+                    SoundboardDao.getInstance(appContext).findSoundboardLinksBySound(sound);
+
             Log.d(TAG, "Sound loaded.");
 
-            return sound;
+            return new SoundEditModel(sound,
+                    toSelectableSoundboards(allSoundboards, mySoundboardsIds));
+        }
+
+        private List<SelectableSoundboard> toSelectableSoundboards(
+                Iterable<Soundboard> allSoundboards, Collection<UUID> mySoundboardsIds) {
+            ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
+            for (Soundboard soundboard : allSoundboards) {
+                res.add(new SelectableSoundboard(soundboard,
+                        mySoundboardsIds.contains(soundboard.getId())));
+            }
+
+            return res.build();
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(Sound sound) {
+        protected void onPostExecute(SoundEditModel soundEditModel) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -256,7 +284,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            updateUI(sound);
+            updateUI(soundEditModel);
         }
     }
 

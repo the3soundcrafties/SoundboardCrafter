@@ -2,12 +2,14 @@ package de.soundboardcrafter.dao;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,10 +98,37 @@ public class SoundboardDao extends AbstractDao {
                 soundFile.getName(), soundFile.getAbsolutePath());
     }
 
+    public Collection<UUID> findSoundboardLinksBySound(Sound sound) {
+        ImmutableList.Builder<UUID> res = ImmutableList.builder();
+
+        try (final Cursor cursor =
+                     getDatabase().query(
+                             DBSchema.SoundboardSoundTable.NAME,
+                             new String[]{SoundboardSoundTable.Cols.SOUNDBOARD_ID},
+                             SoundboardSoundTable.Cols.SOUND_ID + " = ?",
+                             new String[]{sound.getId().toString()},
+                             null,
+                             null,
+                             null)) {
+            while (cursor.moveToNext()) {
+                UUID soundboardId =
+                        UUID.fromString(cursor.getString(0));
+
+                res.add(soundboardId);
+            }
+        }
+
+        return res.build();
+    }
+
     public ImmutableList<Soundboard> findAll() {
+        Cursor rawCursor = rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString());
+        return find(rawCursor);
+    }
+
+    private ImmutableList<Soundboard> find(Cursor rawCursor) {
         final FullJoinSoundboardCursorWrapper cursor =
-                new FullJoinSoundboardCursorWrapper(
-                        rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString()));
+                new FullJoinSoundboardCursorWrapper(rawCursor);
         try {
             ImmutableList.Builder<Soundboard> res = ImmutableList.builder();
             // The same Sound shall result in the same object
