@@ -14,14 +14,12 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayoutMain"
+            style="@style/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
             android:minHeight="?actionBarSize"
             app:tabGravity="fill"
-            app:tabIndicatorColor="@color/colorPrimary"
-            app:tabIndicatorHeight="4dp"
-            app:tabBackground="@color/colorPrimary"
             app:tabMode="fixed" />
 
     </androidx.viewpager.widget.ViewPager>

@@ -9,8 +9,21 @@
     </style>
 
     <style name="MyToolbarTheme" parent="@style/ThemeOverlay.AppCompat.Dark">
-        <item name="colorControlNormal">@color/colorPrimary</item>
-        <item name="titleTextColor">@color/colorPrimary</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="tabBackground">@color/colorPrimary</item>
     </style>
 
+    <style name="tabLayout" parent="Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">@color/colorTabIndicator</item>
+        <item name="tabIndicatorHeight">3dp</item>
+        <item name="tabBackground">@color/colorPrimary</item>
+        <item name="tabTextAppearance">@style/tabTextAppearance</item>
+        <item name="tabSelectedTextColor">@color/white</item>
+    </style>
+
+    <style name="tabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textColor">@color/tabTextColor</item>
+        <item name="textAllCaps">true</item>
+    </style>
 </resources>
