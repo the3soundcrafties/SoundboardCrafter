@@ -3,62 +3,60 @@ package de.soundboardcrafter.dao;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
-import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Database Access Object for accessing Soundboards in the database
  */
 @WorkerThread
-public class SoundboardDao {
+public class SoundboardDao extends AbstractDao {
+    private SoundDao soundDao;
+
     private static SoundboardDao instance;
-    private final SQLiteDatabase database;
 
     public static SoundboardDao getInstance(final Context context) {
         if (instance == null) {
             instance = new SoundboardDao(context);
+            instance.init(context);
         }
 
         return instance;
     }
 
-    private static final Pattern ONLY_THE_INTERESTING_PARTS = Pattern.compile(".*\\s.*\\-(.*)");
-
-
     private SoundboardDao(@Nonnull Context context) {
-        Context appContext = context.getApplicationContext();
-        database = new DBHelper(appContext).getWritableDatabase();
+        super(context);
+    }
+
+    private void init(@Nonnull Context context) {
+        soundDao = SoundDao.getInstance(context);
     }
 
     public void clearDatabase() {
         unlinkAllSounds();
-        deleteAllSounds();
+        soundDao.deleteAllSounds();
 
         // TODO unlink and delete all games
 
@@ -79,12 +77,11 @@ public class SoundboardDao {
                     Sound newSound = createSound(soundFile);
                     soundList.add(newSound);
                 }
-                Soundboard soundboard = new Soundboard(firstLevelFile.getName(), soundList);
+                SoundboardWithSounds soundboard = new SoundboardWithSounds(firstLevelFile.getName(), soundList);
                 insert(soundboard);
             } else {
                 notInSubdirectory.add(firstLevelFile);
             }
-
         }
         if (!notInSubdirectory.isEmpty()) {
             ArrayList<Sound> sounds = new ArrayList<>();
@@ -97,33 +94,49 @@ public class SoundboardDao {
                 // TODO What if renameTo did not succeed?
                 sounds.add(createSound(to));
             }
-            Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds);
+            SoundboardWithSounds soundboard = new SoundboardWithSounds(automaticCreatedDir.getName(), sounds);
             insert(soundboard);
         }
-
     }
 
-    private Sound createSound(File soundFile) {
-        int volume = (new Random().nextInt(22) + 22) % Sound.MAX_VOLUME_PERCENTAGE;
+    private static Sound createSound(File soundFile) {
+        return SoundFromFileCreationUtil.createSound(
+                soundFile.getName(), soundFile.getAbsolutePath());
+    }
 
-        String name = soundFile.getName();
+    private Collection<UUID> findSoundboardLinksBySound(Sound sound) {
+        ImmutableList.Builder<UUID> res = ImmutableList.builder();
 
-        Matcher matcher = ONLY_THE_INTERESTING_PARTS.matcher(soundFile.getName());
-        if (matcher.matches()) {
-            name = matcher.group(1);
+        try (final Cursor cursor =
+                     getDatabase().query(
+                             DBSchema.SoundboardSoundTable.NAME,
+                             new String[]{SoundboardSoundTable.Cols.SOUNDBOARD_ID},
+                             SoundboardSoundTable.Cols.SOUND_ID + " = ?",
+                             new String[]{sound.getId().toString()},
+                             null,
+                             null,
+                             null)) {
+            while (cursor.moveToNext()) {
+                UUID soundboardId =
+                        UUID.fromString(cursor.getString(0));
+
+                res.add(soundboardId);
+            }
         }
 
-        name = name.substring(0, name.indexOf("."));
-
-        return new Sound(soundFile.getAbsolutePath(), name, volume, false);
+        return res.build();
     }
 
-    public ImmutableList<Soundboard> findAll() {
-        final FullJoinSoundboardCursorWrapper cursor =
-                new FullJoinSoundboardCursorWrapper(
-                        rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString()));
-        try {
-            ImmutableList.Builder<Soundboard> res = ImmutableList.builder();
+    public ImmutableList<SoundboardWithSounds> findAllWithSounds() {
+        Cursor rawCursor = rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString());
+        return find(rawCursor);
+    }
+
+
+    private ImmutableList<SoundboardWithSounds> find(Cursor rawCursor) {
+        try (final FullJoinSoundboardCursorWrapper cursor =
+                     new FullJoinSoundboardCursorWrapper(rawCursor)) {
+            ImmutableList.Builder<SoundboardWithSounds> res = ImmutableList.builder();
             // The same Sound shall result in the same object
             Map<UUID, Sound> sounds = new HashMap<>();
 
@@ -178,7 +191,7 @@ public class SoundboardDao {
                 } else {
                     if (lastSoundboardId != null) {
                         lastSounds.trimToSize();
-                        res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                        res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
                     }
 
                     lastSoundboardId = soundboardId;
@@ -199,7 +212,34 @@ public class SoundboardDao {
 
             if (lastSoundboardId != null) {
                 lastSounds.trimToSize();
-                res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+            }
+
+            return res.build();
+        }
+    }
+
+    /**
+     * Retrieves all soundboard, each with a mark, whether this sound is included.
+     */
+    ImmutableList<SelectableSoundboard> findAllSelectable(Sound sound) {
+        Cursor rawCursor = rawQueryOrThrow(SelectableSoundboardCursorWrapper.queryString(),
+                SelectableSoundboardCursorWrapper.selectionArgs(sound.getId()));
+        return findAllSelectable(rawCursor);
+    }
+
+    /**
+     * Retrieves all soundboards, each with a mark, whether this sound is included.
+     */
+    private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
+        final SelectableSoundboardCursorWrapper cursor =
+                new SelectableSoundboardCursorWrapper(rawCursor);
+
+        try {
+            final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
+
+            while (cursor.moveToNext()) {
+                res.add(cursor.getSelectableSoundboard());
             }
 
             return res.build();
@@ -208,60 +248,6 @@ public class SoundboardDao {
         }
     }
 
-    /**
-     * Finds these sounds by their IDs.
-     *
-     * @throws IllegalStateException if for some id, no sound exists (or more than one)
-     */
-    public ImmutableList<Sound> findSounds(UUID... soundIds) {
-        return Stream.of(soundIds)
-                .map(this::findSound)
-                .collect(collectingAndThen(toList(), ImmutableList::copyOf));
-        // TODO Use .collect(ImmutableList::toImmutableList) - why doesn't that work?
-    }
-
-    /**
-     * Finds a sound by ID.
-     *
-     * @throws IllegalStateException if no sound with this ID exists - or more than one
-     */
-    public Sound findSound(UUID soundId) {
-        try (SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
-                new String[]{soundId.toString()})) {
-            if (!cursor.moveToNext()) {
-                throw new IllegalStateException("No sound with ID " + soundId);
-            }
-
-            Sound res = cursor.getSound();
-            if (cursor.moveToNext()) {
-                throw new IllegalStateException("More than one sound with ID " + soundId);
-            }
-
-            return res;
-        }
-    }
-
-    private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
-        final Cursor cursor =
-                database.query(
-                        SoundTable.NAME,
-                        null, // all columns
-                        whereClause, whereArgs,
-                        null,
-                        null,
-                        null
-                );
-
-        return new SoundCursorWrapper(cursor);
-    }
-
-    private Cursor rawQueryOrThrow(String queryString) {
-        final Cursor cursor = database.rawQuery(queryString, new String[]{});
-        if (cursor == null) {
-            throw new RuntimeException("Could not query database: " + queryString);
-        }
-        return cursor;
-    }
 
     /**
      * Inserts this <code>soundboard</code> an all its sounds into the database; <i>each of the
@@ -269,12 +255,12 @@ public class SoundboardDao {
      *
      * @throws RuntimeException if inserting does not succeed
      */
-    private void insert(Soundboard soundboard) {
+    private void insert(SoundboardWithSounds soundboard) {
         insertSoundboard(soundboard.getId(), soundboard.getName());
 
         int index = 0;
         for (Sound sound : soundboard.getSounds()) {
-            insertSound(sound);
+            soundDao.insertSound(sound);
             linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
             index++;
         }
@@ -295,16 +281,70 @@ public class SoundboardDao {
         insertOrThrow(SoundboardTable.NAME, values);
     }
 
-    /**
-     * Inserts a the <code>sound</code> at this <code>position</code> in this
-     * soundboard.
-     *
-     * @throws RuntimeException if inserting does not succeed
-     */
-    private void insertSound(Sound sound) {
-        // TODO throw exception if sound name already exists
 
-        insertOrThrow(SoundTable.NAME, buildContentValues(sound));
+    /**
+     * Updates the soundboard links for this sound. The soundboards must already exist.
+     */
+    void updateLinks(SoundWithSelectableSoundboards sound) {
+        for (SelectableSoundboard selectableSoundboard : sound.getSoundboards()) {
+            updateLink(sound, selectableSoundboard);
+        }
+    }
+
+    /**
+     * Creates or deletes the soundboard link for this sound, if necessary.
+     */
+    private void updateLink(SoundWithSelectableSoundboards sound,
+                            SelectableSoundboard selectableSoundboard) {
+        if (selectableSoundboard.isSelected()) {
+            linkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+            return;
+        }
+
+        unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+    }
+
+    private void linkSound(Soundboard soundboard, Sound sound) {
+        if (isLinked(soundboard, sound)) {
+            return;
+        }
+
+        int index = findMaxIndex(soundboard) + 1;
+
+        linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
+    }
+
+    /**
+     * Returns the maximum index in the soundboard - or <code>-1</code>, if the sound
+     * does not contain any sounds.
+     */
+    private int findMaxIndex(Soundboard soundboard) {
+        try (final Cursor cursor = rawQueryOrThrow(
+                "SELECT MAX(sbs." + SoundboardSoundTable.Cols.POS_INDEX + ") " +
+                        "FROM " + SoundboardSoundTable.NAME + " sbs " +
+                        "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
+                        "GROUP BY sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID,
+                new String[]{soundboard.getId().toString()})) {
+            if (cursor.moveToNext()) {
+                return cursor.getInt(0);
+            }
+
+            return -1;
+        }
+    }
+
+    /**
+     * Returns <code>true</code> if this sound is already linked to this soundboard,
+     * otherwise <code>false</code>.
+     */
+    private boolean isLinked(Soundboard soundboard, Sound sound) {
+        try (final Cursor cursor = queryIndex(soundboard, sound)) {
+            if (cursor.moveToNext()) {
+                return true;
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -326,11 +366,41 @@ public class SoundboardDao {
     }
 
     private void unlinkAllSounds() {
-        database.delete(SoundboardSoundTable.NAME, null, new String[]{});
+        getDatabase().delete(SoundboardSoundTable.NAME, null, new String[]{});
+    }
+
+    private void unlinkSound(Soundboard soundboard, Sound sound) {
+        boolean lookAgain = true;
+        while (lookAgain) {
+            try (final Cursor cursor =
+                         queryIndex(soundboard, sound)) {
+                if (cursor.moveToNext()) {
+                    int index = cursor.getInt(0);
+                    unlinkSound(soundboard, index);
+                } else {
+                    lookAgain = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a query cursor for the column index that this sound has in this soundboard
+     */
+    private Cursor queryIndex(Soundboard soundboard, Sound sound) {
+        return getDatabase().query(
+                SoundboardSoundTable.NAME,
+                new String[]{SoundboardSoundTable.Cols.POS_INDEX},
+                SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? AND " +
+                        SoundboardSoundTable.Cols.SOUND_ID + " = ?",
+                new String[]{soundboard.getId().toString(), sound.getId().toString()},
+                null,
+                null,
+                null);
     }
 
     public void unlinkSound(Soundboard soundboard, int index) {
-        int numDeleted = database.delete(SoundboardSoundTable.NAME,
+        int numDeleted = getDatabase().delete(SoundboardSoundTable.NAME,
                 SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
                         SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
                 new String[]{soundboard.getId().toString(),
@@ -358,7 +428,7 @@ public class SoundboardDao {
             ContentValues values = new ContentValues();
             values.put(SoundboardSoundTable.Cols.POS_INDEX, i - 1);
 
-            rowsUpdated = database.update(SoundboardSoundTable.NAME,
+            rowsUpdated = getDatabase().update(SoundboardSoundTable.NAME,
                     values,
                     SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
                             SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
@@ -374,48 +444,7 @@ public class SoundboardDao {
         } while (rowsUpdated > 0);
     }
 
-    /**
-     * Updates this sound which has to be exist in the database.
-     */
-    public void updateSound(Sound sound) {
-        int rowsUpdated = database.update(SoundTable.NAME,
-                buildContentValues(sound),
-                SoundTable.Cols.ID + " = ?",
-                new String[]{sound.getId().toString()});
-
-        if (rowsUpdated != 1) {
-            throw new RuntimeException("Not exactly one sound with ID + " + sound.getId());
-        }
-    }
-
-    private ContentValues buildContentValues(Sound sound) {
-        ContentValues values = new ContentValues();
-        values.put(SoundTable.Cols.ID, sound.getId().toString());
-        values.put(SoundTable.Cols.NAME, sound.getName());
-        // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method-that-supports-boolean
-        values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
-        values.put(SoundTable.Cols.PATH, sound.getPath());
-        values.put(SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
-        return values;
-    }
-
-    private void deleteAllSounds() {
-        database.delete(SoundTable.NAME, null, new String[]{});
-    }
-
     private void deleteAllSoundboards() {
-        database.delete(SoundboardTable.NAME, null, new String[]{});
-    }
-
-    /**
-     * Inserts these values as a new entry into this table.
-     *
-     * @throws RuntimeException if inserting does not succeed
-     */
-    private void insertOrThrow(final String table, final ContentValues values) {
-        final long rowId = database.insertOrThrow(table, null, values);
-        if (rowId == -1) {
-            throw new RuntimeException("Could not insert into database: " + values);
-        }
+        getDatabase().delete(SoundboardTable.NAME, null, new String[]{});
     }
 }

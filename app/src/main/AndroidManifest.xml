@@ -21,22 +21,25 @@
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity"
+            android:parentActivityName=".activity.main.MainActivity" />
+        <activity
+            android:name=".activity.soundboard.play.SoundboardPlayActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activity.main.MainActivity" />
+        <activity
+            android:name=".activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity"
+            android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity" />
 
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
             android:exported="false"
             android:description="@string/media_player_service_description" />
-
-        <activity
-            android:name=".activity.sound.edit.SoundEditActivity"
-            android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity" />
-        <activity
-            android:name=".activity.soundboard.play.SoundboardPlayActivity"
-            android:parentActivityName=".activity.main.MainActivity" />
     </application>
 
 </manifest>

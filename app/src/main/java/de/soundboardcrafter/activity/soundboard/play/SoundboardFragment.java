@@ -18,6 +18,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
+
 import com.google.common.collect.ImmutableCollection;
 
 import java.lang.ref.WeakReference;
@@ -26,18 +31,16 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
-import de.soundboardcrafter.activity.sound.edit.SoundEditActivity;
-import de.soundboardcrafter.activity.sound.edit.SoundEditFragment;
+import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
+import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
+import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Shows Soundboard in a Grid
@@ -51,9 +54,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     // TODO Allow for zero or more than one soundboards
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
-    private Soundboard soundboard;
+    private SoundboardWithSounds soundboard;
 
-    static SoundboardFragment createTab(Soundboard soundboard) {
+    static SoundboardFragment createTab(SoundboardWithSounds soundboard) {
         Bundle thisTabArguments = new Bundle();
         thisTabArguments.putSerializable("Soundboard", soundboard);
         SoundboardFragment thisTab = new SoundboardFragment();
@@ -96,7 +99,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        soundboard = (Soundboard) getArguments().getSerializable("Soundboard");
+        soundboard = (SoundboardWithSounds) getArguments().getSerializable("Soundboard");
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().startService(intent);
         // TODO Necessary?! Also done in onResume()
@@ -175,15 +178,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
 
-    @Override
-    @UiThread
-    // Called especially when the SoundEditActivity returns.
-    public void onResume() {
-        super.onResume();
-        updateUI();
-        bindService();
-    }
-
     /**
      * Starts reading the data for the UI (first time) or
      * simple ensure that the grid shows the latest information.
@@ -193,6 +187,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         if (soundboardItemAdapter != null) {
             soundboardItemAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the SoundboardPlaySoundEditActivity returns.
+    public void onResume() {
+        super.onResume();
+        updateUI();
+        bindService();
     }
 
     @UiThread
@@ -237,7 +240,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
 
-                Intent intent = SoundEditActivity.newIntent(getActivity(), sound, soundboard);
+                Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
                 startActivityForResult(intent, REQUEST_EDIT_SOUND);
                 return true;
             case R.id.context_menu_remove_sound:
@@ -266,6 +269,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
+                // The sound details may have been changed, but not its soundboards!
                 new UpdateSoundsTask(getActivity()).execute(soundId);
 
                 break;
@@ -311,7 +315,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Loading sounds: " + Arrays.toString(soundIds));
 
-            return SoundboardDao.getInstance(appContext).findSounds(soundIds);
+            return SoundDao.getInstance(appContext).findSounds(soundIds);
         }
 
         @Override
@@ -360,7 +364,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             for (int index : indexes) {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
-                soundboardDao.unlinkSound(soundboardItemAdapter.getSoundboard(), index);
+                soundboardDao.unlinkSound(soundboardItemAdapter.getSoundboard().getSoundboard(), index);
             }
 
             return null;
