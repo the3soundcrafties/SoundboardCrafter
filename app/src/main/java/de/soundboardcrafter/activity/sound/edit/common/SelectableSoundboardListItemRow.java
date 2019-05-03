@@ -42,8 +42,17 @@ class SelectableSoundboardListItemRow extends LinearLayout {
         checkboxSoundboard.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                soundboard.setSelected(checkboxSoundboard.isChecked());
+                if (checkboxSoundboard.isEnabled()) {
+                    soundboard.setSelected(checkboxSoundboard.isChecked());
+                }
             }
         });
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+
+        checkboxSoundboard.setEnabled(enabled);
     }
 }

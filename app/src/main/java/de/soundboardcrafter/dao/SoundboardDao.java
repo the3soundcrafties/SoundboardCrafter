@@ -24,6 +24,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -81,7 +82,6 @@ public class SoundboardDao extends AbstractDao {
             } else {
                 notInSubdirectory.add(firstLevelFile);
             }
-
         }
         if (!notInSubdirectory.isEmpty()) {
             ArrayList<Sound> sounds = new ArrayList<>();
@@ -134,9 +134,8 @@ public class SoundboardDao extends AbstractDao {
 
 
     private ImmutableList<SoundboardWithSounds> find(Cursor rawCursor) {
-        final FullJoinSoundboardCursorWrapper cursor =
-                new FullJoinSoundboardCursorWrapper(rawCursor);
-        try {
+        try (final FullJoinSoundboardCursorWrapper cursor =
+                     new FullJoinSoundboardCursorWrapper(rawCursor)) {
             ImmutableList.Builder<SoundboardWithSounds> res = ImmutableList.builder();
             // The same Sound shall result in the same object
             Map<UUID, Sound> sounds = new HashMap<>();
@@ -217,8 +216,6 @@ public class SoundboardDao extends AbstractDao {
             }
 
             return res.build();
-        } finally {
-            cursor.close();
         }
     }
 
@@ -284,6 +281,72 @@ public class SoundboardDao extends AbstractDao {
         insertOrThrow(SoundboardTable.NAME, values);
     }
 
+
+    /**
+     * Updates the soundboard links for this sound. The soundboards must already exist.
+     */
+    void updateLinks(SoundWithSelectableSoundboards sound) {
+        for (SelectableSoundboard selectableSoundboard : sound.getSoundboards()) {
+            updateLink(sound, selectableSoundboard);
+        }
+    }
+
+    /**
+     * Creates or deletes the soundboard link for this sound, if necessary.
+     */
+    private void updateLink(SoundWithSelectableSoundboards sound,
+                            SelectableSoundboard selectableSoundboard) {
+        if (selectableSoundboard.isSelected()) {
+            linkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+            return;
+        }
+
+        unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+    }
+
+    private void linkSound(Soundboard soundboard, Sound sound) {
+        if (isLinked(soundboard, sound)) {
+            return;
+        }
+
+        int index = findMaxIndex(soundboard) + 1;
+
+        linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
+    }
+
+    /**
+     * Returns the maximum index in the soundboard - or <code>-1</code>, if the sound
+     * does not contain any sounds.
+     */
+    private int findMaxIndex(Soundboard soundboard) {
+        try (final Cursor cursor = rawQueryOrThrow(
+                "SELECT MAX(sbs." + SoundboardSoundTable.Cols.POS_INDEX + ") " +
+                        "FROM " + SoundboardSoundTable.NAME + " sbs " +
+                        "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
+                        "GROUP BY sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID,
+                new String[]{soundboard.getId().toString()})) {
+            if (cursor.moveToNext()) {
+                return cursor.getInt(0);
+            }
+
+            return -1;
+        }
+    }
+
+    /**
+     * Returns <code>true</code> if this sound is already linked to this soundboard,
+     * otherwise <code>false</code>.
+     */
+    private boolean isLinked(Soundboard soundboard, Sound sound) {
+        try (final Cursor cursor = queryIndex(soundboard, sound)) {
+            if (cursor.moveToNext()) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     /**
      * Adds this sound at this <code>index</code> in this
      * soundboard.
@@ -304,6 +367,36 @@ public class SoundboardDao extends AbstractDao {
 
     private void unlinkAllSounds() {
         getDatabase().delete(SoundboardSoundTable.NAME, null, new String[]{});
+    }
+
+    private void unlinkSound(Soundboard soundboard, Sound sound) {
+        boolean lookAgain = true;
+        while (lookAgain) {
+            try (final Cursor cursor =
+                         queryIndex(soundboard, sound)) {
+                if (cursor.moveToNext()) {
+                    int index = cursor.getInt(0);
+                    unlinkSound(soundboard, index);
+                } else {
+                    lookAgain = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a query cursor for the column index that this sound has in this soundboard
+     */
+    private Cursor queryIndex(Soundboard soundboard, Sound sound) {
+        return getDatabase().query(
+                SoundboardSoundTable.NAME,
+                new String[]{SoundboardSoundTable.Cols.POS_INDEX},
+                SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? AND " +
+                        SoundboardSoundTable.Cols.SOUND_ID + " = ?",
+                new String[]{soundboard.getId().toString(), sound.getId().toString()},
+                null,
+                null,
+                null);
     }
 
     public void unlinkSound(Soundboard soundboard, int index) {

@@ -19,4 +19,9 @@ public class SoundboardPlaySoundEditActivity extends AbstractSoundEditActivity {
         putExtras(intent, sound);
         return intent;
     }
+
+    @Override
+    protected boolean userCanChangeSoundboardSelection() {
+        return false;
+    }
 }

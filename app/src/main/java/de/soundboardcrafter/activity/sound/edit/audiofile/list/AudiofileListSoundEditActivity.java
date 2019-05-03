@@ -18,4 +18,9 @@ public class AudiofileListSoundEditActivity extends AbstractSoundEditActivity {
         putExtras(intent, sound);
         return intent;
     }
+
+    @Override
+    protected boolean userCanChangeSoundboardSelection() {
+        return true;
+    }
 }

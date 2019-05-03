@@ -269,6 +269,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
+                // The sound details may have been changed, but not its soundboards!
                 new UpdateSoundsTask(getActivity()).execute(soundId);
 
                 break;

@@ -2,10 +2,11 @@ package de.soundboardcrafter.activity.sound.edit.common;
 
 import android.content.Intent;
 
-import java.util.UUID;
-
 import androidx.annotation.UiThread;
 import androidx.fragment.app.Fragment;
+
+import java.util.UUID;
+
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Sound;
 
@@ -29,6 +30,8 @@ abstract public class AbstractSoundEditActivity extends SingleFragmentActivity {
     protected Fragment createFragment() {
         UUID soundId = UUID.fromString(getIntent().getStringExtra(EXTRA_SOUND_ID));
 
-        return SoundEditFragment.newInstance(soundId);
+        return SoundEditFragment.newInstance(soundId, userCanChangeSoundboardSelection());
     }
+
+    protected abstract boolean userCanChangeSoundboardSelection();
 }

@@ -99,9 +99,12 @@ public class SoundEditView extends ConstraintLayout {
         return seekBarToVolumePercentage(volumePercentageSeekBar.getProgress());
     }
 
-    void setSoundboards(List<SelectableSoundboard> soundboards) {
+    /**
+     * Sets the soundboards and the info whether they can be changed.
+     */
+    void setSoundboards(List<SelectableSoundboard> soundboards, boolean soundboardsEditable) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        adapter = new SelectableSoundboardListItemAdapter(soundboards, soundboardsEditable);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

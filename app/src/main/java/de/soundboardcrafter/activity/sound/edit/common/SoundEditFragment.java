@@ -37,18 +37,23 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundEditFragment.class.getName();
 
     private static final String ARG_SOUND_ID = "soundId";
+    private static final String ARG_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     public static final String EXTRA_SOUND_ID = "soundId";
+    public static final String EXTRA_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     private SoundEditView soundEditView;
 
-    private Sound sound;
+    private SoundWithSelectableSoundboards sound;
+    private boolean soundboardsEditable;
+
 
     private MediaPlayerService mediaPlayerService;
 
-    static SoundEditFragment newInstance(UUID soundId) {
+    static SoundEditFragment newInstance(UUID soundId, boolean soundboardsEditable) {
         Bundle args = new Bundle();
         args.putString(ARG_SOUND_ID, soundId.toString());
+        args.putBoolean(ARG_SOUNDBOARDS_EDITABLE, soundboardsEditable);
 
         SoundEditFragment fragment = new SoundEditFragment();
         fragment.setArguments(args);
@@ -87,6 +92,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final UUID soundId = UUID.fromString(getArguments().getString(ARG_SOUND_ID));
+        soundboardsEditable = getArguments().getBoolean(ARG_SOUNDBOARDS_EDITABLE);
 
         new FindSoundTask(getActivity(), soundId).execute();
 
@@ -141,13 +147,13 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     @UiThread
     private void updateUI(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
-        sound = soundWithSelectableSoundboards.getSound();
+        sound = soundWithSelectableSoundboards;
 
         soundEditView.setName(soundWithSelectableSoundboards.getSound().getName());
         soundEditView.setVolumePercentage(soundWithSelectableSoundboards.getSound().getVolumePercentage());
         soundEditView.setLoop(soundWithSelectableSoundboards.getSound().isLoop());
 
-        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards());
+        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards(), soundboardsEditable);
 
         soundEditView.setEnabled(true);
     }
@@ -161,11 +167,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (playIfNotPlaying && !service.isPlaying(sound)) {
-            service.play(null, sound, null);
+        if (playIfNotPlaying && !service.isPlaying(sound.getSound())) {
+            service.play(null, sound.getSound(), null);
         }
 
-        service.setVolumePercentage(sound.getId(), volumePercentage);
+        service.setVolumePercentage(sound.getSound().getId(), volumePercentage);
     }
 
     private MediaPlayerService getService() {
@@ -186,17 +192,17 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        service.stopPlaying(null, sound);
+        service.stopPlaying(null, sound.getSound());
 
         getActivity().unbindService(this);
 
         String nameEntered = soundEditView.getName();
         if (!nameEntered.isEmpty()) {
-            sound.setName(nameEntered);
+            sound.getSound().setName(nameEntered);
         }
 
-        sound.setVolumePercentage(soundEditView.getVolumePercentage());
-        sound.setLoop(soundEditView.isLoop());
+        sound.getSound().setVolumePercentage(soundEditView.getVolumePercentage());
+        sound.getSound().setLoop(soundEditView.isLoop());
 
         new SaveSoundTask(getActivity(), sound).execute();
     }
@@ -273,9 +279,9 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         private final String TAG = SaveSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final Sound sound;
+        private final SoundWithSelectableSoundboards sound;
 
-        SaveSoundTask(Context context, Sound sound) {
+        SaveSoundTask(Context context, SoundWithSelectableSoundboards sound) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.sound = sound;
@@ -292,7 +298,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Saving sound " + sound);
 
-            SoundDao.getInstance(appContext).updateSound(sound);
+            if (soundboardsEditable) {
+                SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
+            } else {
+                SoundDao.getInstance(appContext).updateSound(sound.getSound());
+            }
 
             return null;
         }

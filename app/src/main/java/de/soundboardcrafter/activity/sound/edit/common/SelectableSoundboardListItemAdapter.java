@@ -19,8 +19,14 @@ class SelectableSoundboardListItemAdapter extends BaseAdapter {
     private static final String TAG = SelectableSoundboardListItemAdapter.class.getName();
     private List<SelectableSoundboard> soundboards = new ArrayList<>();
 
-    SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards) {
+    /**
+     * Whether the soundboards can be changed.
+     */
+    private boolean editable;
+
+    SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards, boolean editable) {
         this.soundboards = soundboards;
+        this.editable = editable;
     }
 
     @Override
@@ -46,6 +52,7 @@ class SelectableSoundboardListItemAdapter extends BaseAdapter {
         }
         SelectableSoundboardListItemRow itemRow = (SelectableSoundboardListItemRow) convertView;
         itemRow.setSoundboard(soundboards.get(position));
+        itemRow.setEnabled(editable);
         return convertView;
     }
 }

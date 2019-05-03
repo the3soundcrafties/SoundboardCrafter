@@ -137,7 +137,16 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
-     * Updates this sound which has to be exist in the database.
+     * Updates this sound (which must already exist in the database) and updates the
+     * soundboard links.
+     */
+    public void updateSoundAndSounboardLinks(SoundWithSelectableSoundboards sound) {
+        updateSound(sound.getSound());
+        soundboardDao.updateLinks(sound);
+    }
+
+    /**
+     * Updates this sound which has to exist in the database.
      */
     public void updateSound(Sound sound) {
         int rowsUpdated = getDatabase().update(DBSchema.SoundTable.NAME,

@@ -2,9 +2,11 @@ package de.soundboardcrafter.dao;
 
 import android.database.Cursor;
 
+import androidx.annotation.WorkerThread;
+
+import java.io.Closeable;
 import java.util.UUID;
 
-import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
@@ -13,7 +15,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
  * Essentially a cursor over a soundboard that's joined with all its sounds.
  */
 @WorkerThread
-class FullJoinSoundboardCursorWrapper {
+class FullJoinSoundboardCursorWrapper implements Closeable {
     private final Cursor cursor;
 
     static String queryString() {
@@ -108,7 +110,8 @@ class FullJoinSoundboardCursorWrapper {
         return cursor.getInt(7) != 0;
     }
 
-    void close() {
+    @Override
+    public void close() {
         cursor.close();
     }
 }
