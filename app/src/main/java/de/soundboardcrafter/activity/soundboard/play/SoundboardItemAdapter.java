@@ -17,7 +17,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Adapter for a SoundBoardItem. Display a Button with Text and Icon
+ * Adapter for a soundboard item.
  */
 class SoundboardItemAdapter extends BaseAdapter {
     private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;

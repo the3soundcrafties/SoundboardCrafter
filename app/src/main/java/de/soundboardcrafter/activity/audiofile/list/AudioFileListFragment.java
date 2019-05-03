@@ -11,6 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -21,10 +26,6 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
@@ -64,7 +65,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
     public void onEditAudioFile(AudioModelAndSound audioModelAndSound) {
         final Sound sound;
         if (audioModelAndSound.getSound() == null) {
-            // Create and safe new sound
+            // Create and save new sound
             sound = new Sound(audioModelAndSound.getAudioModel().getPath(),
                     audioModelAndSound.getAudioModel().getName());
             new AudioFileListFragment.SaveNewSoundTask(getActivity(), sound).execute();

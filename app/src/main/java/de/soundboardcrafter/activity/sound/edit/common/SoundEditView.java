@@ -9,7 +9,11 @@ import android.widget.TextView;
 
 import androidx.annotation.UiThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.util.List;
+
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.SelectableSoundboard;
 
 /**
  * Custom view for editing a sound (name, volume etc.).
@@ -19,10 +23,10 @@ public class SoundEditView extends ConstraintLayout {
     private Switch loopSwitch;
     private SeekBar volumePercentageSeekBar;
 
-    private ListView soundboardsListView;
-
-
     // TODO Show Path
+
+    private ListView soundboardsListView;
+    private SelectableSoundboardListItemAdapter adapter;
 
     private int maxVolumePercentage;
     private SeekBarChangeListener seekBarChangeListener;
@@ -93,6 +97,13 @@ public class SoundEditView extends ConstraintLayout {
 
     int getVolumePercentage() {
         return seekBarToVolumePercentage(volumePercentageSeekBar.getProgress());
+    }
+
+    void setSoundboards(List<SelectableSoundboard> soundboards) {
+        // TODO Better re-use an existing adapter?!
+        adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        soundboardsListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     /**

@@ -1,8 +1,8 @@
-package de.soundboardcrafter.activity.sound.edit.common;
+package de.soundboardcrafter.model;
+
+import androidx.annotation.NonNull;
 
 import java.util.Objects;
-
-import de.soundboardcrafter.model.Soundboard;
 
 /**
  * A soundboard that might be selected.
@@ -47,6 +47,7 @@ public class SelectableSoundboard {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "SelectableSoundboard{" +
                 "soundboard=" + soundboard +

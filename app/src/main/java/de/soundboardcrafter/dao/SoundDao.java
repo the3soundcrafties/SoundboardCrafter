@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 

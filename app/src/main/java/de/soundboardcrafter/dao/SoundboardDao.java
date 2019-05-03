@@ -20,9 +20,9 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;

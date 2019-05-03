@@ -147,7 +147,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         soundEditView.setVolumePercentage(soundWithSelectableSoundboards.getSound().getVolumePercentage());
         soundEditView.setLoop(soundWithSelectableSoundboards.getSound().isLoop());
 
-        // TODO soundEditView. list adapter... soundEditModel...
+        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards());
 
         soundEditView.setEnabled(true);
     }

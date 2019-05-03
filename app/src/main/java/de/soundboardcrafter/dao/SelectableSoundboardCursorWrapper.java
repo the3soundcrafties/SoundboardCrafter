@@ -5,9 +5,9 @@ import android.database.CursorWrapper;
 
 import java.util.UUID;
 
-import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -23,9 +23,9 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
                 + "ON sbs." +
                 SoundboardSoundTable.Cols.SOUNDBOARD_ID +
-                " = sb." + SoundboardTable.Cols.ID + " "
-                + "WHERE sbs." + SoundboardSoundTable.Cols.SOUND_ID + " = ? "
-                + "ORDER BY sb." + SoundboardTable.Cols.NAME;
+                " = sb." + SoundboardTable.Cols.ID + " " +
+                "AND sbs." + SoundboardSoundTable.Cols.SOUND_ID + " = ? " +
+                "ORDER BY sb." + SoundboardTable.Cols.NAME;
     }
 
     static String[] selectionArgs(UUID soundId) {
@@ -39,7 +39,11 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
     SelectableSoundboard getSelectableSoundboard() {
         UUID id = UUID.fromString(getString(getColumnIndex(SoundboardTable.Cols.ID)));
         String name = getString(getColumnIndex(SoundboardTable.Cols.NAME));
-        boolean selected = !isNull(3);
+
+        // UUID soundId = UUID.fromString(getString(2));
+
+
+        boolean selected = !isNull(2);
 
         Soundboard soundboard = new Soundboard(id, name);
         return new SelectableSoundboard(soundboard, selected);

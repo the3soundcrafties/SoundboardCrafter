@@ -1,11 +1,11 @@
 package de.soundboardcrafter.model;
 
+import androidx.annotation.NonNull;
+
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-
-import androidx.annotation.NonNull;
-import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 
 /**
  * Sound with all soundboards, of which some may be selected.
@@ -29,6 +29,13 @@ public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundb
         return soundboards.iterator();
     }
 
+    /**
+     * Returns the soundboards in order, unmodifiable.
+     */
+    public List<SelectableSoundboard> getSoundboards() {
+        return Collections.unmodifiableList(soundboards);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -48,6 +55,7 @@ public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundb
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "SoundWithSelectableSoundboards{" +
                 "sound=" + sound +
