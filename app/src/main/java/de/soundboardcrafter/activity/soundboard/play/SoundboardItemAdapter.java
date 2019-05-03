@@ -5,13 +5,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import java.util.Collection;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+
+import java.util.Collection;
+
 import de.soundboardcrafter.model.Sound;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -20,10 +21,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 class SoundboardItemAdapter extends BaseAdapter {
     private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
-    private Soundboard soundboard;
+    private SoundboardWithSounds soundboard;
     private static final String TAG = SoundboardItemAdapter.class.getName();
 
-    SoundboardItemAdapter(@NonNull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback, @NonNull Soundboard soundboard) {
+    SoundboardItemAdapter(@NonNull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
+                          @NonNull SoundboardWithSounds soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
     }
@@ -31,7 +33,7 @@ class SoundboardItemAdapter extends BaseAdapter {
     /**
      * Returns the soundboard.
      */
-    public Soundboard getSoundboard() {
+    public SoundboardWithSounds getSoundboard() {
         return soundboard;
     }
 
@@ -54,7 +56,7 @@ class SoundboardItemAdapter extends BaseAdapter {
         for (int i = 0; i < soundboard.getSounds().size(); i++) {
             final Sound oldSound = soundboard.getSounds().get(i);
             if (update.getId().equals(oldSound.getId())) {
-                mediaPlayerServiceCallback.stopPlaying(soundboard, oldSound);
+                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), oldSound);
                 soundboard.setSound(i, update);
 
                 break;
@@ -70,7 +72,7 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     void remove(int position) {
         Sound sound = soundboard.getSounds().get(position);
-        mediaPlayerServiceCallback.stopPlaying(soundboard, sound);
+        mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), sound);
 
         soundboard.removeSound(position);
 
@@ -104,10 +106,10 @@ class SoundboardItemAdapter extends BaseAdapter {
 
         Sound sound = soundboard.getSounds().get(position);
 
-        mediaPlayerServiceCallback.setOnPlayingStopped(soundboard, sound,
+        mediaPlayerServiceCallback.setOnPlayingStopped(soundboard.getSoundboard(), sound,
                 this::notifyDataSetChanged);
 
-        itemRow.setSound(soundboard, sound, mediaPlayerServiceCallback);
+        itemRow.setSound(soundboard.getSoundboard(), sound, mediaPlayerServiceCallback);
 
         return convertView;
     }

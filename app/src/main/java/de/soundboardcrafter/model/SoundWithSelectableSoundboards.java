@@ -1,21 +1,20 @@
-package de.soundboardcrafter.activity.sound.edit.common;
+package de.soundboardcrafter.model;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
-import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 
 /**
- * Model for editing a sound - consists of the sound itself and the
- * soundboard of which some might be selected.
+ * Sound with all soundboards, of which some may be selected.
  */
-class SoundEditModel implements Iterable<SelectableSoundboard> {
+public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundboard> {
     private Sound sound;
     private List<SelectableSoundboard> soundboards;
 
-    public SoundEditModel(Sound sound, List<SelectableSoundboard> soundboards) {
+    public SoundWithSelectableSoundboards(Sound sound, List<SelectableSoundboard> soundboards) {
         this.sound = sound;
         this.soundboards = soundboards;
     }
@@ -38,7 +37,7 @@ class SoundEditModel implements Iterable<SelectableSoundboard> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SoundEditModel that = (SoundEditModel) o;
+        SoundWithSelectableSoundboards that = (SoundWithSelectableSoundboards) o;
         return Objects.equals(sound, that.sound) &&
                 Objects.equals(soundboards, that.soundboards);
     }
@@ -50,7 +49,7 @@ class SoundEditModel implements Iterable<SelectableSoundboard> {
 
     @Override
     public String toString() {
-        return "SoundEditModel{" +
+        return "SoundWithSelectableSoundboards{" +
                 "sound=" + sound +
                 '}';
     }

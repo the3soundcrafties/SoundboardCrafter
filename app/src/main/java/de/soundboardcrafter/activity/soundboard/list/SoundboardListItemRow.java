@@ -6,13 +6,14 @@ import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import javax.annotation.Nonnull;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
+
+import javax.annotation.Nonnull;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
@@ -24,7 +25,7 @@ public class SoundboardListItemRow extends RelativeLayout {
     @Nonnull
     private final TextView soundCount;
 
-    private Soundboard soundboard;
+    private SoundboardWithSounds soundboard;
 
     SoundboardListItemRow(Context context) {
         super(context);
@@ -40,7 +41,7 @@ public class SoundboardListItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setSoundboard(Soundboard soundboard) {
+    void setSoundboard(SoundboardWithSounds soundboard) {
         this.soundboard = soundboard;
         soundboardName.setText(this.soundboard.getName());
         soundCount.setText(soundboard.getSounds().size() + " Songs");

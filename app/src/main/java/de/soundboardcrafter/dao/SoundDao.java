@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.WorkerThread;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -12,8 +14,9 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.WorkerThread;
+import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -24,10 +27,12 @@ import static java.util.stream.Collectors.toList;
 @WorkerThread
 public class SoundDao extends AbstractDao {
     private static SoundDao instance;
+    private static SoundboardDao soundboardDao;
 
     public static SoundDao getInstance(final Context context) {
         if (instance == null) {
             instance = new SoundDao(context);
+            instance.init(context);
         }
 
         return instance;
@@ -35,6 +40,10 @@ public class SoundDao extends AbstractDao {
 
     private SoundDao(@Nonnull Context context) {
         super(context);
+    }
+
+    private void init(@Nonnull Context context) {
+        soundboardDao = SoundboardDao.getInstance(context);
     }
 
     /**
@@ -51,6 +60,22 @@ public class SoundDao extends AbstractDao {
         }
 
         return res.build();
+    }
+
+
+    /**
+     * Finds a sound by ID, includes all soundboards and a mark, which of them are
+     * selected.
+     *
+     * @throws IllegalStateException if no sound with this ID exists - or more than one
+     */
+    public SoundWithSelectableSoundboards findSoundWithSelectableSoundboards(UUID soundId) {
+        Sound sound = findSound(soundId);
+        ImmutableList<SelectableSoundboard> selectableSoundboards =
+                soundboardDao.findAllSelectable(sound);
+
+        return new SoundWithSelectableSoundboards(sound, selectableSoundboards);
+
     }
 
     /**
@@ -70,7 +95,7 @@ public class SoundDao extends AbstractDao {
      *
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
-    public Sound findSound(UUID soundId) {
+    private Sound findSound(UUID soundId) {
         try (SoundCursorWrapper cursor = querySounds(DBSchema.SoundTable.Cols.ID + " = ?",
                 new String[]{soundId.toString()})) {
             if (!cursor.moveToNext()) {

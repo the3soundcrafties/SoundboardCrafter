@@ -13,26 +13,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.common.collect.ImmutableList;
-
-import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
+
+import java.lang.ref.WeakReference;
+import java.util.UUID;
+
+import javax.annotation.Nonnull;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
-import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Sound;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 
 /**
  * Activity for editing a single sound (name, volume etc.).
@@ -144,12 +140,12 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     }
 
     @UiThread
-    private void updateUI(SoundEditModel soundEditModel) {
-        sound = soundEditModel.getSound();
+    private void updateUI(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
+        sound = soundWithSelectableSoundboards.getSound();
 
-        soundEditView.setName(soundEditModel.getSound().getName());
-        soundEditView.setVolumePercentage(soundEditModel.getSound().getVolumePercentage());
-        soundEditView.setLoop(soundEditModel.getSound().isLoop());
+        soundEditView.setName(soundWithSelectableSoundboards.getSound().getName());
+        soundEditView.setVolumePercentage(soundWithSelectableSoundboards.getSound().getVolumePercentage());
+        soundEditView.setLoop(soundWithSelectableSoundboards.getSound().isLoop());
 
         // TODO soundEditView. list adapter... soundEditModel...
 
@@ -219,7 +215,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to load the sound from the database.
      */
-    class FindSoundTask extends AsyncTask<Void, Void, SoundEditModel> {
+    class FindSoundTask extends AsyncTask<Void, Void, SoundWithSelectableSoundboards> {
         private final String TAG = FindSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -233,7 +229,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         @Override
         @WorkerThread
-        protected SoundEditModel doInBackground(Void... voids) {
+        protected SoundWithSelectableSoundboards doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -242,36 +238,18 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Loading sound....");
 
-            Sound sound = SoundDao.getInstance(appContext).findSound(soundId);
-
-            // TODO We do not need all sounds here!
-            // findAllWithoutSounds()?!
-            ImmutableList<Soundboard> allSoundboards =
-                    SoundboardDao.getInstance(appContext).findAll();
-
-            Collection<UUID> mySoundboardsIds =
-                    SoundboardDao.getInstance(appContext).findSoundboardLinksBySound(sound);
+            SoundWithSelectableSoundboards res =
+                    SoundDao.getInstance(appContext).findSoundWithSelectableSoundboards(soundId);
 
             Log.d(TAG, "Sound loaded.");
 
-            return new SoundEditModel(sound,
-                    toSelectableSoundboards(allSoundboards, mySoundboardsIds));
+            return res;
         }
 
-        private List<SelectableSoundboard> toSelectableSoundboards(
-                Iterable<Soundboard> allSoundboards, Collection<UUID> mySoundboardsIds) {
-            ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
-            for (Soundboard soundboard : allSoundboards) {
-                res.add(new SelectableSoundboard(soundboard,
-                        mySoundboardsIds.contains(soundboard.getId())));
-            }
-
-            return res.build();
-        }
 
         @Override
         @UiThread
-        protected void onPostExecute(SoundEditModel soundEditModel) {
+        protected void onPostExecute(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -284,7 +262,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            updateUI(soundEditModel);
+            updateUI(soundWithSelectableSoundboards);
         }
     }
 

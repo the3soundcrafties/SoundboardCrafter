@@ -4,6 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -17,12 +20,12 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
+import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboard;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Database Access Object for accessing Soundboards in the database
@@ -36,6 +39,7 @@ public class SoundboardDao extends AbstractDao {
     public static SoundboardDao getInstance(final Context context) {
         if (instance == null) {
             instance = new SoundboardDao(context);
+            instance.init(context);
         }
 
         return instance;
@@ -43,7 +47,9 @@ public class SoundboardDao extends AbstractDao {
 
     private SoundboardDao(@Nonnull Context context) {
         super(context);
+    }
 
+    private void init(@Nonnull Context context) {
         soundDao = SoundDao.getInstance(context);
     }
 
@@ -70,7 +76,7 @@ public class SoundboardDao extends AbstractDao {
                     Sound newSound = createSound(soundFile);
                     soundList.add(newSound);
                 }
-                Soundboard soundboard = new Soundboard(firstLevelFile.getName(), soundList);
+                SoundboardWithSounds soundboard = new SoundboardWithSounds(firstLevelFile.getName(), soundList);
                 insert(soundboard);
             } else {
                 notInSubdirectory.add(firstLevelFile);
@@ -88,7 +94,7 @@ public class SoundboardDao extends AbstractDao {
                 // TODO What if renameTo did not succeed?
                 sounds.add(createSound(to));
             }
-            Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds);
+            SoundboardWithSounds soundboard = new SoundboardWithSounds(automaticCreatedDir.getName(), sounds);
             insert(soundboard);
         }
     }
@@ -98,7 +104,7 @@ public class SoundboardDao extends AbstractDao {
                 soundFile.getName(), soundFile.getAbsolutePath());
     }
 
-    public Collection<UUID> findSoundboardLinksBySound(Sound sound) {
+    private Collection<UUID> findSoundboardLinksBySound(Sound sound) {
         ImmutableList.Builder<UUID> res = ImmutableList.builder();
 
         try (final Cursor cursor =
@@ -121,16 +127,17 @@ public class SoundboardDao extends AbstractDao {
         return res.build();
     }
 
-    public ImmutableList<Soundboard> findAll() {
+    public ImmutableList<SoundboardWithSounds> findAllWithSounds() {
         Cursor rawCursor = rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString());
         return find(rawCursor);
     }
 
-    private ImmutableList<Soundboard> find(Cursor rawCursor) {
+
+    private ImmutableList<SoundboardWithSounds> find(Cursor rawCursor) {
         final FullJoinSoundboardCursorWrapper cursor =
                 new FullJoinSoundboardCursorWrapper(rawCursor);
         try {
-            ImmutableList.Builder<Soundboard> res = ImmutableList.builder();
+            ImmutableList.Builder<SoundboardWithSounds> res = ImmutableList.builder();
             // The same Sound shall result in the same object
             Map<UUID, Sound> sounds = new HashMap<>();
 
@@ -185,7 +192,7 @@ public class SoundboardDao extends AbstractDao {
                 } else {
                     if (lastSoundboardId != null) {
                         lastSounds.trimToSize();
-                        res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                        res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
                     }
 
                     lastSoundboardId = soundboardId;
@@ -206,7 +213,7 @@ public class SoundboardDao extends AbstractDao {
 
             if (lastSoundboardId != null) {
                 lastSounds.trimToSize();
-                res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
             }
 
             return res.build();
@@ -216,12 +223,42 @@ public class SoundboardDao extends AbstractDao {
     }
 
     /**
+     * Retrieves all soundboard, each with a mark, whether this sound is included.
+     */
+    ImmutableList<SelectableSoundboard> findAllSelectable(Sound sound) {
+        Cursor rawCursor = rawQueryOrThrow(SelectableSoundboardCursorWrapper.queryString(),
+                SelectableSoundboardCursorWrapper.selectionArgs(sound.getId()));
+        return findAllSelectable(rawCursor);
+    }
+
+    /**
+     * Retrieves all soundboards, each with a mark, whether this sound is included.
+     */
+    private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
+        final SelectableSoundboardCursorWrapper cursor =
+                new SelectableSoundboardCursorWrapper(rawCursor);
+
+        try {
+            final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
+
+            while (cursor.moveToNext()) {
+                res.add(cursor.getSelectableSoundboard());
+            }
+
+            return res.build();
+        } finally {
+            cursor.close();
+        }
+    }
+
+
+    /**
      * Inserts this <code>soundboard</code> an all its sounds into the database; <i>each of the
      * sounds is newly inserted, existing sounds cannot be reused in this method</i>.
      *
      * @throws RuntimeException if inserting does not succeed
      */
-    private void insert(Soundboard soundboard) {
+    private void insert(SoundboardWithSounds soundboard) {
         insertSoundboard(soundboard.getId(), soundboard.getName());
 
         int index = 0;

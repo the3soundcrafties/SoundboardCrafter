@@ -9,6 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -17,19 +22,14 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.SoundboardDao;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Shows Soundboard in a Grid
  */
 public class SoundboardListFragment extends Fragment {
-    private static final String TAG = SoundboardListFragment.class.getName();
     private ListView listView;
     private SoundboardListItemAdapter adapter;
 
@@ -52,8 +52,8 @@ public class SoundboardListFragment extends Fragment {
 
 
     @UiThread
-    private void initSoundboardItemAdapter(ImmutableList<Soundboard> soundboards) {
-        List<Soundboard> list = Lists.newArrayList(soundboards);
+    private void initSoundboardItemAdapter(ImmutableList<SoundboardWithSounds> soundboards) {
+        List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
         list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
         adapter = new SoundboardListItemAdapter(list);
         listView.setAdapter(adapter);
@@ -71,7 +71,7 @@ public class SoundboardListFragment extends Fragment {
     /**
      * A background task, used to retrieve soundboards from the database.
      */
-    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
+    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = SoundboardListFragment.FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -83,7 +83,7 @@ public class SoundboardListFragment extends Fragment {
 
         @Override
         @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
+        protected ImmutableList<SoundboardWithSounds> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -94,7 +94,7 @@ public class SoundboardListFragment extends Fragment {
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<Soundboard> res = soundboardDao.findAll();
+            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
 
             if (res.isEmpty()) {
                 Log.d(TAG, "No soundboards found.");
@@ -103,7 +103,7 @@ public class SoundboardListFragment extends Fragment {
                 soundboardDao.insertDummyData();
 
                 Log.d(TAG, "...and load the soundboards again");
-                res = soundboardDao.findAll();
+                res = soundboardDao.findAllWithSounds();
             }
 
             Log.d(TAG, "Soundboards loaded.");
@@ -113,7 +113,7 @@ public class SoundboardListFragment extends Fragment {
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
+        protected void onPostExecute(ImmutableList<SoundboardWithSounds> soundboards) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {

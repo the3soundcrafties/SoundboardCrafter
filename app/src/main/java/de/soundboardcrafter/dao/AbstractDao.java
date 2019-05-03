@@ -23,7 +23,11 @@ abstract class AbstractDao {
     }
 
     Cursor rawQueryOrThrow(String queryString) {
-        final Cursor cursor = database.rawQuery(queryString, new String[]{});
+        return rawQueryOrThrow(queryString, new String[]{});
+    }
+
+    Cursor rawQueryOrThrow(String queryString, String[] selectionArgs) {
+        final Cursor cursor = database.rawQuery(queryString, selectionArgs);
         if (cursor == null) {
             throw new RuntimeException("Could not query database: " + queryString);
         }
