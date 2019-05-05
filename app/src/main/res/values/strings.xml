@@ -22,4 +22,5 @@
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
     <string name="games_tab_title">Games</string>
+    <string name="new_game">add new Game</string>
 </resources>

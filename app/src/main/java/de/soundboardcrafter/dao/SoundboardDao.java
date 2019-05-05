@@ -23,9 +23,12 @@ import javax.annotation.Nonnull;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
+import de.soundboardcrafter.dao.DBSchema.GameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
+import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.Game;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -59,11 +62,11 @@ public class SoundboardDao {
     public void clearDatabase() {
         unlinkAllSounds();
         deleteAllSounds();
-
-        // TODO unlink and delete all games
-
+        unlinkAllGames();
+        deleteAllGames();
         deleteAllSoundboards();
     }
+
 
     public void insertDummyData() {
         File directory = new File("/storage/emulated/0/soundboard crafter test songs");
@@ -79,7 +82,7 @@ public class SoundboardDao {
                     Sound newSound = createSound(soundFile);
                     soundList.add(newSound);
                 }
-                Soundboard soundboard = new Soundboard(firstLevelFile.getName(), soundList);
+                Soundboard soundboard = new Soundboard(firstLevelFile.getName(), soundList, Lists.newArrayList(new Game("Spiel Cool")));
                 insert(soundboard);
             } else {
                 notInSubdirectory.add(firstLevelFile);
@@ -97,7 +100,7 @@ public class SoundboardDao {
                 // TODO What if renameTo did not succeed?
                 sounds.add(createSound(to));
             }
-            Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds);
+            Soundboard soundboard = new Soundboard(automaticCreatedDir.getName(), sounds, new ArrayList<>());
             insert(soundboard);
         }
 
@@ -126,21 +129,27 @@ public class SoundboardDao {
             ImmutableList.Builder<Soundboard> res = ImmutableList.builder();
             // The same Sound shall result in the same object
             Map<UUID, Sound> sounds = new HashMap<>();
+            Map<UUID, Game> games = new HashMap<>();
 
             UUID lastSoundboardId = null;
             String lastSoundboardName = null;
             ArrayList<Sound> lastSounds = Lists.newArrayList();
+            ArrayList<Game> lastGames = Lists.newArrayList();
             int lastIndex = -1; // index of the sound on the soundboard
 
             while (cursor.moveToNext()) {
                 final UUID soundboardId = cursor.getSoundboardId();
                 final String soundboardName = cursor.getSoundboardName();
+                //sound
                 final int index;
                 final UUID soundId;
                 final String path;
                 final String name;
                 final int volumePercentage;
                 final boolean loop;
+                //game
+                final UUID gameId;
+                final String gameName;
 
                 if (cursor.hasSound()) {
                     index = cursor.getIndex();
@@ -157,6 +166,13 @@ public class SoundboardDao {
                     volumePercentage = -1;
                     loop = false;
                 }
+                if (cursor.hasGame()) {
+                    gameId = cursor.getGameId();
+                    gameName = cursor.getGameName();
+                } else {
+                    gameId = null;
+                    gameName = "";
+                }
 
                 if (soundboardId.equals(lastSoundboardId)) {
                     // Reuse existing sounds.
@@ -164,6 +180,15 @@ public class SoundboardDao {
                     if (sound == null) {
                         sound = new Sound(soundId, path, name, volumePercentage, loop);
                         sounds.put(soundId, sound);
+                    }
+                    @Nullable Game game = null;
+                    if (gameId != null) {
+                        // Reuse existing lastGames.
+                        game = games.get(gameId);
+                        if (game == null) {
+                            game = new Game(gameId, gameName, new ArrayList<>());
+                            games.put(gameId, game);
+                        }
                     }
 
                     if (index != lastIndex + 1) {
@@ -174,16 +199,20 @@ public class SoundboardDao {
                     lastSoundboardId = soundboardId;
                     lastSoundboardName = soundboardName;
                     lastSounds.add(sound);
+                    if (game != null) {
+                        lastGames.add(game);
+                    }
                     lastIndex = index;
                 } else {
                     if (lastSoundboardId != null) {
                         lastSounds.trimToSize();
-                        res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                        res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds), Lists.newArrayList(lastGames)));
                     }
 
                     lastSoundboardId = soundboardId;
                     lastSoundboardName = soundboardName;
                     lastSounds = Lists.newArrayList();
+                    lastGames = Lists.newArrayList();
 
                     if (index != -1) {
                         if (index > 0) {
@@ -199,7 +228,8 @@ public class SoundboardDao {
 
             if (lastSoundboardId != null) {
                 lastSounds.trimToSize();
-                res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                lastGames.trimToSize();
+                res.add(new Soundboard(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds), Lists.newArrayList(lastGames)));
             }
 
             return res.build();
@@ -278,6 +308,26 @@ public class SoundboardDao {
             linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
             index++;
         }
+
+        for (Game game : soundboard.getGames()) {
+            insertGame(game);
+            linkGameToSoundboard(soundboard.getId(), game.getId());
+        }
+    }
+
+    private void insertGame(Game game) {
+        // TODO throw exception if sound name already exists
+        insertOrThrow(GameTable.NAME, buildContentValues(game));
+    }
+
+    private void linkGameToSoundboard(UUID soundboardId, UUID gameId) {
+        // TODO throw exception if the game is already contained in the soundboard
+        // (at any index)
+        ContentValues values = new ContentValues();
+        values.put(SoundboardGameTable.Cols.SOUNDBOARD_ID, soundboardId.toString());
+        values.put(SoundboardGameTable.Cols.GAME_ID, gameId.toString());
+
+        insertOrThrow(SoundboardGameTable.NAME, values);
     }
 
     /**
@@ -303,7 +353,6 @@ public class SoundboardDao {
      */
     private void insertSound(Sound sound) {
         // TODO throw exception if sound name already exists
-
         insertOrThrow(SoundTable.NAME, buildContentValues(sound));
     }
 
@@ -327,6 +376,10 @@ public class SoundboardDao {
 
     private void unlinkAllSounds() {
         database.delete(SoundboardSoundTable.NAME, null, new String[]{});
+    }
+
+    private void unlinkAllGames() {
+        database.delete(SoundboardGameTable.NAME, null, new String[]{});
     }
 
     public void unlinkSound(Soundboard soundboard, int index) {
@@ -399,12 +452,23 @@ public class SoundboardDao {
         return values;
     }
 
+    private ContentValues buildContentValues(Game game) {
+        ContentValues values = new ContentValues();
+        values.put(SoundTable.Cols.ID, game.getId().toString());
+        values.put(SoundTable.Cols.NAME, game.getName());
+        return values;
+    }
+
     private void deleteAllSounds() {
         database.delete(SoundTable.NAME, null, new String[]{});
     }
 
     private void deleteAllSoundboards() {
         database.delete(SoundboardTable.NAME, null, new String[]{});
+    }
+
+    private void deleteAllGames() {
+        database.delete(GameTable.NAME, null, new String[]{});
     }
 
     /**
@@ -417,5 +481,43 @@ public class SoundboardDao {
         if (rowId == -1) {
             throw new RuntimeException("Could not insert into database: " + values);
         }
+    }
+
+    public ImmutableList<Game> findAllGames() {
+        final GameCursorWrapper cursor =
+                new GameCursorWrapper(
+                        rawQueryOrThrow(GameCursorWrapper.queryString()));
+        ImmutableList.Builder<Game> res = ImmutableList.builder();
+        Game currentGame = null;
+        while (cursor.moveToNext()) {
+            UUID uuid = cursor.getGameId();
+            String name = cursor.getGameName();
+            if (currentGame == null || currentGame.getId() != uuid) {
+                currentGame = new Game(uuid, name);
+                res.add(currentGame);
+            }
+            if (cursor.hasSoundboard()) {
+                UUID uuidSoundboard = cursor.getSoundboardId();
+                String nameSoundboard = cursor.getSoundboardName();
+                Soundboard soundboard = new Soundboard(uuidSoundboard, nameSoundboard);
+                currentGame.addSoundboard(soundboard);
+            }
+        }
+
+        return res.build();
+    }
+
+    private GameCursorWrapper queryGame(String whereClause, String[] whereArgs) {
+        final Cursor cursor =
+                database.query(
+                        SoundTable.NAME,
+                        null, // all columns
+                        whereClause, whereArgs,
+                        null,
+                        null,
+                        null
+                );
+
+        return new GameCursorWrapper(cursor);
     }
 }
