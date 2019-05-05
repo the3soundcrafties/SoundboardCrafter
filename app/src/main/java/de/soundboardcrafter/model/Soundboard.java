@@ -1,10 +1,6 @@
 package de.soundboardcrafter.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -29,38 +25,11 @@ public class Soundboard implements Serializable {
     public Soundboard(@NonNull String name) {
         this(UUID.randomUUID(), name);
 
-    /**
-     * The games the soundboard belonging to
-     */
-    private final ArrayList<Game> games;
-
-    public Soundboard(UUID uuidSoundboard, String nameSoundboard) {
-        this(uuidSoundboard, nameSoundboard, new ArrayList<>(), new ArrayList<>());
     }
 
-    public Soundboard(@NonNull String name, @Nonnull ArrayList<Game> games) {
-        this(UUID.randomUUID(), name, games);
-    }
-
-    public Soundboard(UUID id, @NonNull String name, @Nonnull ArrayList<Game> games) {
+    public Soundboard(UUID id, @NonNull String name) {
         this.id = checkNotNull(id, "id is null");
         this.name = checkNotNull(name, "name is null");
-        this.games = checkNotNull(games, "games is null");
-        addSoundboardInGame(games);
-    }
-
-
-    private void addSoundboardInGame(ArrayList<Game> games) {
-        for (Game game : games) {
-            game.addSoundboard(this);
-        }
-    }
-
-    void addGame(Game game) {
-        Optional<Game> foundGame = games.stream().filter(gm -> gm.getId().equals(game.getId())).findFirst();
-        if (!foundGame.isPresent()) {
-            games.add(game);
-        }
     }
 
 
@@ -78,15 +47,6 @@ public class Soundboard implements Serializable {
         checkNotNull(name, "name is null");
         this.name = name;
     }
-
-
-    /**
-     * Returns the games in order, unmodifiable.
-     */
-    public List<Game> getGames() {
-        return Collections.unmodifiableList(games);
-    }
-
 
 
     @Override

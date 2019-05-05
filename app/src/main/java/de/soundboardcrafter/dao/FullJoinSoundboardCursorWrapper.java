@@ -7,9 +7,7 @@ import androidx.annotation.WorkerThread;
 import java.io.Closeable;
 import java.util.UUID;
 
-import de.soundboardcrafter.dao.DBSchema.GameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
-import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 
@@ -29,18 +27,12 @@ class FullJoinSoundboardCursorWrapper implements Closeable {
                 + ", s." + SoundTable.Cols.PATH
                 + ", s." + SoundTable.Cols.VOLUME_PERCENTAGE
                 + ", s." + SoundTable.Cols.LOOP
-                + ", g." + GameTable.Cols.ID
-                + ", g." + GameTable.Cols.NAME
                 + " " //
                 + "FROM " + SoundboardTable.NAME + " sb "
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
                 + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " "
                 + "LEFT JOIN " + SoundTable.NAME + " s "
                 + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID + " " //
-                + "LEFT JOIN " + SoundboardGameTable.NAME + " sbg "
-                + "ON sbg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " "
-                + "LEFT JOIN " + GameTable.NAME + " g "
-                + "ON g." + GameTable.Cols.ID + " = sbg." + SoundboardGameTable.Cols.GAME_ID + " " //
                 + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX;
     }
 
@@ -123,26 +115,5 @@ class FullJoinSoundboardCursorWrapper implements Closeable {
         cursor.close();
     }
 
-    boolean hasGame() {
-        return !cursor.isNull(8);
-    }
-
-    /**
-     * Returns the ID of the game. Call {@link #hasGame()} before
-     * to check whether the current entry really has a game - otherwise this method
-     * might result in an exception.
-     */
-    UUID getGameId() {
-        return UUID.fromString(cursor.getString(8));
-    }
-
-    /**
-     * Returns the Name of the game. Call {@link #hasGame()} before
-     * to check whether the current entry really has a game - otherwise this method
-     * might result in an exception.
-     */
-    String getGameName() {
-        return cursor.getString(9);
-    }
 
 }

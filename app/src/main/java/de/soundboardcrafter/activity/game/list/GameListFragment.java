@@ -22,8 +22,8 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.dao.SoundboardDao;
-import de.soundboardcrafter.model.Game;
+import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Shows Games in a Grid
@@ -51,9 +51,9 @@ public class GameListFragment extends Fragment {
     }
 
     @UiThread
-    private void initGameItemAdapter(ImmutableList<Game> games) {
-        List<Game> list = Lists.newArrayList(games);
-        list.sort((g1, g2) -> g1.getName().compareTo(g2.getName()));
+    private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {
+        List<GameWithSoundboards> list = Lists.newArrayList(games);
+        list.sort((g1, g2) -> g1.getGame().getName().compareTo(g2.getGame().getName()));
         adapter = new GameListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();
@@ -69,7 +69,7 @@ public class GameListFragment extends Fragment {
     /**
      * A background task, used to retrieve games from the database.
      */
-    class FindGamesTask extends AsyncTask<Void, Void, ImmutableList<Game>> {
+    class FindGamesTask extends AsyncTask<Void, Void, ImmutableList<GameWithSoundboards>> {
         private final String TAG = GameListFragment.FindGamesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -81,18 +81,18 @@ public class GameListFragment extends Fragment {
 
         @Override
         @WorkerThread
-        protected ImmutableList<Game> doInBackground(Void... voids) {
+        protected ImmutableList<GameWithSoundboards> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
 
-            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
+            GameDao gameDao = GameDao.getInstance(appContext);
 
             Log.d(TAG, "Loading games...");
 
-            ImmutableList<Game> res = soundboardDao.findAllGames();
+            ImmutableList<GameWithSoundboards> res = gameDao.findAllGamesWithSoundboards();
 
             Log.d(TAG, "Games loaded.");
 
@@ -101,7 +101,7 @@ public class GameListFragment extends Fragment {
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<Game> games) {
+        protected void onPostExecute(ImmutableList<GameWithSoundboards> gameWithSoundboards) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -109,7 +109,7 @@ public class GameListFragment extends Fragment {
                 // will be of no use to anyone
                 return;
             }
-            initGameItemAdapter(games);
+            initGameItemAdapter(gameWithSoundboards);
         }
     }
 }

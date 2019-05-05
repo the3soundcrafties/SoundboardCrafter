@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.model.Game;
+import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Tile for a single game
@@ -22,7 +22,7 @@ class GameListItemRow extends RelativeLayout {
     @Nonnull
     private final TextView soundboardCount;
 
-    private Game game;
+    private GameWithSoundboards gameWithSoundboards;
 
     GameListItemRow(Context context) {
         super(context);
@@ -38,9 +38,9 @@ class GameListItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setGame(Game game) {
-        this.game = game;
-        gameName.setText(this.game.getName());
+    void setGameWithSoundboards(GameWithSoundboards gameWithSoundboards) {
+        this.gameWithSoundboards = gameWithSoundboards;
+        gameName.setText(gameWithSoundboards.getGame().getName());
         soundboardCount.setText(getSoundboardCountText());
 
         setOnLongClickListener(l -> {
@@ -51,7 +51,7 @@ class GameListItemRow extends RelativeLayout {
     }
 
     private String getSoundboardCountText() {
-        int count = game.getSoundboards().size();
+        int count = gameWithSoundboards.getSoundboards().size();
         if (count == 1) {
             return count + " Soundboard";
         }

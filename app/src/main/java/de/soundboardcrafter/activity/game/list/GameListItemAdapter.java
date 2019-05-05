@@ -9,16 +9,16 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import de.soundboardcrafter.model.Game;
+import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Adapter for a GameItem.
  */
 class GameListItemAdapter extends BaseAdapter {
     private static final String TAG = GameListItemAdapter.class.getName();
-    private List<Game> games = new ArrayList<>();
+    private List<GameWithSoundboards> games = new ArrayList<>();
 
-    GameListItemAdapter(List<Game> games) {
+    GameListItemAdapter(List<GameWithSoundboards> games) {
         this.games = games;
     }
 
@@ -33,7 +33,7 @@ class GameListItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public Game getItem(int position) {
+    public GameWithSoundboards getItem(int position) {
         return games.get(position);
     }
 
@@ -44,7 +44,7 @@ class GameListItemAdapter extends BaseAdapter {
             convertView = new GameListItemRow(parent.getContext());
         }
         GameListItemRow itemRow = (GameListItemRow) convertView;
-        itemRow.setGame(games.get(position));
+        itemRow.setGameWithSoundboards(games.get(position));
         return convertView;
     }
 }
