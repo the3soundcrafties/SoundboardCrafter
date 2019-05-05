@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -15,12 +16,18 @@ import de.soundboardcrafter.R;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 class AudioFileItemRow extends RelativeLayout {
+    private static final String TAG = AudioFileItemRow.class.getName();
+
+    public interface Callback {
+        public void onEditAudioFile(AudioModelAndSound audioModelAndSound);
+    }
+
     @NonNull
     private final TextView audioName;
     @Nonnull
     private final TextView audioArtist;
 
-    private AudioModel audioFile;
+    private AudioModelAndSound audioModelAndSound;
 
     AudioFileItemRow(Context context) {
         super(context);
@@ -36,22 +43,33 @@ class AudioFileItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setAudioFile(AudioModel audioFile) {
-        this.audioFile = audioFile;
-        String name = audioFile.getName();
-        if (name.length() > 35) {
-            name = audioFile.getName().substring(0, 35) + "...";
-        }
-        audioName.setText(name);
-        audioArtist.setText(audioFile.getArtist());
+    void setAudioFile(AudioModelAndSound audioFileAndSound, Callback callback) {
+        audioModelAndSound = audioFileAndSound;
+        audioName.setText(abbreviateName(audioModelAndSound));
+        audioArtist.setText(audioModelAndSound.getAudioModel().getArtist());
 
+        // TODO Choose appropriate image: + or - ?!
+        /*
+        setImage(is...() ? R.drawable.... : R.drawable....);
+        */
 
-        setOnLongClickListener(l -> {
-            // Do NOT consume long clicks.
-            // Without this, this context menu on the list view won't work
-            return false;
-        });
+        ImageView iconAdd = findViewById(R.id.icon_add);
+        iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
     }
 
+    private static String abbreviateName(AudioModelAndSound audioModelAndSound) {
+        if (audioModelAndSound.getSound() == null) {
+            return abbreviateName(audioModelAndSound.getAudioModel().getName());
+        }
 
+        return abbreviateName(audioModelAndSound.getSound().getName());
+    }
+
+    private static String abbreviateName(String name) {
+        if (name.length() > 35) {
+            return name.substring(0, 35) + "...";
+        }
+
+        return name;
+    }
 }

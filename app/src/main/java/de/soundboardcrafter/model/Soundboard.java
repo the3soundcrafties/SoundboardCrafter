@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A soundboard, that is a keyboard you can play sounds with.
  * The application supports several soundboards.
  * <p></p>
- * <code>Games</code>s are not thread-safe. So it might be necessary to use
+ * <code>Soundboards</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
 public class Soundboard implements Serializable {
@@ -25,12 +25,10 @@ public class Soundboard implements Serializable {
     UUID id;
     private @NonNull
     String name;
-    /**
-     * The sounds on their position on the <code>Soundboard</code>.
-     * Sounds can be shared between soundboards, and there are no empty
-     * positions.
-     */
-    private final ArrayList<Sound> sounds;
+
+    public Soundboard(@NonNull String name) {
+        this(UUID.randomUUID(), name);
+
     /**
      * The games the soundboard belonging to
      */
@@ -40,14 +38,13 @@ public class Soundboard implements Serializable {
         this(uuidSoundboard, nameSoundboard, new ArrayList<>(), new ArrayList<>());
     }
 
-    public Soundboard(@NonNull String name, @NonNull ArrayList<Sound> sounds, @Nonnull ArrayList<Game> games) {
-        this(UUID.randomUUID(), name, sounds, games);
+    public Soundboard(@NonNull String name, @Nonnull ArrayList<Game> games) {
+        this(UUID.randomUUID(), name, games);
     }
 
-    public Soundboard(UUID id, @NonNull String name, @NonNull ArrayList<Sound> sounds, ArrayList<Game> games) {
+    public Soundboard(UUID id, @NonNull String name, @Nonnull ArrayList<Game> games) {
         this.id = checkNotNull(id, "id is null");
         this.name = checkNotNull(name, "name is null");
-        this.sounds = checkNotNull(sounds, "sound is null");
         this.games = checkNotNull(games, "games is null");
         addSoundboardInGame(games);
     }
@@ -82,12 +79,6 @@ public class Soundboard implements Serializable {
         this.name = name;
     }
 
-    /**
-     * Returns the sounds in order, unmodifiable.
-     */
-    public List<Sound> getSounds() {
-        return Collections.unmodifiableList(sounds);
-    }
 
     /**
      * Returns the games in order, unmodifiable.
@@ -96,20 +87,7 @@ public class Soundboard implements Serializable {
         return Collections.unmodifiableList(games);
     }
 
-    /**
-     * Replaces the sound with this <code>index</code> with the new
-     * <code>sound</code>.
-     */
-    public void setSound(int index, Sound sound) {
-        sounds.set(index, sound);
-    }
 
-    /**
-     * Removes this sound from the soundboard.
-     */
-    public void removeSound(int index) {
-        sounds.remove(index);
-    }
 
     @Override
     public @Nonnull
@@ -119,6 +97,4 @@ public class Soundboard implements Serializable {
                 ", name='" + name + '\'' +
                 '}';
     }
-
-
 }

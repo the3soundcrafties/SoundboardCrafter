@@ -4,21 +4,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Adapter for a SoundBoardItem. Display a Button with Text and Icon
  */
 class SoundboardListItemAdapter extends BaseAdapter {
     private static final String TAG = SoundboardListItemAdapter.class.getName();
-    private List<Soundboard> soundboards = new ArrayList<>();
+    private List<SoundboardWithSounds> soundboards = new ArrayList<>();
 
-    SoundboardListItemAdapter(List<Soundboard> soundboards) {
+    SoundboardListItemAdapter(List<SoundboardWithSounds> soundboards) {
         this.soundboards = soundboards;
     }
 
@@ -33,7 +34,7 @@ class SoundboardListItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public Soundboard getItem(int position) {
+    public SoundboardWithSounds getItem(int position) {
         return soundboards.get(position);
     }
 

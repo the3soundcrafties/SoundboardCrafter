@@ -16,15 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.common.collect.ImmutableList;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -36,11 +27,22 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.common.collect.ImmutableList;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
 import de.soundboardcrafter.dao.SoundboardDao;
-import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * The main activity, showing the soundboards.
@@ -199,7 +201,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        private final List<Soundboard> soundboardList = new ArrayList<>();
+        private final List<SoundboardWithSounds> soundboardList = new ArrayList<>();
 
         ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
             super(fm);
@@ -216,7 +218,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          *
          * @param soundboards
          */
-        void addSoundboards(Collection<Soundboard> soundboards) {
+        void addSoundboards(Collection<SoundboardWithSounds> soundboards) {
             soundboardList.addAll(soundboards);
             soundboardList.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
             notifyDataSetChanged();
@@ -249,7 +251,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          */
         @Nullable
         UUID getSoundboardId(int index) {
-            @Nullable Soundboard soundboard = getSoundboard(index);
+            @Nullable SoundboardWithSounds soundboard = getSoundboard(index);
             if (soundboard == null) {
                 return null;
             }
@@ -262,7 +264,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          * was invalid.
          */
         @Nullable
-        Soundboard getSoundboard(int index) {
+        SoundboardWithSounds getSoundboard(int index) {
             if (index >= getCount()) {
                 return null;
             }
@@ -295,7 +297,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
             if (service == null) {
                 return;
             }
-            service.stopPlaying(soundboardList);
+            service.stopPlaying(soundboardList.stream()
+                    .map(SoundboardWithSounds::getSoundboard)
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -355,7 +359,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     /**
      * A background task, used to retrieve soundboards from the database.
      */
-    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
+    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -367,7 +371,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         @Override
         @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
+        protected ImmutableList<SoundboardWithSounds> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -378,7 +382,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<Soundboard> res = soundboardDao.findAll();
+            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
 
             if (res.isEmpty()) {
                 Log.d(TAG, "No soundboards found.");
@@ -387,7 +391,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 soundboardDao.insertDummyData();
 
                 Log.d(TAG, "...and load the soundboards again");
-                res = soundboardDao.findAll();
+                res = soundboardDao.findAllWithSounds();
             }
 
             Log.d(TAG, "Soundboards loaded.");
@@ -397,7 +401,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
+        protected void onPostExecute(ImmutableList<SoundboardWithSounds> soundboards) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -419,7 +423,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     /**
      * A background task, used to reset the soundboards and retrieve them from the database.
      */
-    class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<Soundboard>> {
+    class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = ResetAllTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -432,7 +436,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         @Override
         @WorkerThread
-        protected ImmutableList<Soundboard> doInBackground(Void... voids) {
+        protected ImmutableList<SoundboardWithSounds> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -447,7 +451,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             Log.d(TAG, "Loading soundboards...");
 
-            final ImmutableList<Soundboard> res = soundboardDao.findAll();
+            final ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
 
             Log.d(TAG, "Soundboards loaded.");
 
@@ -456,7 +460,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<Soundboard> soundboards) {
+        protected void onPostExecute(ImmutableList<SoundboardWithSounds> soundboards) {
 
             Context appContext = appContextRef.get();
 
