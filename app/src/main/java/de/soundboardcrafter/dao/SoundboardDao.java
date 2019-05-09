@@ -147,79 +147,59 @@ public class SoundboardDao extends AbstractDao {
             // The same Sound shall result in the same object
             Map<UUID, Sound> sounds = new HashMap<>();
 
-            UUID lastSoundboardId = null;
-            String lastSoundboardName = null;
+            Soundboard lastSoundboard = null;
             ArrayList<Sound> lastSounds = Lists.newArrayList();
             int lastIndex = -1; // index of the sound on the soundboard
 
             while (cursor.moveToNext()) {
-                final UUID soundboardId = cursor.getSoundboardId();
-                final String soundboardName = cursor.getSoundboardName();
-                final int index;
-                final UUID soundId;
-                final String path;
-                final String name;
-                final int volumePercentage;
-                final boolean loop;
+                final FullJoinSoundboardCursorWrapper.Row row = cursor.getRow();
 
-                if (cursor.hasSound()) {
-                    index = cursor.getIndex();
-                    soundId = cursor.getSoundId();
-                    path = cursor.getSoundPath();
-                    name = cursor.getSoundName();
-                    volumePercentage = cursor.getSoundVolumePercentage();
-                    loop = cursor.isSoundLoop();
-                } else {
-                    index = -1;
-                    soundId = null;
-                    path = null;
-                    name = null;
-                    volumePercentage = -1;
-                    loop = false;
-                }
-
-                if (soundboardId.equals(lastSoundboardId)) {
+                if (lastSoundboard != null &&
+                        row.getSoundboard().getId().equals(lastSoundboard.getId())) {
                     // Reuse existing sounds.
+                    UUID soundId = row.getIndexedSound().getSound().getId();
                     @Nullable Sound sound = sounds.get(soundId);
                     if (sound == null) {
-                        sound = new Sound(soundId, path, name, volumePercentage, loop);
+                        sound = row.getIndexedSound().getSound();
                         sounds.put(soundId, sound);
                     }
 
-                    if (index != lastIndex + 1) {
-                        throw new IllegalStateException("Gap in indexes of soundboard " + soundboardId + ". Expected next index " +
-                                (lastIndex + 1) + ", but was " + index);
+                    if (row.getIndexedSound().getIndex() != lastIndex + 1) {
+                        throw new IllegalStateException("Gap in indexes of soundboard " +
+                                row.getSoundboard().getId() + ". Expected next index " +
+                                (lastIndex + 1) + ", but was " + row.getIndexedSound().getIndex());
                     }
 
-                    lastSoundboardId = soundboardId;
-                    lastSoundboardName = soundboardName;
+                    lastSoundboard = row.getSoundboard();
                     lastSounds.add(sound);
-                    lastIndex = index;
+                    lastIndex = row.getIndexedSound().getIndex();
                 } else {
-                    if (lastSoundboardId != null) {
+                    if (lastSoundboard != null) {
                         lastSounds.trimToSize();
-                        res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                        res.add(new SoundboardWithSounds(lastSoundboard, Lists.newArrayList(lastSounds)));
                     }
 
-                    lastSoundboardId = soundboardId;
-                    lastSoundboardName = soundboardName;
+                    lastSoundboard = row.getSoundboard();
                     lastSounds = Lists.newArrayList();
 
-                    if (index != -1) {
-                        if (index > 0) {
-                            throw new IllegalStateException("Lowest sound index of soundboard " + soundboardId + " invalid. Expected 0, but was " + index);
+                    if (row.getIndexedSound() != null) {
+                        if (row.getIndexedSound().getIndex() > 0) {
+                            throw new IllegalStateException("Lowest sound index of soundboard " +
+                                    row.getSoundboard().getId() + " invalid. Expected 0, but was "
+                                    + row.getIndexedSound().getIndex());
                         }
 
-                        lastSounds.add(new Sound(soundId, path, name, volumePercentage, loop));
+                        lastSounds.add(row.getIndexedSound().getSound());
+                        lastIndex = row.getIndexedSound().getIndex();
+                    } else {
+                        lastIndex = -1;
                     }
-
-                    lastIndex = index;
                 }
             }
 
-            if (lastSoundboardId != null) {
+            if (lastSoundboard != null) {
                 lastSounds.trimToSize();
-                res.add(new SoundboardWithSounds(lastSoundboardId, lastSoundboardName, Lists.newArrayList(lastSounds)));
+                res.add(new SoundboardWithSounds(lastSoundboard, Lists.newArrayList(lastSounds)));
             }
 
             return res.build();
