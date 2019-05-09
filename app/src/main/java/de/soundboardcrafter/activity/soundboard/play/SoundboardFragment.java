@@ -51,7 +51,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final int REQUEST_EDIT_SOUND = 1;
 
     private GridView gridView;
-    // TODO Allow for zero or more than one soundboards
+    // TODO Allow for zero soundboards
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
