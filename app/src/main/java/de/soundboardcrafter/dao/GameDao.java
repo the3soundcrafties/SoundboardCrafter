@@ -3,6 +3,8 @@ package de.soundboardcrafter.dao;
 import android.content.ContentValues;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.UUID;
@@ -69,23 +71,22 @@ public class GameDao extends AbstractDao {
     }
 
     public ImmutableList<GameWithSoundboards> findAllGamesWithSoundboards() {
-        final GameCursorWrapper cursor =
-                new GameCursorWrapper(
-                        rawQueryOrThrow(GameCursorWrapper.queryString()));
         ImmutableList.Builder<GameWithSoundboards> res = ImmutableList.builder();
-        GameWithSoundboards currentGame = null;
-        while (cursor.moveToNext()) {
-            UUID uuid = cursor.getGameId();
-            String name = cursor.getGameName();
-            if (currentGame == null || !currentGame.getGame().getId().equals(uuid)) {
-                currentGame = new GameWithSoundboards(uuid, name);
-                res.add(currentGame);
-            }
-            if (cursor.hasSoundboard()) {
-                UUID uuidSoundboard = cursor.getSoundboardId();
-                String nameSoundboard = cursor.getSoundboardName();
-                Soundboard soundboard = new Soundboard(uuidSoundboard, nameSoundboard);
-                currentGame.addSoundboard(soundboard);
+
+        try (GameCursorWrapper cursor =
+                     new GameCursorWrapper(
+                             rawQueryOrThrow(GameCursorWrapper.queryString()))) {
+            GameWithSoundboards currentGame = null;
+            while (cursor.moveToNext()) {
+                @NonNull Game game = cursor.getRow().getGame();
+                if (currentGame == null ||
+                        !currentGame.getGame().getId().equals(game.getId())) {
+                    currentGame = new GameWithSoundboards(game);
+                    res.add(currentGame);
+                }
+                if (cursor.getRow().getSoundboard() != null) {
+                    currentGame.addSoundboard(cursor.getRow().getSoundboard());
+                }
             }
         }
 

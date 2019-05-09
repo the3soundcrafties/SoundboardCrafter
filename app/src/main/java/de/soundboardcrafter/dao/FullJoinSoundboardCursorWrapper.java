@@ -89,10 +89,11 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
      * and maybe an indexed sound.
      */
     static class Row {
-        private final @NonNull
-        Soundboard soundboard;
-        private final @Nullable
-        IndexedSound indexedSound;
+        @NonNull
+        private final Soundboard soundboard;
+
+        @Nullable
+        private final IndexedSound indexedSound;
 
         Row(@NonNull Soundboard soundboard,
             @Nullable IndexedSound indexedSound) {
