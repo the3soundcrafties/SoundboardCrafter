@@ -16,6 +16,7 @@ import de.soundboardcrafter.model.SelectableSoundboard;
  * Row for a single soundboard that can be selected.
  */
 // TODO Use LinearLayoutCompat?
+// TODO: 05.05.2019 move to another packager 
 class SelectableSoundboardListItemRow extends LinearLayout {
     @NonNull
     private final CheckBox checkboxSoundboard;

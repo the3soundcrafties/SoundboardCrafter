@@ -15,7 +15,8 @@ import de.soundboardcrafter.model.SelectableSoundboard;
 /**
  * Adapter for a {@link SelectableSoundboardListItemRow}.
  */
-class SelectableSoundboardListItemAdapter extends BaseAdapter {
+// TODO: 05.05.2019 move to another package it is also used in the gameeditview
+public class SelectableSoundboardListItemAdapter extends BaseAdapter {
     private static final String TAG = SelectableSoundboardListItemAdapter.class.getName();
     private List<SelectableSoundboard> soundboards = new ArrayList<>();
 
@@ -24,7 +25,7 @@ class SelectableSoundboardListItemAdapter extends BaseAdapter {
      */
     private boolean editable;
 
-    SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards, boolean editable) {
+    public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards, boolean editable) {
         this.soundboards = soundboards;
         this.editable = editable;
     }
