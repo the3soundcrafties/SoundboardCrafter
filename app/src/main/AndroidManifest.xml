@@ -25,16 +25,22 @@
             </intent-filter>
         </activity>
 
+        <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity"
-            android:parentActivityName=".activity.main.MainActivity" />
+            android:parentActivityName=".activity.main.MainActivity"
+            android:windowSoftInputMode="stateHidden" />
+
         <activity
             android:name=".activity.soundboard.play.SoundboardPlayActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activity.main.MainActivity" />
+
+        <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity"
-            android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity" />
+            android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
+            android:windowSoftInputMode="stateVisible" />
 
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
