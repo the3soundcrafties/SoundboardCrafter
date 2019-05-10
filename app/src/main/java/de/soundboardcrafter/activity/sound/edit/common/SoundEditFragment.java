@@ -187,14 +187,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
-        MediaPlayerService service = getService();
-        if (service == null) {
-            return;
-        }
-
-        service.stopPlaying(null, sound.getSound());
+        stopPlaying();
 
         getActivity().unbindService(this);
+
+        if (sound == null) {
+            // Sound not yet loaded
+            return;
+        }
 
         String nameEntered = soundEditView.getName();
         if (!nameEntered.isEmpty()) {
@@ -205,6 +205,20 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         sound.getSound().setLoop(soundEditView.isLoop());
 
         new SaveSoundTask(getActivity(), sound).execute();
+    }
+
+    private void stopPlaying() {
+        if (sound == null) {
+            // not yet loaded
+            return;
+        }
+
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        service.stopPlaying(null, sound.getSound());
     }
 
     /**

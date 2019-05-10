@@ -337,13 +337,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         SharedPreferences pref = getApplicationContext().getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         if (selectedSoundboardId != null) {
             editor.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId.toString());
         }
         editor.commit();
+        super.onDestroy();
     }
 
     @Override

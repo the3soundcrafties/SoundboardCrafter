@@ -279,8 +279,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     @Override
     @UiThread
     public void onDestroy() {
-        super.onDestroy();
         // TODO: 17.03.2019 destroy service save state
+
+        super.onDestroy();
     }
 
     private MediaPlayerService getService() {
