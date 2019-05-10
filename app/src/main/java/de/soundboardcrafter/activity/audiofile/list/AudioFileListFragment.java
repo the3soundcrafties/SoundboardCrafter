@@ -92,10 +92,8 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
 
-                // The sound may have been changed.
-
-                // TODO Something like this??
-                // new SoundboardFragment.UpdateSoundsTask(getActivity()).execute(soundId);
+                // The sound name may have been changed.
+                new FindAudioFileTask(getContext()).execute();
 
                 break;
         }
