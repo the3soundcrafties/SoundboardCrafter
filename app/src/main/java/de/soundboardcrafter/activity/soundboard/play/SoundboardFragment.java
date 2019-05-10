@@ -104,8 +104,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         getActivity().startService(intent);
         // TODO Necessary?! Also done in onResume()
         bindService();
-
-
     }
 
     private void bindService() {
@@ -180,7 +178,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     /**
      * Starts reading the data for the UI (first time) or
-     * simple ensure that the grid shows the latest information.
+     * simply ensure that the grid shows the latest information.
      */
     @UiThread
     private void updateUI() {

@@ -4,12 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.common.collect.Lists;
-
-import java.util.List;
-import java.util.function.Supplier;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -19,6 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.common.collect.Lists;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         pager = findViewById(R.id.viewPagerMain);
         pager.clearOnPageChangeListeners();
         TabLayout tabLayout = findViewById(R.id.tabLayoutMain);
@@ -131,12 +133,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return pages.size();
-        }
-
-        @Override
-        public int getItemPosition(@NonNull Object object) {
-            // https://medium.com/inloopx/adventures-with-fragmentstatepageradapter-4f56a643f8e0
-            return POSITION_NONE;
         }
 
         int getIndexOf(Page selectedPage) {

@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
@@ -44,12 +43,6 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
     private AudioFileListItemAdapter adapter;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        new FindAudioFileTask(getContext()).execute();
-    }
-
-    @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -57,8 +50,12 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 container, false);
         listView = rootView.findViewById(R.id.listview_audiofile);
 
+        initAudioFileListItemAdapter();
+        new FindAudioFileTask(getContext()).execute();
+
         return rootView;
     }
+
 
     @Override
     @UiThread
@@ -95,7 +92,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
 
-                // TODO The sound and its soundboards may have been changed.
+                // The sound may have been changed.
 
                 // TODO Something like this??
                 // new SoundboardFragment.UpdateSoundsTask(getActivity()).execute(soundId);
@@ -105,14 +102,20 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
     }
 
     @UiThread
-    private void initAudioFileListItemAdapter(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
-        List<AudioModelAndSound> list = Lists.newArrayList(audioFilesAndSounds);
-        list.sort((s1, s2) ->
-                s1.getAudioModel().getName().compareTo(s2.getAudioModel().getName()));
-        adapter = new AudioFileListItemAdapter(list, this);
+    private void initAudioFileListItemAdapter() {
+        adapter = new AudioFileListItemAdapter(this);
         listView.setAdapter(adapter);
         updateUI();
     }
+
+    @UiThread
+    private void setAudioFiles(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
+        List<AudioModelAndSound> list = Lists.newArrayList(audioFilesAndSounds);
+        list.sort((s1, s2) ->
+                s1.getAudioModel().getName().compareTo(s2.getAudioModel().getName()));
+        adapter.setAudioFiles(list);
+    }
+
 
     @UiThread
     private void updateUI() {
@@ -120,7 +123,6 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
             adapter.notifyDataSetChanged();
         }
     }
-
 
     /**
      * A background task, used to retrieve audio files from the file system
@@ -178,7 +180,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 // will be of no use to anyone
                 return;
             }
-            initAudioFileListItemAdapter(audioFilesAndSounds);
+            setAudioFiles(audioFilesAndSounds);
         }
     }
 
