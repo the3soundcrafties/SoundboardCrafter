@@ -45,7 +45,7 @@
         <activity
             android:name=".activity.game.edit.GameCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
-            android:windowSoftInputMode="stateVisible" />
+            android:windowSoftInputMode="adjustNothing" />
 
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
