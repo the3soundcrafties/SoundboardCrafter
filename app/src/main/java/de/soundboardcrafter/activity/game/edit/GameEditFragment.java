@@ -112,7 +112,10 @@ public class GameEditFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
                     intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                    getActivity().startActivityForResult(intent, Activity.RESULT_OK);
+                    getActivity().setResult(
+                            Activity.RESULT_OK,
+                            intent);
+                    getActivity().finish();
                 }
         );
         gameEditView.setOnClickListenerCancel(
@@ -120,7 +123,10 @@ public class GameEditFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
                     intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                    getActivity().startActivityForResult(intent, Activity.RESULT_CANCELED);
+                    getActivity().setResult(
+                            Activity.RESULT_CANCELED,
+                            intent);
+                    getActivity().finish();
                 }
         );
 

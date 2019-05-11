@@ -103,7 +103,10 @@ public class SoundboardEditFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                     intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                    getActivity().startActivityForResult(intent, Activity.RESULT_OK);
+                    getActivity().setResult(
+                            Activity.RESULT_OK,
+                            intent);
+                    getActivity().finish();
                 }
         );
         soundboardEditView.setOnClickListenerCancel(
@@ -111,7 +114,10 @@ public class SoundboardEditFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                     intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                    getActivity().startActivityForResult(intent, Activity.RESULT_CANCELED);
+                    getActivity().setResult(
+                            Activity.RESULT_CANCELED,
+                            intent);
+                    getActivity().finish();
                 }
         );
 

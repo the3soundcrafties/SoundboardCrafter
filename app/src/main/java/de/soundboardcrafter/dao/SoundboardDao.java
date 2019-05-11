@@ -470,7 +470,7 @@ public class SoundboardDao extends AbstractDao {
     private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
-                        DBSchema.SoundTable.NAME,
+                        DBSchema.SoundboardTable.NAME,
                         null, // all columns
                         whereClause, whereArgs,
                         null,
