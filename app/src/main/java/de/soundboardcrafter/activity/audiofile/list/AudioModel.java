@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -10,6 +11,7 @@ public class AudioModel {
     private String name;
     private String album;
     private String artist;
+    private Date dateAdded;
 
     public String getPath() {
         return path;
@@ -43,6 +45,14 @@ public class AudioModel {
         this.artist = artist;
     }
 
+    Date getDateAdded() {
+        return dateAdded;
+    }
+
+    void setDateAdded(Date dateAdded) {
+        this.dateAdded = dateAdded;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -55,12 +65,13 @@ public class AudioModel {
         return Objects.equals(path, that.path) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(album, that.album) &&
-                Objects.equals(artist, that.artist);
+                Objects.equals(artist, that.artist) &&
+                Objects.equals(dateAdded, that.dateAdded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, name, album, artist);
+        return Objects.hash(path, name, album, artist, dateAdded);
     }
 
     @Override
@@ -70,6 +81,7 @@ public class AudioModel {
                 ", name='" + name + '\'' +
                 ", album='" + album + '\'' +
                 ", artist='" + artist + '\'' +
+                ", dateAdded='" + dateAdded + '\'' +
                 '}';
     }
 }
