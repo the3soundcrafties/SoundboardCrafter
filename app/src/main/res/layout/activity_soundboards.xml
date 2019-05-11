@@ -21,7 +21,7 @@
             android:layout_gravity="top"
             android:minHeight="?actionBarSize"
             app:tabGravity="fill"
-            app:tabMode="fixed" />
+            app:tabMode="scrollable" />
 
     </androidx.viewpager.widget.ViewPager>
 </LinearLayout>
