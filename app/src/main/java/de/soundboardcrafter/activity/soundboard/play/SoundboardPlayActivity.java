@@ -447,7 +447,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
             soundboardDao.clearDatabase();
-            soundboardDao.insertDummyData();
+
 
             Log.d(TAG, "Loading soundboards...");
 
