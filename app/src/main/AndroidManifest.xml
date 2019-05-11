@@ -47,6 +47,11 @@
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="adjustNothing" />
 
+        <activity
+            android:name=".activity.soundboard.edit.SoundboardCreateActivity"
+            android:parentActivityName=".activity.main.MainActivity"
+            android:windowSoftInputMode="adjustNothing" />
+
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
             android:exported="false"

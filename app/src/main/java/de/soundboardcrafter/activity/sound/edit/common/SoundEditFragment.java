@@ -313,7 +313,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             if (soundboardsEditable) {
                 SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
             } else {
-                SoundDao.getInstance(appContext).updateSound(sound.getSound());
+                SoundDao.getInstance(appContext).update(sound.getSound());
             }
 
             return null;

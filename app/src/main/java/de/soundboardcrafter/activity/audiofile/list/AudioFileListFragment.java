@@ -250,7 +250,7 @@ public class AudioFileListFragment extends Fragment implements
 
             // TODO If name already exists, choose another name - like ... "Name1", "Name2"
 
-            SoundDao.getInstance(appContext).insertSound(sound);
+            SoundDao.getInstance(appContext).insert(sound);
 
             return null;
         }

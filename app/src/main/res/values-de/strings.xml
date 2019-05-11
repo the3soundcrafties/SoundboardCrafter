@@ -26,4 +26,5 @@
     <string name="new_game">neues Spiel hinzufügen</string>
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
+    <string name="new_soundboard">neues Soundboard hinzufügen</string>
 </resources>

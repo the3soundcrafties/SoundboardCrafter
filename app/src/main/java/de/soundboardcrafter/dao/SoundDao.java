@@ -70,7 +70,7 @@ public class SoundDao extends AbstractDao {
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
     public SoundWithSelectableSoundboards findSoundWithSelectableSoundboards(UUID soundId) {
-        Sound sound = findSound(soundId);
+        Sound sound = find(soundId);
         ImmutableList<SelectableSoundboard> selectableSoundboards =
                 soundboardDao.findAllSelectable(sound);
 
@@ -85,7 +85,7 @@ public class SoundDao extends AbstractDao {
      */
     public ImmutableList<Sound> findSounds(UUID... soundIds) {
         return Stream.of(soundIds)
-                .map(this::findSound)
+                .map(this::find)
                 .collect(collectingAndThen(toList(), ImmutableList::copyOf));
         // TODO Use .collect(ImmutableList::toImmutableList) - why doesn't that work?
     }
@@ -95,7 +95,7 @@ public class SoundDao extends AbstractDao {
      *
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
-    private Sound findSound(UUID soundId) {
+    private Sound find(UUID soundId) {
         try (SoundCursorWrapper cursor = querySounds(DBSchema.SoundTable.Cols.ID + " = ?",
                 new String[]{soundId.toString()})) {
             if (!cursor.moveToNext()) {
@@ -130,7 +130,7 @@ public class SoundDao extends AbstractDao {
      *
      * @throws RuntimeException if inserting does not succeed
      */
-    public void insertSound(Sound sound) {
+    public void insert(Sound sound) {
         // TODO throw exception if sound name already exists
 
         insertOrThrow(DBSchema.SoundTable.NAME, buildContentValues(sound));
@@ -141,14 +141,14 @@ public class SoundDao extends AbstractDao {
      * soundboard links.
      */
     public void updateSoundAndSounboardLinks(SoundWithSelectableSoundboards sound) {
-        updateSound(sound.getSound());
+        update(sound.getSound());
         soundboardDao.updateLinks(sound);
     }
 
     /**
      * Updates this sound which has to exist in the database.
      */
-    public void updateSound(Sound sound) {
+    public void update(Sound sound) {
         int rowsUpdated = getDatabase().update(DBSchema.SoundTable.NAME,
                 buildContentValues(sound),
                 DBSchema.SoundTable.Cols.ID + " = ?",

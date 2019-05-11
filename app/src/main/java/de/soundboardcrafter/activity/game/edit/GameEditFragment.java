@@ -41,7 +41,7 @@ public class GameEditFragment extends Fragment {
     private static final String ARG_GAME_ID = "gameId";
 
     private static final String EXTRA_GAME_ID = "gameId";
-    public static final String EXTRA_EDIT_FRAGMENT = "editFragment";
+    public static final String EXTRA_EDIT_FRAGMENT = "gameEditFragment";
 
     private GameEditView gameEditView;
 

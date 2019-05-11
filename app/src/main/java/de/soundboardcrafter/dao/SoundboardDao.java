@@ -247,7 +247,7 @@ public class SoundboardDao extends AbstractDao {
 
         int index = 0;
         for (Sound sound : soundboard.getSounds()) {
-            soundDao.insertSound(sound);
+            soundDao.insert(sound);
             linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
             index++;
         }
@@ -441,20 +441,57 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public List<Soundboard> findAll() {
+        try (SoundboardCursorWrapper cursorWrapper = querySoundboards(null, null)) {
+            ImmutableList.Builder<Soundboard> res = new ImmutableList.Builder<>();
+            while (cursorWrapper.moveToNext()) {
+                res.add(cursorWrapper.getSoundboard());
+            }
+            return res.build();
+        }
+    }
+
+    public Soundboard find(UUID soundboardId) {
+        try (SoundboardCursorWrapper cursor = querySoundboards(DBSchema.SoundboardTable.Cols.ID + " = ?",
+                new String[]{soundboardId.toString()})) {
+            if (!cursor.moveToNext()) {
+                throw new IllegalStateException("No sound with ID " + soundboardId);
+            }
+
+            Soundboard res = cursor.getSoundboard();
+            if (cursor.moveToNext()) {
+                throw new IllegalStateException("More than one sound with ID " + soundboardId);
+            }
+
+            return res;
+        }
+    }
+
+
+    private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
-                        SoundboardTable.NAME,
+                        DBSchema.SoundTable.NAME,
                         null, // all columns
-                        null, null,
+                        whereClause, whereArgs,
                         null,
                         null,
                         null
                 );
-        SoundboardCursorWrapper cursorWrapper = new SoundboardCursorWrapper(cursor);
-        ImmutableList.Builder<Soundboard> res = new ImmutableList.Builder<>();
-        while (cursorWrapper.moveToNext()) {
-            res.add(cursorWrapper.getSoundboard());
-        }
-        return res.build();
+
+        return new SoundboardCursorWrapper(cursor);
     }
+
+    public void insert(Soundboard soundboard) {
+        // TODO throw exception if sound name already exists
+        insertOrThrow(DBSchema.SoundboardTable.NAME, buildContentValues(soundboard));
+    }
+
+    private ContentValues buildContentValues(Soundboard soundboard) {
+        ContentValues values = new ContentValues();
+        values.put(DBSchema.SoundboardTable.Cols.ID, soundboard.getId().toString());
+        values.put(DBSchema.SoundboardTable.Cols.NAME, soundboard.getName());
+
+        return values;
+    }
+
 }

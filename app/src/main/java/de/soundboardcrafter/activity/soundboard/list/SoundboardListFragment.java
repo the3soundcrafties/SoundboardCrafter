@@ -1,12 +1,15 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.annotation.UiThread;
@@ -24,6 +27,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -33,7 +37,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
     private static final String TAG = SoundboardListFragment.class.getName();
-
+    private Button addNewSoundboard;
     /**
      * @param editSoundRequestCode request code used whenever a sound edit
      * fragment is started from this activity
@@ -58,11 +62,18 @@ public class SoundboardListFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_soundboard_list,
                 container, false);
         listView = rootView.findViewById(R.id.listview_soundboard);
-
+        addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
+        addNewSoundboard.setOnClickListener(e -> {
+            startActivityForResult(SoundboardCreateActivity.newIntent(getContext()));
+        });
         initSoundboardItemAdapter();
         new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
 
         return rootView;
+    }
+
+    private void startActivityForResult(@SuppressLint("UnknownNullness") Intent intent) {
+        startActivityForResult(intent, 0, null);
     }
 
     @Override

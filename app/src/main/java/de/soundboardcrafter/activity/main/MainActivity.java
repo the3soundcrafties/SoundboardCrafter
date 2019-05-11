@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -16,13 +15,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
-import com.google.common.collect.Lists;
-
-import java.util.List;
-import java.util.function.Supplier;
-
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.common.collect.Lists;
@@ -39,6 +31,7 @@ import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.edit.GameEditFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditFragment;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**
@@ -82,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         if (calledIntent.getExtras() != null
                 && calledIntent.getExtras().get(GameEditFragment.EXTRA_EDIT_FRAGMENT) != null) {
             selectedPage = Page.GAMES;
+        }
+        if (calledIntent.getExtras() != null
+                && calledIntent.getExtras().get(SoundboardEditFragment.EXTRA_EDIT_FRAGMENT) != null) {
+            selectedPage = Page.SOUNDBOARDS;
         }
         if (selectedPage == null) {
             selectedPage = Page.SOUNDBOARDS;

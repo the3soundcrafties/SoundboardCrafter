@@ -99,21 +99,24 @@ public class GameDao extends AbstractDao {
     }
 
     public GameWithSoundboards findGameWithSoundboards(UUID gameId) {
-        final GameCursorWrapper cursor =
-                new GameCursorWrapper(
-                        rawQueryOrThrow(GameCursorWrapper.queryString(gameId)));
-        ImmutableList<GameWithSoundboards> result = findGamesWithSoundboards(cursor);
-        if (result.size() > 1) {
-            throw new IllegalStateException("More than one game was found");
+        try (GameCursorWrapper cursor =
+                     new GameCursorWrapper(
+                             rawQueryOrThrow(GameCursorWrapper.queryString(gameId)))) {
+            ImmutableList<GameWithSoundboards> result = findGamesWithSoundboards(cursor);
+            if (result.size() > 1) {
+                throw new IllegalStateException("More than one game was found");
+            }
+            return result.get(0);
         }
-        return result.get(0);
+
     }
 
     public ImmutableList<GameWithSoundboards> findAllGamesWithSoundboards() {
-        final GameCursorWrapper cursor =
-                new GameCursorWrapper(
-                        rawQueryOrThrow(GameCursorWrapper.queryString(null)));
-        return findGamesWithSoundboards(cursor);
+        try (GameCursorWrapper cursor = new GameCursorWrapper(
+                rawQueryOrThrow(GameCursorWrapper.queryString(null)))) {
+            return findGamesWithSoundboards(cursor);
+        }
+
     }
 
 
