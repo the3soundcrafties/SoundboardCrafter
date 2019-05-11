@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -18,10 +21,10 @@ import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,7 +43,23 @@ import de.soundboardcrafter.model.Sound;
 public class AudioFileListFragment extends Fragment implements
         AudioFileItemRow.Callback,
         SoundEventListener {
+    private enum SortOrder {
+        BY_NAME(Comparator.comparing(AudioModelAndSound::getName)),
+        BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded).reversed());
+        private Comparator<AudioModelAndSound> comparator;
+
+        SortOrder(Comparator<AudioModelAndSound> comparator) {
+            this.comparator = comparator;
+        }
+
+        public Comparator<AudioModelAndSound> getComparator() {
+            return comparator;
+        }
+    }
+
     private static final String TAG = AudioFileListFragment.class.getName();
+
+    private static final String ARG_SORT_ORDER = "sortOrder";
 
     /**
      * Request code used whenever a sound edit
@@ -54,6 +73,8 @@ public class AudioFileListFragment extends Fragment implements
     private @Nullable
     SoundEventListener soundEventListenerActivity;
 
+    private SortOrder sortOrder;
+
     /**
      * Creates an <code>AudioFileListFragment</code>.
      */
@@ -63,17 +84,38 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Bundle args = getArguments();
+        if (args != null) {
+            sortOrder = (SortOrder) args.getSerializable(ARG_SORT_ORDER);
+        }
+        if (sortOrder == null) {
+            sortOrder = SortOrder.BY_NAME;
+        }
+
         View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
         listView = rootView.findViewById(R.id.listview_audiofile);
 
         initAudioFileListItemAdapter();
-        new FindAudioFileTask(getContext()).execute();
+        new FindAudioFileTask(getContext(), sortOrder).execute();
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.fragment_audiofile_file, menu);
     }
 
     @Override
@@ -89,6 +131,24 @@ public class AudioFileListFragment extends Fragment implements
     public void onDetach() {
         super.onDetach();
         soundEventListenerActivity = null;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.toolbar_menu_audiofiles_sort_alpha:
+                sort(SortOrder.BY_NAME);
+                return true;
+            case R.id.toolbar_menu_audiofiles_sort_date:
+                sort(SortOrder.BY_DATE);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void sort(SortOrder sortOrder) {
+        new FindAudioFileTask(getContext(), sortOrder).execute();
     }
 
     @Override
@@ -136,7 +196,7 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public void soundChanged(UUID soundId) {
         // The sound NAME may have been changed.
-        new FindAudioFileTask(getContext()).execute();
+        new FindAudioFileTask(getContext(), sortOrder).execute();
     }
 
     @UiThread
@@ -148,10 +208,7 @@ public class AudioFileListFragment extends Fragment implements
 
     @UiThread
     private void setAudioFiles(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
-        List<AudioModelAndSound> list = Lists.newArrayList(audioFilesAndSounds);
-        list.sort((s1, s2) ->
-                s1.getAudioModel().getName().compareTo(s2.getAudioModel().getName()));
-        adapter.setAudioFiles(list);
+        adapter.setAudioFiles(audioFilesAndSounds);
     }
 
 
@@ -162,6 +219,12 @@ public class AudioFileListFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        // TODO save ARG_SORT_ORDER?!
+        super.onSaveInstanceState(outState);
+    }
+
     /**
      * A background task, used to retrieve audio files from the file system
      * and corresponding sounds from the database.
@@ -170,10 +233,12 @@ public class AudioFileListFragment extends Fragment implements
         private final String TAG = FindAudioFileTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
+        private SortOrder sortOrder;
 
-        FindAudioFileTask(Context context) {
+        FindAudioFileTask(Context context, SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.sortOrder = sortOrder;
         }
 
         @Override
@@ -189,7 +254,8 @@ public class AudioFileListFragment extends Fragment implements
 
             Log.d(TAG, "Loading audio files from file system...");
 
-            ImmutableList<AudioModel> audioModels = audioLoader.getAllAudioFromDevice(appContext);
+            ImmutableList<AudioModel> audioModels =
+                    audioLoader.getAllAudioFromDevice(appContext);
 
             Log.d(TAG, "Audio files loaded.");
 
@@ -200,12 +266,14 @@ public class AudioFileListFragment extends Fragment implements
 
             Log.d(TAG, "Sounds loaded.");
 
-            ImmutableList.Builder<AudioModelAndSound> res = ImmutableList.builder();
+            ArrayList<AudioModelAndSound> res = new ArrayList<>(audioModels.size());
             for (AudioModel audioModel : audioModels) {
                 res.add(new AudioModelAndSound(audioModel, soundMap.get(audioModel.getPath())));
             }
 
-            return res.build();
+            res.sort(sortOrder.getComparator());
+
+            return ImmutableList.copyOf(res);
         }
 
         @Override

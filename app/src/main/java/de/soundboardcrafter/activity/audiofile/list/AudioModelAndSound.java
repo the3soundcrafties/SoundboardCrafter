@@ -1,8 +1,10 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import androidx.annotation.Nullable;
+
+import java.util.Date;
 import java.util.Objects;
 
-import androidx.annotation.Nullable;
 import de.soundboardcrafter.model.Sound;
 
 /**
@@ -13,22 +15,32 @@ public class AudioModelAndSound {
     private @Nullable
     Sound sound;
 
-    public AudioModelAndSound(AudioModel audioModel) {
-        this(audioModel, null);
-    }
-
     AudioModelAndSound(AudioModel audioModel, @Nullable Sound sound) {
         this.audioModel = audioModel;
         this.sound = sound;
     }
 
-    public AudioModel getAudioModel() {
+    AudioModel getAudioModel() {
         return audioModel;
     }
 
     @Nullable
+    public String getName() {
+        if (sound == null) {
+            return audioModel.getName();
+        }
+
+        return sound.getName();
+    }
+
+
+    @Nullable
     public Sound getSound() {
         return sound;
+    }
+
+    Date getDateAdded() {
+        return audioModel.getDateAdded();
     }
 
     @Override

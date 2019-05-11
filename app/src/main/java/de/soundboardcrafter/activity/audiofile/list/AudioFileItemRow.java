@@ -6,10 +6,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import javax.annotation.Nonnull;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
+
+import javax.annotation.Nonnull;
+
 import de.soundboardcrafter.R;
 
 /**
@@ -45,7 +46,7 @@ class AudioFileItemRow extends RelativeLayout {
     @UiThread
     void setAudioFile(AudioModelAndSound audioFileAndSound, Callback callback) {
         audioModelAndSound = audioFileAndSound;
-        audioName.setText(abbreviateName(audioModelAndSound));
+        audioName.setText(abbreviateName(audioModelAndSound.getName()));
         audioArtist.setText(audioModelAndSound.getAudioModel().getArtist());
 
         // TODO Choose appropriate image: + or - ?!
@@ -55,14 +56,6 @@ class AudioFileItemRow extends RelativeLayout {
 
         ImageView iconAdd = findViewById(R.id.icon_add);
         iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
-    }
-
-    private static String abbreviateName(AudioModelAndSound audioModelAndSound) {
-        if (audioModelAndSound.getSound() == null) {
-            return abbreviateName(audioModelAndSound.getAudioModel().getName());
-        }
-
-        return abbreviateName(audioModelAndSound.getSound().getName());
     }
 
     private static String abbreviateName(String name) {
