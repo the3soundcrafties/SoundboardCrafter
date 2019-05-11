@@ -1,11 +1,10 @@
 package de.soundboardcrafter.model;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
+
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import androidx.annotation.NonNull;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -21,15 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <code>Sound</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
-public class Sound implements Serializable {
+public class Sound extends AbstractEntity {
     /**
      * Maximum volume percentage
      */
     // Changing this might need a database migration! -> DBHelper
     public static final int MAX_VOLUME_PERCENTAGE = 100;
-
-    private final @NonNull
-    UUID id;
 
     /**
      * Path to the audio file
@@ -62,17 +58,13 @@ public class Sound implements Serializable {
     }
 
     public Sound(UUID id, @NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
-        this.id = checkNotNull(id, "id is null");
+        super(id);
         this.path = checkNotNull(path, "path is null");
         this.name = checkNotNull(name, "name is null");
         setVolumePercentage(volumePercentage);
         this.loop = loop;
     }
 
-    public @NonNull
-    UUID getId() {
-        return id;
-    }
 
     @NonNull
     public String getPath() {
@@ -115,7 +107,7 @@ public class Sound implements Serializable {
     public @Nonnull
     String toString() {
         return "Sound{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", path=" + path +
                 ", name='" + name + '\'' +
                 ", volumePercentage=" + volumePercentage +

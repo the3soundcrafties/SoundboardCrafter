@@ -2,9 +2,11 @@ package de.soundboardcrafter.dao;
 
 import android.database.Cursor;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
+
 import java.util.UUID;
 
-import androidx.annotation.WorkerThread;
 import de.soundboardcrafter.dao.DBSchema.GameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
@@ -22,27 +24,31 @@ class GameCursorWrapper {
 
 
     UUID getSoundboardId() {
-        return UUID.fromString(cursor.getString(cursor.getColumnIndex(SoundboardTable.Cols.ID)));
+        return UUID.fromString(cursor.getString(0));
     }
 
     String getSoundboardName() {
-        return cursor.getString(cursor.getColumnIndex(SoundboardTable.Cols.NAME));
-    }
-
-    String getGameName() {
-        return cursor.getString(cursor.getColumnIndex(GameTable.Cols.NAME));
+        return cursor.getString(1);
     }
 
     UUID getGameId() {
-        return UUID.fromString(cursor.getString(cursor.getColumnIndex(GameTable.Cols.ID)));
+        return UUID.fromString(cursor.getString(2));
     }
+
+    String getGameName() {
+        return cursor.getString(3);
+    }
+
 
     boolean hasSoundboard() {
-        return !cursor.isNull(cursor.getColumnIndex(SoundboardTable.Cols.ID));
+        return !cursor.isNull(0);
     }
 
-    static String queryString() {
-        return "SELECT sb." + SoundboardTable.Cols.ID
+    /**
+     * SQL for getting all games if gameId ist Null or for a certain gameId
+     */
+    static String queryString(@Nullable UUID gameId) {
+        String query = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
                 + ", g." + GameTable.Cols.ID
                 + ", g." + GameTable.Cols.NAME
@@ -51,8 +57,12 @@ class GameCursorWrapper {
                 + "LEFT JOIN " + SoundboardGameTable.NAME + " sbg "
                 + "ON sbg." + SoundboardGameTable.Cols.GAME_ID + " = g." + GameTable.Cols.ID + " "
                 + "LEFT JOIN " + SoundboardTable.NAME + " sb "
-                + "ON sb." + SoundboardTable.Cols.ID + " = sbg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " " //
-                + "ORDER BY g." + GameTable.Cols.ID;
+                + "ON sb." + SoundboardTable.Cols.ID + " = sbg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " ";
+        if (gameId != null) {
+            query += "WHERE g." + SoundboardGameTable.Cols.GAME_ID + "=" + gameId;
+        }
+        query += "ORDER BY g." + GameTable.Cols.ID;
+        return query;
     }
 
     boolean moveToNext() {

@@ -460,4 +460,21 @@ public class SoundboardDao extends AbstractDao {
         getDatabase().delete(SoundboardTable.NAME, null, new String[]{});
     }
 
+    public List<Soundboard> findAll() {
+        final Cursor cursor =
+                getDatabase().query(
+                        SoundboardTable.NAME,
+                        null, // all columns
+                        null, null,
+                        null,
+                        null,
+                        null
+                );
+        SoundboardCursorWrapper cursorWrapper = new SoundboardCursorWrapper(cursor);
+        ImmutableList.Builder<Soundboard> res = new ImmutableList.Builder<>();
+        while (cursorWrapper.moveToNext()) {
+            res.add(cursorWrapper.getSoundboard());
+        }
+        return res.build();
+    }
 }

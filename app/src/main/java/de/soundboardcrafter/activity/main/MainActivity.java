@@ -1,14 +1,9 @@
 package de.soundboardcrafter.activity.main;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import com.google.android.material.tabs.TabLayout;
-import com.google.common.collect.Lists;
-
-import java.util.List;
-import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,8 +14,16 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.common.collect.Lists;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
+import de.soundboardcrafter.activity.game.edit.GameEditFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
@@ -61,10 +64,14 @@ public class MainActivity extends AppCompatActivity {
             @Nullable String selectedPage = savedInstanceState.getString(KEY_SELECTED_PAGE);
             this.selectedPage = selectedPage != null ? Page.valueOf(selectedPage) : null;
         }
+        Intent calledIntent = getIntent();
+        if (calledIntent.getExtras() != null
+                && calledIntent.getExtras().get(GameEditFragment.EXTRA_EDIT_FRAGMENT) != null) {
+            selectedPage = Page.GAMES;
+        }
         if (selectedPage == null) {
             selectedPage = Page.SOUNDBOARDS;
         }
-
         int index = pagerAdapter.getIndexOf(selectedPage);
         pager.setCurrentItem(index != -1 ? index : 0, false);
 

@@ -1,13 +1,21 @@
 package de.soundboardcrafter.activity.game.list;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -17,11 +25,8 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.game.edit.GameCreateActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
@@ -31,6 +36,7 @@ import de.soundboardcrafter.model.GameWithSoundboards;
 public class GameListFragment extends Fragment {
     private static final String TAG = GameListFragment.class.getName();
     private ListView listView;
+    private Button addNewGame;
     private GameListItemAdapter adapter;
 
     @Override
@@ -46,8 +52,17 @@ public class GameListFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_game_list,
                 container, false);
         listView = rootView.findViewById(R.id.listview_games);
+        addNewGame = rootView.findViewById(R.id.new_game);
+        addNewGame.setOnClickListener(e -> {
+            startActivityForResult(GameCreateActivity.newIntent(getContext()));
+        });
 
         return rootView;
+    }
+
+
+    private void startActivityForResult(@SuppressLint("UnknownNullness") Intent intent) {
+        startActivityForResult(intent, 0, null);
     }
 
     @UiThread

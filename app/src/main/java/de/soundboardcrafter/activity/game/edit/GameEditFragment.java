@@ -25,10 +25,11 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.dao.SoundDao;
+import de.soundboardcrafter.activity.main.MainActivity;
+import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 import de.soundboardcrafter.model.SelectableSoundboard;
-import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -40,10 +41,12 @@ public class GameEditFragment extends Fragment {
     private static final String ARG_GAME_ID = "gameId";
 
     private static final String EXTRA_GAME_ID = "gameId";
+    public static final String EXTRA_EDIT_FRAGMENT = "editFragment";
 
     private GameEditView gameEditView;
 
     private GameWithSoundboards gameWithSoundboards;
+
 
     static GameEditFragment newInstance(UUID gameId) {
         Bundle args = new Bundle();
@@ -54,23 +57,33 @@ public class GameEditFragment extends Fragment {
         return fragment;
     }
 
+    static GameEditFragment newInstance() {
+        return new GameEditFragment();
+    }
+
 
     @Override
     @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final UUID gameId = UUID.fromString(getArguments().getString(ARG_GAME_ID));
-
-        new FindGameTask(getActivity(), gameId).execute();
 
         // The result will be the game id, so that the calling
         // activity can update its GUI for this gameWithSoundboards.
-        Intent intent = new Intent(getActivity(), GameEditActivity.class);
-        intent.putExtra(EXTRA_GAME_ID, gameId.toString());
+
+        if (getArguments() != null) {
+            String gameIdArg = getArguments().getString(ARG_GAME_ID);
+            UUID gameId = UUID.fromString(gameIdArg);
+            new FindGameTask(getActivity(), gameId).execute();
+        } else {
+            gameWithSoundboards = new GameWithSoundboards("NEW_GAME");
+            new FindAllSoundboardsTask(getContext()).execute();
+
+        }
+        Intent intent = new Intent(getActivity(), GameCreateActivity.class);
         getActivity().setResult(
-                // There is no cancel button - the result is always OK
-                Activity.RESULT_OK,
+                Activity.RESULT_CANCELED,
                 intent);
+
 
     }
 
@@ -90,28 +103,66 @@ public class GameEditFragment extends Fragment {
                 container, false);
 
         gameEditView = rootView.findViewById(R.id.edit_view);
+        gameEditView.setName(gameWithSoundboards.getGame().getName());
 
-        gameEditView.setEnabled(false);
+
+        gameEditView.setOnClickListenerSave(
+                () -> {
+                    saveGame();
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
+                    intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                    getActivity().startActivityForResult(intent, Activity.RESULT_OK);
+                }
+        );
+        gameEditView.setOnClickListenerCancel(
+                () -> {
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
+                    intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                    getActivity().startActivityForResult(intent, Activity.RESULT_CANCELED);
+                }
+        );
 
         return rootView;
     }
 
+
     @UiThread
-    private void updateUI(GameWithSoundboards gameWithSoundboards) {
+    private void updateUIGameInfo(GameWithSoundboards gameWithSoundboards) {
         this.gameWithSoundboards = gameWithSoundboards;
-
         gameEditView.setName(gameWithSoundboards.getGame().getName());
-        gameEditView.setSoundboards(toSelectableSoundboards(gameWithSoundboards.getSoundboards()));
-
-        gameEditView.setEnabled(true);
     }
 
-    private List<SelectableSoundboard> toSelectableSoundboards(ImmutableList<Soundboard> soundboards) {
-        List<SelectableSoundboard> res = new ArrayList<>();
+    @UiThread
+    private void updateUISoundboards(List<Soundboard> soundboards) {
+        List<SelectableSoundboard> selectableSoundboards = new ArrayList<>();
+        ImmutableList<Soundboard> soundboardsInGame = gameWithSoundboards.getSoundboards();
         for (Soundboard soundboard : soundboards) {
-            res.add(new SelectableSoundboard(soundboard, true));
+            if (soundboardsInGame.contains(soundboard)) {
+                selectableSoundboards.add(new SelectableSoundboard(soundboard, true));
+            } else {
+                selectableSoundboards.add(new SelectableSoundboard(soundboard, false));
+            }
         }
-        return res;
+        gameEditView.setSoundboards(selectableSoundboards);
+
+
+    }
+
+    private void saveGame() {
+        String nameEntered = gameEditView.getName();
+        if (!nameEntered.isEmpty()) {
+            gameWithSoundboards.getGame().setName(nameEntered);
+        }
+        List<SelectableSoundboard> soundboards = gameEditView.getSelectableSoundboards();
+        gameWithSoundboards.clearSoundboards();
+        for (SelectableSoundboard soundboard : soundboards) {
+            if (soundboard.isSelected()) {
+                gameWithSoundboards.addSoundboard(soundboard.getSoundboard());
+            }
+        }
+        new SaveNewGameTask(getActivity(), gameWithSoundboards).execute();
     }
 
 
@@ -120,45 +171,36 @@ public class GameEditFragment extends Fragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
-
-        String nameEntered = gameEditView.getName();
-        if (!nameEntered.isEmpty()) {
-            gameWithSoundboards.getSound().setName(nameEntered);
-        }
-        new SaveSoundTask(getActivity(), gameWithSoundboards).execute();
     }
 
 
     /**
-     * A background task, used to load the gameWithSoundboards from the database.
+     * A background task, used to load all soundboards from the database.
      */
-    class FindGameTask extends AsyncTask<Void, Void, GameWithSoundboards> {
-        private final String TAG = FindGameTask.class.getName();
+    class FindAllSoundboardsTask extends AsyncTask<Void, Void, List<Soundboard>> {
+        private final String TAG = FindAllSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final UUID soundId;
 
-        FindGameTask(Context context, UUID soundId) {
+        FindAllSoundboardsTask(Context context) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.soundId = soundId;
         }
 
         @Override
         @WorkerThread
-        protected SoundWithSelectableSoundboards doInBackground(Void... voids) {
+        protected List<Soundboard> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
+            Log.d(TAG, "Loading soundboards....");
 
-            Log.d(TAG, "Loading gameWithSoundboards....");
+            List<Soundboard> res =
+                    SoundboardDao.getInstance(appContext).findAll();
 
-            SoundWithSelectableSoundboards res =
-                    SoundDao.getInstance(appContext).findSoundWithSelectableSoundboards(soundId);
-
-            Log.d(TAG, "Sound loaded.");
+            Log.d(TAG, "Game loaded.");
 
             return res;
         }
@@ -166,7 +208,7 @@ public class GameEditFragment extends Fragment {
 
         @Override
         @UiThread
-        protected void onPostExecute(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
+        protected void onPostExecute(List<Soundboard> soundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -179,23 +221,78 @@ public class GameEditFragment extends Fragment {
                 return;
             }
 
-            updateUI(soundWithSelectableSoundboards);
+            updateUISoundboards(soundboards);
+        }
+    }
+
+
+    /**
+     * A background task, used to load the gameWithSoundboards from the database.
+     */
+    class FindGameTask extends AsyncTask<Void, Void, GameWithSoundboards> {
+        private final String TAG = FindGameTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final UUID gameId;
+
+        FindGameTask(Context context, UUID gameId) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.gameId = gameId;
+        }
+
+        @Override
+        @WorkerThread
+        protected GameWithSoundboards doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+            Log.d(TAG, "Loading gameWithSoundboards....");
+
+            GameWithSoundboards res =
+                    GameDao.getInstance(appContext).findGameWithSoundboards(gameId);
+
+            Log.d(TAG, "Game loaded.");
+
+            return res;
+        }
+
+
+        @Override
+        @UiThread
+        protected void onPostExecute(GameWithSoundboards gameWithSoundboards) {
+            if (!isAdded()) {
+                // fragment is no longer linked to an activity
+                return;
+            }
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            updateUIGameInfo(gameWithSoundboards);
+            new FindAllSoundboardsTask(getContext()).execute();
         }
     }
 
     /**
      * A background task, used to save the gameWithSoundboards
      */
-    class SaveSoundTask extends AsyncTask<Void, Void, Void> {
-        private final String TAG = SaveSoundTask.class.getName();
+    class SaveNewGameTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = SaveNewGameTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final SoundWithSelectableSoundboards sound;
+        private final GameWithSoundboards gameWithSoundboards;
 
-        SaveSoundTask(Context context, SoundWithSelectableSoundboards sound) {
+        SaveNewGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.sound = sound;
+            this.gameWithSoundboards = gameWithSoundboards;
         }
 
         @Override
@@ -207,13 +304,8 @@ public class GameEditFragment extends Fragment {
                 return null;
             }
 
-            Log.d(TAG, "Saving gameWithSoundboards " + sound);
-
-            if (soundboardsEditable) {
-                SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
-            } else {
-                SoundDao.getInstance(appContext).updateSound(sound.getSound());
-            }
+            Log.d(TAG, "Saving gameWithSoundboards " + gameWithSoundboards);
+            GameDao.getInstance(appContext).insertWithSoundboards(gameWithSoundboards);
 
             return null;
         }

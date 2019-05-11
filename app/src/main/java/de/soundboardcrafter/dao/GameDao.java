@@ -23,7 +23,6 @@ public class GameDao extends AbstractDao {
             instance = new GameDao(context);
             instance.init(context);
         }
-
         return instance;
     }
 
@@ -35,16 +34,47 @@ public class GameDao extends AbstractDao {
         soundboardDao = SoundboardDao.getInstance(context);
     }
 
-    void insertWithSoundboards(GameWithSoundboards gameWithSoundboards) {
-        insert(gameWithSoundboards.getGame());
-        for (Soundboard soundboard : gameWithSoundboards.getSoundboards()) {
-            linkGameToSoundboard(soundboard.getId(), gameWithSoundboards.getGame().getId());
+
+    /**
+     * Updates this gameWithSoundboards (which must already exist in the database) and updates the
+     * soundboard links.
+     */
+    public void updateGameWithSoundboards(GameWithSoundboards gameWithSoundboards) {
+        updateGame(gameWithSoundboards.getGame());
+        //unlink soundboards
+        getDatabase().delete(SoundboardGameTable.NAME, DBSchema.GameTable.Cols.ID + " = ?",
+                new String[]{gameWithSoundboards.getGame().getId().toString()});
+        linkSoundboardsToGame(gameWithSoundboards);
+    }
+
+    /**
+     * Updates this sound which has to exist in the database.
+     */
+    private void updateGame(Game game) {
+        int rowsUpdated = getDatabase().update(DBSchema.GameTable.NAME,
+                buildContentValues(game),
+                DBSchema.GameTable.Cols.ID + " = ?",
+                new String[]{game.getId().toString()});
+
+        if (rowsUpdated != 1) {
+            throw new RuntimeException("Not exactly one sound with ID + " + game.getId());
         }
     }
 
+    public void insertWithSoundboards(GameWithSoundboards gameWithSoundboards) {
+        insert(gameWithSoundboards.getGame());
+        linkSoundboardsToGame(gameWithSoundboards);
+    }
+
     private void insert(Game game) {
-        // TODO throw exception if sound name already exists
+        // TODO throw exception if game name already exists
         insertOrThrow(DBSchema.GameTable.NAME, buildContentValues(game));
+    }
+
+    private void linkSoundboardsToGame(GameWithSoundboards gameWithSoundboards) {
+        for (Soundboard soundboard : gameWithSoundboards.getSoundboards()) {
+            linkGameToSoundboard(soundboard.getId(), gameWithSoundboards.getGame().getId());
+        }
     }
 
     private void linkGameToSoundboard(UUID soundboardId, UUID gameId) {
@@ -68,10 +98,26 @@ public class GameDao extends AbstractDao {
         getDatabase().delete(DBSchema.GameTable.NAME, null, new String[]{});
     }
 
+    public GameWithSoundboards findGameWithSoundboards(UUID gameId) {
+        final GameCursorWrapper cursor =
+                new GameCursorWrapper(
+                        rawQueryOrThrow(GameCursorWrapper.queryString(gameId)));
+        ImmutableList<GameWithSoundboards> result = findGamesWithSoundboards(cursor);
+        if (result.size() > 1) {
+            throw new IllegalStateException("More than one game was found");
+        }
+        return result.get(0);
+    }
+
     public ImmutableList<GameWithSoundboards> findAllGamesWithSoundboards() {
         final GameCursorWrapper cursor =
                 new GameCursorWrapper(
-                        rawQueryOrThrow(GameCursorWrapper.queryString()));
+                        rawQueryOrThrow(GameCursorWrapper.queryString(null)));
+        return findGamesWithSoundboards(cursor);
+    }
+
+
+    private ImmutableList<GameWithSoundboards> findGamesWithSoundboards(GameCursorWrapper cursor) {
         ImmutableList.Builder<GameWithSoundboards> res = ImmutableList.builder();
         GameWithSoundboards currentGame = null;
         while (cursor.moveToNext()) {
@@ -88,12 +134,14 @@ public class GameDao extends AbstractDao {
                 currentGame.addSoundboard(soundboard);
             }
         }
-
         return res.build();
     }
+
 
     void unlinkAllGames() {
         getDatabase().delete(SoundboardGameTable.NAME, null, new String[]{});
 
     }
+
+
 }

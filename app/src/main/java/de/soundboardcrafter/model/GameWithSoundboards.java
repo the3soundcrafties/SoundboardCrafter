@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import androidx.annotation.NonNull;
+
 import com.google.common.collect.ImmutableList;
 
 import java.io.Serializable;
@@ -8,8 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import androidx.annotation.NonNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -59,6 +59,9 @@ public class GameWithSoundboards implements Serializable {
         return ImmutableList.copyOf(soundboards);
     }
 
+    public void clearSoundboards() {
+        soundboards.clear();
+    }
 
     @Override
     public String toString() {
@@ -67,4 +70,5 @@ public class GameWithSoundboards implements Serializable {
                 ", soundboards=" + soundboards +
                 '}';
     }
+
 }

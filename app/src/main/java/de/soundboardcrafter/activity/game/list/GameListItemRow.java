@@ -4,11 +4,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import javax.annotation.Nonnull;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
+
+import com.google.common.base.Joiner;
+
+import javax.annotation.Nonnull;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
@@ -42,7 +46,10 @@ class GameListItemRow extends RelativeLayout {
         this.gameWithSoundboards = gameWithSoundboards;
         gameName.setText(gameWithSoundboards.getGame().getName());
         soundboardCount.setText(getSoundboardCountText());
-
+        setOnClickListener(l -> {
+            Toast toast = Toast.makeText(getContext(), Joiner.on(" ").join(gameWithSoundboards.getSoundboards()), Toast.LENGTH_LONG);
+            toast.show();
+        });
         setOnLongClickListener(l -> {
             // Do NOT consume long clicks.
             // Without this, this context menu on the list view won't work

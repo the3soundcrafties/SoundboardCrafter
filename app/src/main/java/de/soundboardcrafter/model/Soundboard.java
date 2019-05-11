@@ -1,11 +1,10 @@
 package de.soundboardcrafter.model;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
+
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import androidx.annotation.NonNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -16,9 +15,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <code>Soundboards</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
-public class Soundboard implements Serializable {
-    private final @NonNull
-    UUID id;
+public class Soundboard extends AbstractEntity {
+
     private @NonNull
     String name;
 
@@ -28,14 +26,8 @@ public class Soundboard implements Serializable {
     }
 
     public Soundboard(UUID id, @NonNull String name) {
-        this.id = checkNotNull(id, "id is null");
+        super(id);
         this.name = checkNotNull(name, "name is null");
-    }
-
-
-    public @NonNull
-    UUID getId() {
-        return id;
     }
 
     public @NonNull
@@ -53,7 +45,7 @@ public class Soundboard implements Serializable {
     public @Nonnull
     String toString() {
         return "Soundboard{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", name='" + name + '\'' +
                 '}';
     }

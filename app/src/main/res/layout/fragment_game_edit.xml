@@ -13,5 +13,6 @@
         android:id="@+id/edit_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" />
+        android:orientation="vertical"></de.soundboardcrafter.activity.game.edit.GameEditView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

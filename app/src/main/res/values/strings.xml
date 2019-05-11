@@ -24,4 +24,6 @@
     <string name="sounds_tab_title">Sounds</string>
     <string name="games_tab_title">Games</string>
     <string name="new_game">add new Game</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 </resources>

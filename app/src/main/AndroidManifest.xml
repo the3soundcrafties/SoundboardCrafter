@@ -42,6 +42,11 @@
             android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
             android:windowSoftInputMode="stateVisible" />
 
+        <activity
+            android:name=".activity.game.edit.GameCreateActivity"
+            android:parentActivityName=".activity.main.MainActivity"
+            android:windowSoftInputMode="stateVisible" />
+
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
             android:exported="false"

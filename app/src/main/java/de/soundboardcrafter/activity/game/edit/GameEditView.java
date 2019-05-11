@@ -2,11 +2,14 @@ package de.soundboardcrafter.activity.game.edit;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.UiThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
@@ -21,6 +24,8 @@ public class GameEditView extends ConstraintLayout {
     private TextView nameTextView;
     private ListView soundboardsListView;
     private SelectableSoundboardListItemAdapter adapter;
+    private Button cancel;
+    private Button save;
 
 
     public GameEditView(Context context) {
@@ -42,10 +47,22 @@ public class GameEditView extends ConstraintLayout {
         inflate(getContext(), R.layout.view_game_edit, this);
         nameTextView = findViewById(R.id.nameText);
         soundboardsListView = findViewById(R.id.soundboardsList);
-
+        cancel = findViewById(R.id.cancel);
+        save = findViewById(R.id.save);
         setEnabled(true);
     }
 
+    void setOnClickListenerSave(Runnable runnable) {
+        save.setOnClickListener(l -> {
+            runnable.run();
+        });
+    }
+
+    void setOnClickListenerCancel(Runnable runnable) {
+        cancel.setOnClickListener(l -> {
+            runnable.run();
+        });
+    }
 
     /**
      * Sets the soundboards and the info whether they can be changed.
@@ -55,6 +72,14 @@ public class GameEditView extends ConstraintLayout {
         adapter = new SelectableSoundboardListItemAdapter(soundboards, true);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+    }
+
+    List<SelectableSoundboard> getSelectableSoundboards() {
+        ImmutableList.Builder<SelectableSoundboard> res = new ImmutableList.Builder<>();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            res.add(adapter.getItem(i));
+        }
+        return res.build();
     }
 
     /**
@@ -82,5 +107,6 @@ public class GameEditView extends ConstraintLayout {
     public String getName() {
         return nameTextView.getText().toString();
     }
+
 
 }

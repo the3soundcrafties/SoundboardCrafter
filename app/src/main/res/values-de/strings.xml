@@ -24,4 +24,6 @@
     <string name="sounds_tab_title">Sounds</string>
     <string name="games_tab_title">Spiele</string>
     <string name="new_game">neues Spiel hinzufügen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="save">Speichern</string>
 </resources>
