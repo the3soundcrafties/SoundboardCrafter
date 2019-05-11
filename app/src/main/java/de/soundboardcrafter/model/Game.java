@@ -20,12 +20,12 @@ public class Game extends AbstractEntity {
     private String name;
 
 
-    public Game(@NonNull String name) {
+    Game(@NonNull String name) {
         this(UUID.randomUUID(), name);
     }
 
 
-    Game(@Nonnull UUID id, String name) {
+    public Game(@Nonnull UUID id, String name) {
         super(id);
         this.name = checkNotNull(name, "name is null");
     }

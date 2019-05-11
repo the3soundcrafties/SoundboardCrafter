@@ -121,17 +121,13 @@ public class GameDao extends AbstractDao {
         ImmutableList.Builder<GameWithSoundboards> res = ImmutableList.builder();
         GameWithSoundboards currentGame = null;
         while (cursor.moveToNext()) {
-            UUID uuid = cursor.getGameId();
-            String name = cursor.getGameName();
-            if (currentGame == null || !currentGame.getGame().getId().equals(uuid)) {
-                currentGame = new GameWithSoundboards(uuid, name);
+            GameCursorWrapper.Row row = cursor.getRow();
+            if (currentGame == null || !currentGame.getGame().getId().equals(row.getGame().getId())) {
+                currentGame = new GameWithSoundboards(row.getGame());
                 res.add(currentGame);
             }
-            if (cursor.hasSoundboard()) {
-                UUID uuidSoundboard = cursor.getSoundboardId();
-                String nameSoundboard = cursor.getSoundboardName();
-                Soundboard soundboard = new Soundboard(uuidSoundboard, nameSoundboard);
-                currentGame.addSoundboard(soundboard);
+            if (row.getSoundboard() != null) {
+                currentGame.addSoundboard(row.getSoundboard());
             }
         }
         return res.build();
@@ -140,7 +136,6 @@ public class GameDao extends AbstractDao {
 
     void unlinkAllGames() {
         getDatabase().delete(SoundboardGameTable.NAME, null, new String[]{});
-
     }
 
 

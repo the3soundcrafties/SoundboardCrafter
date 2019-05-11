@@ -3,7 +3,6 @@ package de.soundboardcrafter.dao;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -23,7 +22,7 @@ import de.soundboardcrafter.model.Soundboard;
 class GameCursorWrapper extends CursorWrapper {
     GameCursorWrapper(Cursor cursor) {
         super(cursor);
-
+    }
 
     /**
      * SQL for getting all games if gameId ist Null or for a certain gameId
@@ -55,8 +54,8 @@ class GameCursorWrapper extends CursorWrapper {
 
     @NonNull
     private Game getGame() {
-            UUID gameId =
-                    UUID.fromString(getString(2));
+        UUID gameId =
+                UUID.fromString(getString(2));
         String gameName = getString(3);
 
         return new Game(gameId, gameName);
@@ -68,9 +67,9 @@ class GameCursorWrapper extends CursorWrapper {
             return null;
         }
 
-        UUID soundboardId =  UUID.fromString(getString(0));
+        UUID soundboardId = UUID.fromString(getString(0));
 
-        String soundboardName = getString(1));
+        String soundboardName = getString(1);
 
         return new Soundboard(soundboardId, soundboardName);
     }
