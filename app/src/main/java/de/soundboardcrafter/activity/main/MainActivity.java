@@ -1,7 +1,6 @@
 package de.soundboardcrafter.activity.main;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.ViewGroup;
@@ -28,10 +27,8 @@ import java.util.function.Supplier;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
-import de.soundboardcrafter.activity.game.edit.GameEditFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
-import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditFragment;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**
@@ -71,15 +68,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
             @Nullable String selectedPage = savedInstanceState.getString(KEY_SELECTED_PAGE);
             this.selectedPage = selectedPage != null ? Page.valueOf(selectedPage) : null;
         }
-        Intent calledIntent = getIntent();
-        if (calledIntent.getExtras() != null
-                && calledIntent.getExtras().get(GameEditFragment.EXTRA_EDIT_FRAGMENT) != null) {
-            selectedPage = Page.GAMES;
-        }
-        if (calledIntent.getExtras() != null
-                && calledIntent.getExtras().get(SoundboardEditFragment.EXTRA_EDIT_FRAGMENT) != null) {
-            selectedPage = Page.SOUNDBOARDS;
-        }
+
         if (selectedPage == null) {
             selectedPage = Page.SOUNDBOARDS;
         }
@@ -101,6 +90,10 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
+        updateUI();
+    }
+
+    private void updateUI() {
         if (pagerAdapter != null) {
             pagerAdapter.notifyDataSetChanged();
         }

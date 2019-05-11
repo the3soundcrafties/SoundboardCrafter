@@ -63,7 +63,7 @@ class GameCursorWrapper extends CursorWrapper {
 
     @Nullable
     private Soundboard getSoundboard() {
-        if (isNull(getColumnIndex(SoundboardTable.Cols.ID))) {
+        if (isNull(0)) {
             return null;
         }
 

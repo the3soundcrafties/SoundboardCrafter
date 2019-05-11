@@ -1,6 +1,6 @@
 package de.soundboardcrafter.activity.game.list;
 
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -34,7 +34,10 @@ import de.soundboardcrafter.model.GameWithSoundboards;
  * Shows Games in a Grid
  */
 public class GameListFragment extends Fragment {
+    private static final String TAG = GameListFragment.class.getName();
+
     private static final String ARG_EDIT_SOUND_REQUEST_CODE = "ARG_EDIT_SOUND_REQUEST_CODE";
+    private static final int EDIT_GAME_REQUEST_CODE = 27;
 
     private ListView listView;
     private Button addNewGame;
@@ -55,16 +58,28 @@ public class GameListFragment extends Fragment {
         listView = rootView.findViewById(R.id.listview_games);
         addNewGame = rootView.findViewById(R.id.new_game);
         addNewGame.setOnClickListener(e -> {
-            startActivityForResult(GameCreateActivity.newIntent(getContext()));
+            startActivityForResult(GameCreateActivity.newIntent(getContext()), EDIT_GAME_REQUEST_CODE);
         });
 
         return rootView;
     }
 
+    @Override
+    @UiThread
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
 
-    private void startActivityForResult(@SuppressLint("UnknownNullness") Intent intent) {
-        startActivityForResult(intent, 0, null);
+        switch (requestCode) {
+            case EDIT_GAME_REQUEST_CODE:
+                Log.d(TAG, "Editing game " + this + ": Returned from game edit fragment with OK");
+                new FindGamesTask(getContext()).execute();
+                updateUI();
+                break;
+        }
     }
+
 
     @UiThread
     private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {

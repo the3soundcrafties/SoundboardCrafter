@@ -1,6 +1,6 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -37,6 +37,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
     private static final String TAG = SoundboardListFragment.class.getName();
+    private static final int EDIT_SOUNDBOARD_REQUEST_CODE = 25;
     private Button addNewSoundboard;
     /**
      * @param editSoundRequestCode request code used whenever a sound edit
@@ -64,7 +65,7 @@ public class SoundboardListFragment extends Fragment
         listView = rootView.findViewById(R.id.listview_soundboard);
         addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
         addNewSoundboard.setOnClickListener(e -> {
-            startActivityForResult(SoundboardCreateActivity.newIntent(getContext()));
+            startActivityForResult(SoundboardCreateActivity.newIntent(getContext()), EDIT_SOUNDBOARD_REQUEST_CODE);
         });
         initSoundboardItemAdapter();
         new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
@@ -72,8 +73,20 @@ public class SoundboardListFragment extends Fragment
         return rootView;
     }
 
-    private void startActivityForResult(@SuppressLint("UnknownNullness") Intent intent) {
-        startActivityForResult(intent, 0, null);
+
+    @Override
+    @UiThread
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        switch (requestCode) {
+            case EDIT_SOUNDBOARD_REQUEST_CODE:
+                Log.d(TAG, "Editing soundboard " + this + ": Returned from soundboard edit fragment with OK");
+                new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+                break;
+        }
     }
 
     @Override
