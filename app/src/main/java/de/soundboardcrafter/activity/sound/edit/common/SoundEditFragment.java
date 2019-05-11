@@ -40,13 +40,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     public static final String EXTRA_SOUND_ID = "soundId";
-    public static final String EXTRA_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     private SoundEditView soundEditView;
 
     private SoundWithSelectableSoundboards sound;
     private boolean soundboardsEditable;
-
 
     private MediaPlayerService mediaPlayerService;
 
@@ -187,14 +185,14 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
-        MediaPlayerService service = getService();
-        if (service == null) {
-            return;
-        }
-
-        service.stopPlaying(null, sound.getSound());
+        stopPlaying();
 
         getActivity().unbindService(this);
+
+        if (sound == null) {
+            // Sound not yet loaded
+            return;
+        }
 
         String nameEntered = soundEditView.getName();
         if (!nameEntered.isEmpty()) {
@@ -205,6 +203,20 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         sound.getSound().setLoop(soundEditView.isLoop());
 
         new SaveSoundTask(getActivity(), sound).execute();
+    }
+
+    private void stopPlaying() {
+        if (sound == null) {
+            // not yet loaded
+            return;
+        }
+
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        service.stopPlaying(null, sound.getSound());
     }
 
     /**

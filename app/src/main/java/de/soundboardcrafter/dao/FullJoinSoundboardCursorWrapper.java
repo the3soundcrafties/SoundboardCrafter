@@ -1,23 +1,27 @@
 package de.soundboardcrafter.dao;
 
 import android.database.Cursor;
+import android.database.CursorWrapper;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import java.io.Closeable;
 import java.util.UUID;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.Soundboard;
+
+import static androidx.core.util.Preconditions.checkNotNull;
 
 /**
  * Essentially a cursor over a soundboard that's joined with all its sounds.
  */
 @WorkerThread
-class FullJoinSoundboardCursorWrapper implements Closeable {
-    private final Cursor cursor;
-
+class FullJoinSoundboardCursorWrapper extends CursorWrapper {
     static String queryString() {
         return "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
@@ -37,83 +41,114 @@ class FullJoinSoundboardCursorWrapper implements Closeable {
     }
 
     FullJoinSoundboardCursorWrapper(Cursor cursor) {
-        this.cursor = cursor;
-    }
-
-    boolean moveToNext() {
-        return cursor.moveToNext();
-    }
-
-    UUID getSoundboardId() {
-        return UUID.fromString(cursor.getString(0));
-    }
-
-    String getSoundboardName() {
-        return cursor.getString(1);
-    }
-
-    boolean hasSound() {
-        return !cursor.isNull(2);
+        super(cursor);
     }
 
     /**
-     * Returns the index of the sound in the soundboard. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
+     * Gets the current {@link Row} from the cursor.
      */
-    int getIndex() {
-        return cursor.getInt(2);
+    Row getRow() {
+        Soundboard soundboard = getSoundboard();
+        @Nullable IndexedSound indexedSound = getIndexedSound();
+
+        return new Row(soundboard, indexedSound);
     }
 
     /**
-     * Returns the ID of the sound. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
+     * Gets the current {@link Soundboard} from the cursor.
      */
-    UUID getSoundId() {
-        return UUID.fromString(cursor.getString(3));
+    private Soundboard getSoundboard() {
+        UUID soundboardId = UUID.fromString(getString(0));
+        String soundboardName = getString(1);
+        return new Soundboard(soundboardId, soundboardName);
     }
 
     /**
-     * Returns the name of the sound. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
+     * Gets the current {@link IndexedSound} from the cursor.
      */
-    String getSoundName() {
-        return cursor.getString(4);
+    @Nullable
+    private IndexedSound getIndexedSound() {
+        if (isNull(2)) {
+            return null;
+        }
+        int index = getInt(2);
+
+        UUID soundId = UUID.fromString(getString(3));
+        String soundName = getString(4);
+        String soundPath = getString(5);
+        int soundVolumePercentage = getInt(6);
+        boolean soundLoop = getInt(7) != 0;
+        Sound sound = new Sound(soundId, soundPath, soundName,
+                soundVolumePercentage, soundLoop);
+
+        return new IndexedSound(index, sound);
     }
 
     /**
-     * Returns the path of the sound. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
+     * A row of this wrapped cursor, containing a soundboard
+     * and maybe an indexed sound.
      */
-    String getSoundPath() {
-        return cursor.getString(5);
+    static class Row {
+        @NonNull
+        private final Soundboard soundboard;
+
+        @Nullable
+        private final IndexedSound indexedSound;
+
+        Row(@NonNull Soundboard soundboard,
+            @Nullable IndexedSound indexedSound) {
+            this.soundboard = checkNotNull(soundboard, "soundboard was null");
+            this.indexedSound = indexedSound;
+        }
+
+        @NonNull
+        public Soundboard getSoundboard() {
+            return soundboard;
+        }
+
+        @Nullable
+        IndexedSound getIndexedSound() {
+            return indexedSound;
+        }
+
+        @Override
+        public String toString() {
+            return "Row{" +
+                    "soundboard=" + soundboard +
+                    ", indexedSound=" + indexedSound +
+                    '}';
+        }
     }
 
     /**
-     * Returns the relative volume of the sound as a percentage. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
+     * Index and sound
      */
-    int getSoundVolumePercentage() {
-        return cursor.getInt(6);
+    static class IndexedSound {
+        private final int index;
+
+        @NonNull
+        private final Sound sound;
+
+        IndexedSound(int index, @NonNull Sound sound) {
+            this.index = index;
+            this.sound = checkNotNull(sound, "sound was null");
+        }
+
+        int getIndex() {
+            return index;
+        }
+
+        @NonNull
+        public Sound getSound() {
+            return sound;
+        }
+
+        @Override
+        public String toString() {
+            return "IndexedSound{" +
+                    "index=" + index +
+                    ", sound=" + sound +
+                    '}';
+        }
     }
-
-    /**
-     * Returns whether the sound shall be played in a loop. Call {@link #hasSound()} before
-     * to check whether the current entry really has a sound - otherwise this method
-     * might result in an exception.
-     */
-    boolean isSoundLoop() {
-        return cursor.getInt(7) != 0;
-    }
-
-    @Override
-    public void close() {
-        cursor.close();
-    }
-
-
 }

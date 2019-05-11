@@ -4,11 +4,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
 
 /**
@@ -18,12 +20,21 @@ class AudioFileListItemAdapter extends BaseAdapter {
     private static final String TAG = AudioFileListItemAdapter.class.getName();
 
     private final AudioFileItemRow.Callback callback;
-    private List<AudioModelAndSound> audioModelAndSounds = new ArrayList<>();
+    private final List<AudioModelAndSound> audioModelAndSounds;
 
-    AudioFileListItemAdapter(List<AudioModelAndSound> audioFiles,
-                             AudioFileItemRow.Callback callback) {
-        audioModelAndSounds = audioFiles;
+    /**
+     * Creates an adapter that's initially empty
+     */
+    AudioFileListItemAdapter(AudioFileItemRow.Callback callback) {
+        audioModelAndSounds = new ArrayList<>();
         this.callback = callback;
+    }
+
+    void setAudioFiles(Collection<AudioModelAndSound> audioModelAndSounds) {
+        this.audioModelAndSounds.clear();
+        this.audioModelAndSounds.addAll(audioModelAndSounds);
+
+        notifyDataSetChanged();
     }
 
     @Override

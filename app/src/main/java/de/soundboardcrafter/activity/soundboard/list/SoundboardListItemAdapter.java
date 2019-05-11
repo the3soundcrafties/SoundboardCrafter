@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import de.soundboardcrafter.model.SoundboardWithSounds;
@@ -17,10 +18,17 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  */
 class SoundboardListItemAdapter extends BaseAdapter {
     private static final String TAG = SoundboardListItemAdapter.class.getName();
-    private List<SoundboardWithSounds> soundboards = new ArrayList<>();
+    private final List<SoundboardWithSounds> soundboards;
 
-    SoundboardListItemAdapter(List<SoundboardWithSounds> soundboards) {
-        this.soundboards = soundboards;
+    SoundboardListItemAdapter() {
+        soundboards = new ArrayList<>();
+    }
+
+    public void setSoundboards(Collection<SoundboardWithSounds> soundboards) {
+        this.soundboards.clear();
+        this.soundboards.addAll(soundboards);
+
+        notifyDataSetChanged();
     }
 
     @Override

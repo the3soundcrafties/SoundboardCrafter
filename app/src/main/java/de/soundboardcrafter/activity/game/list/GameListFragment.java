@@ -34,7 +34,8 @@ import de.soundboardcrafter.model.GameWithSoundboards;
  * Shows Games in a Grid
  */
 public class GameListFragment extends Fragment {
-    private static final String TAG = GameListFragment.class.getName();
+    private static final String ARG_EDIT_SOUND_REQUEST_CODE = "ARG_EDIT_SOUND_REQUEST_CODE";
+
     private ListView listView;
     private Button addNewGame;
     private GameListItemAdapter adapter;

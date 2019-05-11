@@ -34,11 +34,11 @@ public class SoundboardWithSounds implements Serializable {
         this(UUID.randomUUID(), name, sounds);
     }
 
-    public SoundboardWithSounds(UUID id, @NonNull String name, @NonNull ArrayList<Sound> sounds) {
+    private SoundboardWithSounds(UUID id, @NonNull String name, @NonNull ArrayList<Sound> sounds) {
         this(new Soundboard(id, name), sounds);
     }
 
-    private SoundboardWithSounds(@NonNull Soundboard soundboard, @NonNull ArrayList<Sound> sounds) {
+    public SoundboardWithSounds(@NonNull Soundboard soundboard, @NonNull ArrayList<Sound> sounds) {
         this.soundboard = soundboard;
         this.sounds = checkNotNull(sounds, "sound is null");
     }

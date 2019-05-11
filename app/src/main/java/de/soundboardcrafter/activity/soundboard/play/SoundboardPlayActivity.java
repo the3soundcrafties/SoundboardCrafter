@@ -210,7 +210,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         @Override
         public @NonNull
         Fragment getItem(int position) {
-            return SoundboardFragment.createTab(soundboardList.get(position));
+            return SoundboardFragment.createFragment(soundboardList.get(position));
         }
 
         /**
@@ -337,13 +337,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         SharedPreferences pref = getApplicationContext().getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         if (selectedSoundboardId != null) {
             editor.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId.toString());
         }
         editor.commit();
+        super.onDestroy();
     }
 
     @Override

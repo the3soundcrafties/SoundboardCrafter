@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -29,21 +28,21 @@ public class GameWithSoundboards implements Serializable {
 
 
     public GameWithSoundboards(@NonNull String name) {
-        this(UUID.randomUUID(), name);
+        this(new Game(name));
     }
 
-    public GameWithSoundboards(@Nonnull UUID id, String name) {
-        this(id, name, new ArrayList<>());
+    public GameWithSoundboards(@Nonnull Game game) {
+        this(game, new ArrayList<>());
     }
 
-    private GameWithSoundboards(@Nonnull UUID id, String name, ArrayList<Soundboard> soundboards) {
-        game = new Game(id, name);
+    private GameWithSoundboards(@Nonnull Game game, @Nonnull ArrayList<Soundboard> soundboards) {
+        this.game = game;
         this.soundboards = checkNotNull(soundboards, "soundboards is null");
     }
 
-
     public void addSoundboard(Soundboard soundboard) {
-        Optional<Soundboard> foundSoundboard = soundboards.stream().filter(sd -> sd.getId().equals(soundboard.getId())).findFirst();
+        Optional<Soundboard> foundSoundboard =
+                soundboards.stream().filter(sd -> sd.getId().equals(soundboard.getId())).findFirst();
         if (!foundSoundboard.isPresent()) {
             soundboards.add(soundboard);
         }

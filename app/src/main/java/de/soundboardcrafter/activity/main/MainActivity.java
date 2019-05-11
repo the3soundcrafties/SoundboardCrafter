@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -21,17 +23,28 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Supplier;
 
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Supplier;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.edit.GameEditFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
+import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**
  * The main activity, showing the soundboards.
  */
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getName();
+public class MainActivity extends AppCompatActivity implements SoundEventListener {
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
     private static final String KEY_SELECTED_PAGE = "selectedPage";
@@ -44,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         pager = findViewById(R.id.viewPagerMain);
         pager.clearOnPageChangeListeners();
         TabLayout tabLayout = findViewById(R.id.tabLayoutMain);
@@ -93,13 +107,12 @@ public class MainActivity extends AppCompatActivity {
         if (pagerAdapter != null) {
             pagerAdapter.notifyDataSetChanged();
         }
-
     }
 
     public enum Page {
         GAMES(R.string.games_tab_title, GameListFragment::new),
-        SOUNDBOARDS(R.string.soundboards_tab_title, SoundboardListFragment::new),
-        SOUNDS(R.string.sounds_tab_title, AudioFileListFragment::new);
+        SOUNDBOARDS(R.string.soundboards_tab_title, MainActivity::createSoundboardListFragment),
+        SOUNDS(R.string.sounds_tab_title, MainActivity::createAudioFileListFragment);
 
         public final int title;
         public final Supplier<Fragment> createNew;
@@ -110,9 +123,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static SoundboardListFragment createSoundboardListFragment() {
+        return SoundboardListFragment.createFragment();
+    }
 
-    class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-        private final List<Page> pages = Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
+    private static AudioFileListFragment createAudioFileListFragment() {
+        return AudioFileListFragment.createFragment();
+    }
+
+    @Override
+    public void soundChanged(UUID soundId) {
+        for (Fragment fragment : pagerAdapter) {
+            if (fragment instanceof SoundEventListener) {
+                ((SoundEventListener) fragment).soundChanged(soundId);
+            }
+        }
+    }
+
+    class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter
+            implements Iterable<Fragment> {
+        private final List<Page> pages =
+                Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
+
+        private ArrayList<Fragment> registeredFragments =
+                Lists.newArrayList(null, null, null);
 
         ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
             super(fm);
@@ -123,6 +157,13 @@ public class MainActivity extends AppCompatActivity {
         Fragment getItem(int position) {
             Page page = pages.get(position);
             return page.createNew.get();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+            registeredFragments.set(position, fragment);
+            return fragment;
         }
 
         Page getPage(int position) {
@@ -140,14 +181,24 @@ public class MainActivity extends AppCompatActivity {
             return pages.size();
         }
 
-        @Override
-        public int getItemPosition(@NonNull Object object) {
-            // https://medium.com/inloopx/adventures-with-fragmentstatepageradapter-4f56a643f8e0
-            return POSITION_NONE;
-        }
-
         int getIndexOf(Page selectedPage) {
             return pages.indexOf(selectedPage);
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.set(position, null);
+            super.destroyItem(container, position, object);
+        }
+
+        public Fragment getRegisteredFragment(int position) {
+            return registeredFragments.get(position);
+        }
+
+        @Override
+        public Iterator<Fragment> iterator() {
+            return registeredFragments.stream()
+                    .filter(Objects::nonNull).iterator();
         }
     }
 
