@@ -384,16 +384,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
 
-            if (res.isEmpty()) {
-                Log.d(TAG, "No soundboards found.");
-                Log.d(TAG, "Insert some dummy data...");
-
-                soundboardDao.insertDummyData();
-
-                Log.d(TAG, "...and load the soundboards again");
-                res = soundboardDao.findAllWithSounds();
-            }
-
             Log.d(TAG, "Soundboards loaded.");
 
             return res;

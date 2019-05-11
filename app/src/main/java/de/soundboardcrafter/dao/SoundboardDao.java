@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
-import de.soundboardcrafter.model.GameWithSoundboards;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
@@ -65,46 +64,6 @@ public class SoundboardDao extends AbstractDao {
         deleteAllSoundboards();
     }
 
-    public void insertDummyData() {
-        File directory = new File("/storage/emulated/0/soundboard crafter test songs");
-        // get all the files from a directory
-        File[] fList = directory.listFiles();
-
-        List<File> notInSubdirectory = new ArrayList<>();
-        GameWithSoundboards gameWithSoundboards = new GameWithSoundboards("Cool Game :(");
-        for (File firstLevelFile : fList) {
-            if (firstLevelFile.isDirectory()) {
-                ArrayList<Sound> soundList = new ArrayList<>();
-                File[] soundFiles = firstLevelFile.listFiles();
-                for (File soundFile : soundFiles) {
-                    Sound newSound = createSound(soundFile);
-                    soundList.add(newSound);
-                }
-                SoundboardWithSounds soundboardWithSounds = new SoundboardWithSounds(firstLevelFile.getName(), soundList);
-                gameWithSoundboards.addSoundboard(soundboardWithSounds.getSoundboard());
-                insert(soundboardWithSounds);
-
-            } else {
-                notInSubdirectory.add(firstLevelFile);
-            }
-
-        }
-        gameDao.insertWithSoundboards(gameWithSoundboards);
-        if (!notInSubdirectory.isEmpty()) {
-            ArrayList<Sound> sounds = new ArrayList<>();
-            File automaticCreatedDir = new File(directory.getAbsolutePath() + "/automatic_created_dir");
-            automaticCreatedDir.mkdir();
-            // TODO What if mkdir did not succeed?
-            for (File notInSubdirectoryFile : notInSubdirectory) {
-                File to = new File(automaticCreatedDir.getAbsolutePath() + "/" + notInSubdirectoryFile.getName());
-                notInSubdirectoryFile.renameTo(to);
-                // TODO What if renameTo did not succeed?
-                sounds.add(createSound(to));
-            }
-            SoundboardWithSounds soundboard = new SoundboardWithSounds(automaticCreatedDir.getName(), sounds);
-            insert(soundboard);
-        }
-    }
 
     private static Sound createSound(File soundFile) {
         return SoundFromFileCreationUtil.createSound(
