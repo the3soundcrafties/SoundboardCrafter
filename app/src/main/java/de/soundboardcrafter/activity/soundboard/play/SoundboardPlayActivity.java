@@ -210,7 +210,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         @Override
         public @NonNull
         Fragment getItem(int position) {
-            return SoundboardFragment.createTab(soundboardList.get(position));
+            return SoundboardFragment.createFragment(soundboardList.get(position));
         }
 
         /**

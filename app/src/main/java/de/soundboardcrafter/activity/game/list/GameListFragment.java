@@ -9,6 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -17,10 +22,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
@@ -29,7 +30,8 @@ import de.soundboardcrafter.model.GameWithSoundboards;
  * Shows Games in a Grid
  */
 public class GameListFragment extends Fragment {
-    private static final String TAG = GameListFragment.class.getName();
+    private static final String ARG_EDIT_SOUND_REQUEST_CODE = "ARG_EDIT_SOUND_REQUEST_CODE";
+
     private ListView listView;
     private GameListItemAdapter adapter;
 

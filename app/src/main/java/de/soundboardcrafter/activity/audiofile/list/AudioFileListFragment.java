@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
@@ -28,19 +30,37 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
+import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.model.Sound;
 
 /**
  * Shows Soundboard in a Grid
  */
-public class AudioFileListFragment extends Fragment implements AudioFileItemRow.Callback {
+public class AudioFileListFragment extends Fragment implements
+        AudioFileItemRow.Callback,
+        SoundEventListener {
     private static final String TAG = AudioFileListFragment.class.getName();
 
-    private static final int REQUEST_EDIT_SOUND = 1;
+    /**
+     * Request code used whenever a sound edit
+     * fragment is started from this activity
+     */
+    private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
     private ListView listView;
     private AudioFileListItemAdapter adapter;
+
+    private @Nullable
+    SoundEventListener soundEventListenerActivity;
+
+    /**
+     * Creates an <code>AudioFileListFragment</code>.
+     */
+    public static AudioFileListFragment createFragment() {
+        AudioFileListFragment fragment = new AudioFileListFragment();
+        return fragment;
+    }
 
     @Override
     @UiThread
@@ -56,6 +76,20 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
         return rootView;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof SoundEventListener) {
+            soundEventListenerActivity = (SoundEventListener) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        soundEventListenerActivity = null;
+    }
 
     @Override
     @UiThread
@@ -75,7 +109,7 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
                 audioModelAndSound.getAudioModel().getPath());
 
         Intent intent = AudiofileListSoundEditActivity.newIntent(getContext(), sound);
-        startActivityForResult(intent, REQUEST_EDIT_SOUND);
+        startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
     }
 
     @Override
@@ -86,17 +120,23 @@ public class AudioFileListFragment extends Fragment implements AudioFileItemRow.
         }
 
         switch (requestCode) {
-            case REQUEST_EDIT_SOUND:
+            case EDIT_SOUND_REQUEST_CODE:
                 Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
 
-                final UUID soundId = UUID.fromString(
-                        data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
+                if (soundEventListenerActivity != null) {
+                    final UUID soundId = UUID.fromString(
+                            data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
 
-                // The sound name may have been changed.
-                new FindAudioFileTask(getContext()).execute();
-
+                    soundEventListenerActivity.soundChanged(soundId);
+                }
                 break;
         }
+    }
+
+    @Override
+    public void soundChanged(UUID soundId) {
+        // The sound NAME may have been changed.
+        new FindAudioFileTask(getContext()).execute();
     }
 
     @UiThread

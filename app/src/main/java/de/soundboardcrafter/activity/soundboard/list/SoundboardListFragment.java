@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
@@ -19,24 +18,37 @@ import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
- * Shows Soundboard in a Grid
+ * Shows Soundboards in a list
  */
-public class SoundboardListFragment extends Fragment {
+public class SoundboardListFragment extends Fragment
+        implements SoundEventListener {
+    private static final String TAG = SoundboardListFragment.class.getName();
+
+    /**
+     * @param editSoundRequestCode request code used whenever a sound edit
+     * fragment is started from this activity
+     */
+    private int editSoundRequestCode;
+
     private ListView listView;
     private SoundboardListItemAdapter adapter;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+    /**
+     * Creates a <code>SoundboardListFragment</code>.
+     */
+    public static SoundboardListFragment createFragment() {
+        SoundboardListFragment fragment = new SoundboardListFragment();
+        return fragment;
     }
 
     @Override
@@ -47,17 +59,30 @@ public class SoundboardListFragment extends Fragment {
                 container, false);
         listView = rootView.findViewById(R.id.listview_soundboard);
 
+        initSoundboardItemAdapter();
+        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+
         return rootView;
     }
 
+    @Override
+    public void soundChanged(UUID soundId) {
+        // The sound NAME may have been changed.
+        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+    }
 
     @UiThread
-    private void initSoundboardItemAdapter(ImmutableList<SoundboardWithSounds> soundboards) {
-        List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
-        list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
-        adapter = new SoundboardListItemAdapter(list);
+    private void initSoundboardItemAdapter() {
+        adapter = new SoundboardListItemAdapter();
         listView.setAdapter(adapter);
         updateUI();
+    }
+
+    @UiThread
+    private void setSoundboards(ImmutableList<SoundboardWithSounds> soundboards) {
+        List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
+        list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
+        adapter.setSoundboards(list);
     }
 
     @UiThread
@@ -121,7 +146,7 @@ public class SoundboardListFragment extends Fragment {
                 // will be of no use to anyone
                 return;
             }
-            initSoundboardItemAdapter(soundboards);
+            setSoundboards(soundboards);
         }
     }
 

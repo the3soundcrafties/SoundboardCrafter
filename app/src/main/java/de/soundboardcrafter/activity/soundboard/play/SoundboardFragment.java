@@ -48,7 +48,9 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundboardFragment.class.getName();
 
-    private static final int REQUEST_EDIT_SOUND = 1;
+    private static final String ARG_SOUNDBOADRD = "Soundboard";
+
+    private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
     private GridView gridView;
     // TODO Allow for zero soundboards
@@ -56,12 +58,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
 
-    static SoundboardFragment createTab(SoundboardWithSounds soundboard) {
-        Bundle thisTabArguments = new Bundle();
-        thisTabArguments.putSerializable("Soundboard", soundboard);
-        SoundboardFragment thisTab = new SoundboardFragment();
-        thisTab.setArguments(thisTabArguments);
-        return thisTab;
+    /**
+     * Creates a <code>SoundboardFragment</code> for this soundboard.
+     */
+    static SoundboardFragment createFragment(SoundboardWithSounds soundboard) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_SOUNDBOADRD, soundboard);
+        SoundboardFragment fragment = new SoundboardFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -93,13 +98,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         // TODO What to do on Null Binding?
     }
 
-
     @Override
     @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        soundboard = (SoundboardWithSounds) getArguments().getSerializable("Soundboard");
+        soundboard = (SoundboardWithSounds) getArguments().getSerializable(ARG_SOUNDBOADRD);
+
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().startService(intent);
         // TODO Necessary?! Also done in onResume()
@@ -239,7 +244,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
 
                 Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
-                startActivityForResult(intent, REQUEST_EDIT_SOUND);
+                startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_sound:
                 menuInfo =
@@ -262,14 +267,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
 
         switch (requestCode) {
-            case REQUEST_EDIT_SOUND:
+            case EDIT_SOUND_REQUEST_CODE:
                 Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
 
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
                 // The sound details may have been changed, but not its soundboards!
                 new UpdateSoundsTask(getActivity()).execute(soundId);
-
                 break;
         }
     }

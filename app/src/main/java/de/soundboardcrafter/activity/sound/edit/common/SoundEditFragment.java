@@ -40,13 +40,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     public static final String EXTRA_SOUND_ID = "soundId";
-    public static final String EXTRA_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
 
     private SoundEditView soundEditView;
 
     private SoundWithSelectableSoundboards sound;
     private boolean soundboardsEditable;
-
 
     private MediaPlayerService mediaPlayerService;
 

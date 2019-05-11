@@ -30,9 +30,9 @@ class AudioFileListItemAdapter extends BaseAdapter {
         this.callback = callback;
     }
 
-    void setAudioFiles(Collection<AudioModelAndSound> audioFiles) {
-        audioModelAndSounds.clear();
-        audioModelAndSounds.addAll(audioFiles);
+    void setAudioFiles(Collection<AudioModelAndSound> audioModelAndSounds) {
+        this.audioModelAndSounds.clear();
+        this.audioModelAndSounds.addAll(audioModelAndSounds);
 
         notifyDataSetChanged();
     }
