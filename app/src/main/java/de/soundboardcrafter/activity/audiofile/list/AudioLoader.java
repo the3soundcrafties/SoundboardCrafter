@@ -37,7 +37,8 @@ class AudioLoader {
                     String path = c.getString(0);
                     String name = c.getString(1);
                     String album = c.getString(2);
-                    Date dateAdded = new Date(c.getInt(3) * 1000);
+                    int rawDateAdded = c.getInt(3);
+                    Date dateAdded = new Date(rawDateAdded * 1000L);
                     String artist = c.getString(4);
 
 
