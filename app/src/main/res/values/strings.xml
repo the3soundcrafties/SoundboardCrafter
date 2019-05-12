@@ -30,4 +30,5 @@
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="new_soundboard">add new Soundboard</string>
+    <string name="new_soundboard_name">NEW</string>
 </resources>

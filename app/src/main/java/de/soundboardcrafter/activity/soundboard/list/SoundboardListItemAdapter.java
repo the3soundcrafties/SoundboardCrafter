@@ -31,6 +31,16 @@ class SoundboardListItemAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    void remove(SoundboardWithSounds soundboard) {
+        soundboards.stream()
+                .filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
+                .findFirst()
+                .ifPresent(obj -> {
+                    soundboards.remove(obj);
+                    notifyDataSetChanged();
+                });
+    }
+
     @Override
     public int getCount() {
         return soundboards.size();
@@ -56,4 +66,6 @@ class SoundboardListItemAdapter extends BaseAdapter {
         itemRow.setSoundboard(soundboards.get(position));
         return convertView;
     }
+
+
 }

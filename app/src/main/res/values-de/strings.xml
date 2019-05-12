@@ -30,4 +30,5 @@
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
     <string name="new_soundboard">neues Soundboard hinzufügen</string>
+    <string name="new_soundboard_name">NEU</string>
 </resources>

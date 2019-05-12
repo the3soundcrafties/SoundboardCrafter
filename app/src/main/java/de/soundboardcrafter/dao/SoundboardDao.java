@@ -316,6 +316,10 @@ public class SoundboardDao extends AbstractDao {
         getDatabase().delete(SoundboardSoundTable.NAME, null, new String[]{});
     }
 
+    public void unlinkAllSounds(UUID soundboardId) {
+        getDatabase().delete(SoundboardSoundTable.NAME, SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ?", new String[]{soundboardId.toString()});
+    }
+
     private void unlinkSound(Soundboard soundboard, Sound sound) {
         boolean lookAgain = true;
         while (lookAgain) {
@@ -346,9 +350,6 @@ public class SoundboardDao extends AbstractDao {
                 null);
     }
 
-    private void unlinkAllGames() {
-        gameDao.unlinkAllGames();
-    }
 
     public void unlinkSound(Soundboard soundboard, int index) {
         int numDeleted = getDatabase().delete(SoundboardSoundTable.NAME,
@@ -395,8 +396,23 @@ public class SoundboardDao extends AbstractDao {
         } while (rowsUpdated > 0);
     }
 
+    public void update(Soundboard soundboard) {
+        int rowsUpdated = getDatabase().update(DBSchema.SoundboardTable.NAME,
+                buildContentValues(soundboard),
+                DBSchema.SoundboardTable.Cols.ID + " = ?",
+                new String[]{soundboard.getId().toString()});
+
+        if (rowsUpdated != 1) {
+            throw new RuntimeException("Not exactly one sound with ID + " + soundboard.getId());
+        }
+    }
+
     private void deleteAllSoundboards() {
         getDatabase().delete(SoundboardTable.NAME, null, new String[]{});
+    }
+
+    public void remove(UUID soundboardId) {
+        getDatabase().delete(SoundboardTable.NAME, SoundboardTable.Cols.ID + " = ?", new String[]{soundboardId.toString()});
     }
 
     public List<Soundboard> findAll() {
@@ -452,5 +468,6 @@ public class SoundboardDao extends AbstractDao {
 
         return values;
     }
+
 
 }

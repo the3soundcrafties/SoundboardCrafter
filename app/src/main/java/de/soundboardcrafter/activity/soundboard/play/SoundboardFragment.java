@@ -216,7 +216,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getActivity().getMenuInflater();
-        inflater.inflate(R.menu.fragment_main_context, menu);
+        inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
