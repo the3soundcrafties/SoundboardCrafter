@@ -150,7 +150,8 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         }
 
         @Override
-        public Object instantiateItem(ViewGroup container, int position) {
+        public @NonNull
+        Object instantiateItem(@NonNull ViewGroup container, int position) {
             Fragment fragment = (Fragment) super.instantiateItem(container, position);
             registeredFragments.set(position, fragment);
             return fragment;
@@ -176,17 +177,14 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         }
 
         @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
+        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             registeredFragments.set(position, null);
             super.destroyItem(container, position, object);
         }
 
-        public Fragment getRegisteredFragment(int position) {
-            return registeredFragments.get(position);
-        }
-
         @Override
-        public Iterator<Fragment> iterator() {
+        public @NonNull
+        Iterator<Fragment> iterator() {
             return registeredFragments.stream()
                     .filter(Objects::nonNull).iterator();
         }

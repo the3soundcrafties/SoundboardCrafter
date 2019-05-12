@@ -4,19 +4,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+
+import java.util.List;
+
 import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Adapter for a GameItem.
  */
 class GameListItemAdapter extends BaseAdapter {
-    private static final String TAG = GameListItemAdapter.class.getName();
-    private List<GameWithSoundboards> games = new ArrayList<>();
+    private List<GameWithSoundboards> games;
 
     GameListItemAdapter(List<GameWithSoundboards> games) {
         this.games = games;

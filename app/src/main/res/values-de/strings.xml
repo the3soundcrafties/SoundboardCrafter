@@ -14,9 +14,9 @@
     <string name="toolbar_menu_audiofiles_sort_date">Nach Datum sortieren</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>
-    <string name="reset_all_title">Alle Sounds löschen?</string>
-    <string name="reset_all_message">Alle Sounds werden gelöscht und aus dem Verzeichnis neu
-        geladen. Lautstärkeeinstellungen etc. gehen verloren.</string>
+    <string name="reset_all_title">Alle Daten löschen?</string>
+    <string name="reset_all_message">Alle Spiele, Soundboards und Sound-Einstellungen werden
+        gelöscht. Lautstärkeeinstellungen etc. gehen verloren. Sound-Dateien bleiben erhalten.</string>
     <string name="reset_all_title_cancel">Abbrechen</string>
     <string name="reset_all_title_ok">OK</string>
     <string name="sound_edit_sound_name_hint">Name</string>

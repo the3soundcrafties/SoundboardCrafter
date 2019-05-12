@@ -168,7 +168,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     @UiThread
     public void doResetAll() {
-        Log.i(TAG, "Resetting sound data");
+        Log.i(TAG, "Resetting all data");
         pagerAdapter.clear(true);
         new ResetAllTask(this).execute();
     }
@@ -411,7 +411,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     /**
-     * A background task, used to reset the soundboards and retrieve them from the database.
+     * A background task, used to reset games, soundboards and sounds.
      */
     class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = ResetAllTask.class.getName();
@@ -433,7 +433,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 return null;
             }
 
-            Log.d(TAG, "Resetting soundboards.");
+            Log.d(TAG, "Resetting all data.");
 
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
             soundboardDao.clearDatabase();

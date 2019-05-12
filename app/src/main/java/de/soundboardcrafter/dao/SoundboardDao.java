@@ -10,9 +10,7 @@ import androidx.annotation.WorkerThread;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,40 +62,10 @@ public class SoundboardDao extends AbstractDao {
         deleteAllSoundboards();
     }
 
-
-    private static Sound createSound(File soundFile) {
-        return SoundFromFileCreationUtil.createSound(
-                soundFile.getName(), soundFile.getAbsolutePath());
-    }
-
-    private Collection<UUID> findSoundboardLinksBySound(Sound sound) {
-        ImmutableList.Builder<UUID> res = ImmutableList.builder();
-
-        try (final Cursor cursor =
-                     getDatabase().query(
-                             DBSchema.SoundboardSoundTable.NAME,
-                             new String[]{SoundboardSoundTable.Cols.SOUNDBOARD_ID},
-                             SoundboardSoundTable.Cols.SOUND_ID + " = ?",
-                             new String[]{sound.getId().toString()},
-                             null,
-                             null,
-                             null)) {
-            while (cursor.moveToNext()) {
-                UUID soundboardId =
-                        UUID.fromString(cursor.getString(0));
-
-                res.add(soundboardId);
-            }
-        }
-
-        return res.build();
-    }
-
     public ImmutableList<SoundboardWithSounds> findAllWithSounds() {
         Cursor rawCursor = rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString());
         return find(rawCursor);
     }
-
 
     private ImmutableList<SoundboardWithSounds> find(Cursor rawCursor) {
         try (final FullJoinSoundboardCursorWrapper cursor =
@@ -193,25 +161,6 @@ public class SoundboardDao extends AbstractDao {
             cursor.close();
         }
     }
-
-
-    /**
-     * Inserts this <code>soundboard</code> an all its sounds into the database; <i>each of the
-     * sounds is newly inserted, existing sounds cannot be reused in this method</i>.
-     *
-     * @throws RuntimeException if inserting does not succeed
-     */
-    private void insert(SoundboardWithSounds soundboard) {
-        insertSoundboard(soundboard.getId(), soundboard.getName());
-
-        int index = 0;
-        for (Sound sound : soundboard.getSounds()) {
-            soundDao.insert(sound);
-            linkSoundToSoundboard(soundboard.getId(), index, sound.getId());
-            index++;
-        }
-    }
-
 
     /**
      * Inserts an empty soundboard with this name.

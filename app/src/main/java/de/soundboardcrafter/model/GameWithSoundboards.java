@@ -24,7 +24,7 @@ public class GameWithSoundboards implements Serializable {
     /**
      * The soundboards the game belonging to
      */
-    private ArrayList<Soundboard> soundboards = new ArrayList<>();
+    private ArrayList<Soundboard> soundboards;
 
 
     public GameWithSoundboards(@NonNull String name) {
@@ -63,11 +63,11 @@ public class GameWithSoundboards implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public @NonNull
+    String toString() {
         return "GameWithSoundboards{" +
                 "game=" + game +
                 ", soundboards=" + soundboards +
                 '}';
     }
-
 }

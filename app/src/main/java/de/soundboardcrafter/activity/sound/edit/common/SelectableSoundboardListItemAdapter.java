@@ -7,7 +7,6 @@ import android.widget.BaseAdapter;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.soundboardcrafter.model.SelectableSoundboard;
@@ -17,8 +16,7 @@ import de.soundboardcrafter.model.SelectableSoundboard;
  */
 // TODO: 05.05.2019 move to another package it is also used in the gameeditview
 public class SelectableSoundboardListItemAdapter extends BaseAdapter {
-    private static final String TAG = SelectableSoundboardListItemAdapter.class.getName();
-    private List<SelectableSoundboard> soundboards = new ArrayList<>();
+    private List<SelectableSoundboard> soundboards;
 
     /**
      * Whether the soundboards can be changed.

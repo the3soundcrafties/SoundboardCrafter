@@ -9,11 +9,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+
 import de.soundboardcrafter.R;
 
 /**
- * Fragment showing a yes/no-question dialog whether the sounds shall be reset, that is, deleted and
- * recreated from the file system using default values.
+ * Fragment showing a yes/no-question dialog whether all data shall be deleted.
  */
 public class ResetAllDialogFragment extends DialogFragment {
     /**
