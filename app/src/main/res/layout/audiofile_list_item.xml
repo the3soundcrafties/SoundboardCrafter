@@ -25,14 +25,14 @@
         android:src="@drawable/ic_add_black" />
 
     <TextView
-        android:id="@+id/audio_artist"
+        android:id="@+id/audio_artist_and_length"
         android:layout_width="fill_parent"
         android:layout_height="26dip"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="30dp"
         android:layout_toEndOf="@id/icon"
-        android:text="Sound Artist"
+        android:text="Sound Artist · 00:14"
         android:textSize="12sp" />
 
     <TextView
@@ -40,13 +40,13 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_above="@id/audio_artist"
+        android:layout_above="@id/audio_artist_and_length"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="30dp"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        android:text="Soundboard name"
+        android:text="Name"
         android:textSize="16sp" />
 
 

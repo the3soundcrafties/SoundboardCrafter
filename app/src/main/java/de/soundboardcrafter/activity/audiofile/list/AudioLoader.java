@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import com.google.common.collect.ImmutableList;
 
@@ -22,7 +21,8 @@ class AudioLoader {
                 MediaStore.Audio.AudioColumns.TITLE,
                 MediaStore.Audio.AudioColumns.ALBUM,
                 MediaStore.Audio.AudioColumns.DATE_ADDED,
-                MediaStore.Audio.ArtistColumns.ARTIST,};
+                MediaStore.Audio.ArtistColumns.ARTIST,
+                MediaStore.Audio.AudioColumns.DURATION};
 
 //        Cursor c = context.getContentResolver().query(uri, projection, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%yourFolderName%"}, null);
         try (Cursor c = context.getContentResolver().query(uri,
@@ -34,22 +34,18 @@ class AudioLoader {
                 while (c.moveToNext()) {
 
                     AudioModel audioModel = new AudioModel();
-                    String path = c.getString(0);
-                    String name = c.getString(1);
-                    String album = c.getString(2);
+
+                    audioModel.setName(c.getString(1));
+                    audioModel.setAlbum(c.getString(2));
+
                     int rawDateAdded = c.getInt(3);
-                    Date dateAdded = new Date(rawDateAdded * 1000L);
-                    String artist = c.getString(4);
+                    audioModel.setDateAdded(new Date(rawDateAdded * 1000L));
 
+                    audioModel.setArtist(c.getString(4));
+                    audioModel.setPath(c.getString(0));
 
-                    audioModel.setName(name);
-                    audioModel.setAlbum(album);
-                    audioModel.setDateAdded(dateAdded);
-                    audioModel.setArtist(artist);
-                    audioModel.setPath(path);
-
-                    Log.d("Name :" + name, " Album :" + album);
-                    Log.d("Path :" + path, " Artist :" + artist);
+                    long durationMillis = c.getLong(5);
+                    audioModel.setDurationSecs((long) Math.ceil(durationMillis / 1000f));
 
                     tempAudioList.add(audioModel);
                 }

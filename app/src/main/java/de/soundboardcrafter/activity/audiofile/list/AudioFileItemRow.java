@@ -17,7 +17,7 @@ import de.soundboardcrafter.R;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 class AudioFileItemRow extends RelativeLayout {
-    private static final String TAG = AudioFileItemRow.class.getName();
+    private static final int MINS_PER_SEC = 60;
 
     public interface Callback {
         public void onEditAudioFile(AudioModelAndSound audioModelAndSound);
@@ -26,7 +26,7 @@ class AudioFileItemRow extends RelativeLayout {
     @NonNull
     private final TextView audioName;
     @Nonnull
-    private final TextView audioArtist;
+    private final TextView audioArtistAndLength;
 
     private AudioModelAndSound audioModelAndSound;
 
@@ -36,9 +36,8 @@ class AudioFileItemRow extends RelativeLayout {
         // Inflate the view into this object
         inflater.inflate(R.layout.audiofile_list_item, this, true);
         audioName = findViewById(R.id.audio_name);
-        audioArtist = findViewById(R.id.audio_artist);
+        audioArtistAndLength = findViewById(R.id.audio_artist_and_length);
     }
-
 
     /**
      * Set the data for the view.
@@ -46,8 +45,8 @@ class AudioFileItemRow extends RelativeLayout {
     @UiThread
     void setAudioFile(AudioModelAndSound audioFileAndSound, Callback callback) {
         audioModelAndSound = audioFileAndSound;
-        audioName.setText(abbreviateName(audioModelAndSound.getName()));
-        audioArtist.setText(audioModelAndSound.getAudioModel().getArtist());
+        audioName.setText(formatName());
+        audioArtistAndLength.setText(formatArtistAndLength());
 
         // TODO Choose appropriate image: + or - ?!
         /*
@@ -56,6 +55,27 @@ class AudioFileItemRow extends RelativeLayout {
 
         ImageView iconAdd = findViewById(R.id.icon_add);
         iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
+    }
+
+    private String formatName() {
+        return abbreviateName(audioModelAndSound.getName());
+    }
+
+    private String formatArtistAndLength() {
+        return audioModelAndSound.getAudioModel().getArtist()
+                + " · " +
+                formatLenght();
+    }
+
+    private String formatLenght() {
+        return formatMinSecs(audioModelAndSound.getAudioModel().getDurationSecs());
+    }
+
+    private static String formatMinSecs(long durationSecs) {
+        long mins = durationSecs / MINS_PER_SEC;
+        long secs = durationSecs - mins * MINS_PER_SEC;
+
+        return String.format("%02d:%02d", mins, secs);
     }
 
     private static String abbreviateName(String name) {
