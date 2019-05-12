@@ -12,6 +12,7 @@ public class AudioModel {
     private String album;
     private String artist;
     private Date dateAdded;
+    private long durationSecs;
 
     public String getPath() {
         return path;
@@ -53,6 +54,14 @@ public class AudioModel {
         this.dateAdded = dateAdded;
     }
 
+    public long getDurationSecs() {
+        return durationSecs;
+    }
+
+    void setDurationSecs(long durationSecs) {
+        this.durationSecs = durationSecs;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -66,12 +75,13 @@ public class AudioModel {
                 Objects.equals(name, that.name) &&
                 Objects.equals(album, that.album) &&
                 Objects.equals(artist, that.artist) &&
-                Objects.equals(dateAdded, that.dateAdded);
+                Objects.equals(dateAdded, that.dateAdded) &&
+                Objects.equals(durationSecs, that.durationSecs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, name, album, artist, dateAdded);
+        return Objects.hash(path, name, album, artist, dateAdded, durationSecs);
     }
 
     @Override
@@ -82,6 +92,7 @@ public class AudioModel {
                 ", album='" + album + '\'' +
                 ", artist='" + artist + '\'' +
                 ", dateAdded='" + dateAdded + '\'' +
+                ", durationSecs='" + durationSecs + '\'' +
                 '}';
     }
 }
