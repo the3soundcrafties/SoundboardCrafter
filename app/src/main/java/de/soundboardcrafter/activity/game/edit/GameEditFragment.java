@@ -41,7 +41,7 @@ public class GameEditFragment extends Fragment {
     private static final String ARG_GAME_ID = "gameId";
 
     private static final String EXTRA_GAME_ID = "gameId";
-    public static final String EXTRA_EDIT_FRAGMENT = "gameEditFragment";
+    private static final String EXTRA_EDIT_FRAGMENT = "gameEditFragment";
 
     private GameEditView gameEditView;
 
@@ -75,7 +75,7 @@ public class GameEditFragment extends Fragment {
             UUID gameId = UUID.fromString(gameIdArg);
             new FindGameTask(getActivity(), gameId).execute();
         } else {
-            gameWithSoundboards = new GameWithSoundboards("NEW_GAME");
+            gameWithSoundboards = new GameWithSoundboards(getString(R.string.new_game_name));
             new FindAllSoundboardsTask(getContext()).execute();
 
         }

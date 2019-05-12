@@ -50,7 +50,12 @@
         <activity
             android:name=".activity.soundboard.edit.SoundboardCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.soundboard.edit.SoundboardEditActivity"
+            android:parentActivityName=".activity.main.MainActivity"
+            android:windowSoftInputMode="stateVisible" />
 
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"

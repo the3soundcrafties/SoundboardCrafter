@@ -59,10 +59,9 @@ class GameListItemRow extends RelativeLayout {
 
     private String getSoundboardCountText() {
         int count = gameWithSoundboards.getSoundboards().size();
-        if (count == 1) {
-            return count + " Soundboard";
-        }
-        return count + " Soundboards";
+        return getResources().getQuantityString(
+                R.plurals.soundboard_count_text,
+                count, count);
 
     }
 

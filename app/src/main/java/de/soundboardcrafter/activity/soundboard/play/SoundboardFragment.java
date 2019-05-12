@@ -137,8 +137,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return rootView;
     }
 
-    private SoundBoardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
-        return new SoundBoardItemRow.MediaPlayerServiceCallback() {
+    private SoundboardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
+        return new SoundboardItemRow.MediaPlayerServiceCallback() {
             @Override
             public boolean isConnected() {
                 return getService() != null;
@@ -216,11 +216,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getActivity().getMenuInflater();
-        inflater.inflate(R.menu.fragment_main_context, menu);
+        inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
-        SoundBoardItemRow itemRow = (SoundBoardItemRow) adapterContextMenuInfo.targetView;
+        SoundboardItemRow itemRow = (SoundboardItemRow) adapterContextMenuInfo.targetView;
 
         menu.setHeaderTitle(itemRow.getSoundName());
     }
@@ -238,7 +238,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             case R.id.context_menu_edit_sound:
                 AdapterView.AdapterContextMenuInfo menuInfo =
                         (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-                SoundBoardItemRow itemRow = (SoundBoardItemRow) menuInfo.targetView;
+                SoundboardItemRow itemRow = (SoundboardItemRow) menuInfo.targetView;
                 Sound sound = itemRow.getSound();
 
                 Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");

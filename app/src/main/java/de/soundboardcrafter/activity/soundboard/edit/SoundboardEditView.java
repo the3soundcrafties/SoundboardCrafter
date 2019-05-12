@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.soundboard.edit;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -70,4 +71,8 @@ public class SoundboardEditView extends ConstraintLayout {
         return nameTextView.getText().toString();
     }
 
+    void setButtonsInvisible() {
+        save.setVisibility(View.INVISIBLE);
+        cancel.setVisibility(View.INVISIBLE);
+    }
 }

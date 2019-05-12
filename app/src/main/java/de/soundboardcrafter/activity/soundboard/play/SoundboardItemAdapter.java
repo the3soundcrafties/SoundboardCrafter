@@ -20,11 +20,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Adapter for a soundboard item.
  */
 class SoundboardItemAdapter extends BaseAdapter {
-    private final SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
+    private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private SoundboardWithSounds soundboard;
     private static final String TAG = SoundboardItemAdapter.class.getName();
 
-    SoundboardItemAdapter(@NonNull SoundBoardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
+    SoundboardItemAdapter(@NonNull SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
                           @NonNull SoundboardWithSounds soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback = checkNotNull(mediaPlayerServiceCallback, "mediaPlayerServiceCallback!=null");
@@ -98,11 +98,11 @@ class SoundboardItemAdapter extends BaseAdapter {
     @Override
     @UiThread
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
-        if (!(convertView instanceof SoundBoardItemRow)) {
-            convertView = new SoundBoardItemRow(parent.getContext());
+        if (!(convertView instanceof SoundboardItemRow)) {
+            convertView = new SoundboardItemRow(parent.getContext());
         }
 
-        SoundBoardItemRow itemRow = (SoundBoardItemRow) convertView;
+        SoundboardItemRow itemRow = (SoundboardItemRow) convertView;
 
         Sound sound = soundboard.getSounds().get(position);
 
