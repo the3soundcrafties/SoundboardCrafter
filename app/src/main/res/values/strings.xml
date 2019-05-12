@@ -31,4 +31,14 @@
     <string name="save">Save</string>
     <string name="new_soundboard">add new Soundboard</string>
     <string name="new_soundboard_name">NEW</string>
+    <string name="new_game_name">NEW</string>
+    <plurals name="sound_count_text">
+        <item quantity="one">1 Sound</item>
+        <item quantity="other">%d Sounds</item>
+    </plurals>
+    <plurals name="soundboard_count_text">
+        <item quantity="one">1 Soundboard</item>
+        <item quantity="other">%d Soundboards</item>
+    </plurals>
+
 </resources>

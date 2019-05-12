@@ -47,7 +47,7 @@ public class SoundboardListItemRow extends RelativeLayout {
     void setSoundboard(SoundboardWithSounds soundboard) {
         this.soundboard = soundboard;
         soundboardName.setText(this.soundboard.getName());
-        soundCount.setText(soundboard.getSounds().size() + " Sounds");
+        soundCount.setText(getSoundCountText());
 
         setOnClickListener(l -> {
             Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
@@ -62,5 +62,11 @@ public class SoundboardListItemRow extends RelativeLayout {
         });
     }
 
+    private String getSoundCountText() {
+        int count = soundboard.getSounds().size();
+        return getResources().getQuantityString(
+                R.plurals.sound_count_text,
+                count, count);
 
+    }
 }
