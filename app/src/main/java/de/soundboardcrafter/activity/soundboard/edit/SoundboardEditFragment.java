@@ -34,11 +34,12 @@ public class SoundboardEditFragment extends Fragment {
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
-    public static final String EXTRA_EDIT_FRAGMENT = "soundboardEditFragment";
+    private static final String EXTRA_EDIT_FRAGMENT = "soundboardEditFragment";
 
     private SoundboardEditView soundboardEditView;
 
     private Soundboard soundboard;
+    private boolean isNew;
 
 
     static SoundboardEditFragment newInstance(UUID soundboardId) {
@@ -67,13 +68,19 @@ public class SoundboardEditFragment extends Fragment {
             UUID soundboardId = UUID.fromString(getArguments().getString(ARG_SOUNDBOARD_ID));
             new FindSoundboardTask(getActivity(), soundboardId).execute();
         } else {
-            soundboard = new Soundboard("NEW_SOUNDBOARD");
-
+            isNew = true;
+            soundboard = new Soundboard(getString(R.string.new_soundboard_name));
         }
         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
-        getActivity().setResult(
-                Activity.RESULT_CANCELED,
-                intent);
+        if (isNew) {
+            getActivity().setResult(
+                    Activity.RESULT_CANCELED,
+                    intent);
+        } else {
+            getActivity().setResult(
+                    Activity.RESULT_OK,
+                    intent);
+        }
 
 
     }
@@ -94,32 +101,38 @@ public class SoundboardEditFragment extends Fragment {
                 container, false);
 
         soundboardEditView = rootView.findViewById(R.id.edit_view);
-        soundboardEditView.setName(soundboard.getName());
 
+        if (isNew) {
+            soundboardEditView.setOnClickListenerSave(
+                    () -> {
+                        saveNewSoundboard();
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
+                        getActivity().setResult(
+                                Activity.RESULT_OK,
+                                intent);
+                        getActivity().finish();
+                    }
+            );
+            soundboardEditView.setOnClickListenerCancel(
+                    () -> {
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
+                        getActivity().setResult(
+                                Activity.RESULT_CANCELED,
+                                intent);
+                        getActivity().finish();
+                    }
+            );
+        } else {
+            soundboardEditView.setButtonsInvisible();
+        }
+        if (isNew) {
+            soundboardEditView.setName(soundboard.getName());
+        }
 
-        soundboardEditView.setOnClickListenerSave(
-                () -> {
-                    saveSoundboard();
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-                    intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                    getActivity().setResult(
-                            Activity.RESULT_OK,
-                            intent);
-                    getActivity().finish();
-                }
-        );
-        soundboardEditView.setOnClickListenerCancel(
-                () -> {
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-                    intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                    getActivity().setResult(
-                            Activity.RESULT_CANCELED,
-                            intent);
-                    getActivity().finish();
-                }
-        );
 
         return rootView;
     }
@@ -132,7 +145,7 @@ public class SoundboardEditFragment extends Fragment {
     }
 
 
-    private void saveSoundboard() {
+    private void saveNewSoundboard() {
         String nameEntered = soundboardEditView.getName();
         if (!nameEntered.isEmpty()) {
             soundboard.setName(nameEntered);
@@ -146,6 +159,15 @@ public class SoundboardEditFragment extends Fragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
+        if (!isNew) {
+            String nameEntered = soundboardEditView.getName();
+            if (!nameEntered.isEmpty()) {
+                soundboard.setName(nameEntered);
+            }
+
+            new UpdateSoundboardTask(getActivity(), soundboard).execute();
+        }
+
     }
 
 
@@ -228,6 +250,37 @@ public class SoundboardEditFragment extends Fragment {
 
             Log.d(TAG, "Saving soundboard " + soundboard);
             SoundboardDao.getInstance(appContext).insert(soundboard);
+
+            return null;
+        }
+    }
+
+    /**
+     * A background task, used to save the soundboard
+     */
+    class UpdateSoundboardTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = SaveNewSoundboardTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final Soundboard soundboard;
+
+        UpdateSoundboardTask(Context context, Soundboard soundboard) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.soundboard = soundboard;
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            Log.d(TAG, "Saving soundboard " + soundboard);
+            SoundboardDao.getInstance(appContext).update(soundboard);
 
             return null;
         }

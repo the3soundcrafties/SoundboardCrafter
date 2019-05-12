@@ -16,12 +16,12 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
-class SoundBoardItemRow extends RelativeLayout {
+class SoundboardItemRow extends RelativeLayout {
     @NonNull
     private final TextView soundItem;
     private Sound sound;
 
-    SoundBoardItemRow(Context context) {
+    SoundboardItemRow(Context context) {
         super(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         // Inflate the view into this object
