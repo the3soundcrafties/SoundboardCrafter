@@ -39,7 +39,7 @@ class GameCursorWrapper extends CursorWrapper {
                 + "LEFT JOIN " + SoundboardTable.NAME + " sb "
                 + "ON sb." + SoundboardTable.Cols.ID + " = sbg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " ";
         if (gameId != null) {
-            query += "WHERE g." + SoundboardGameTable.Cols.GAME_ID + "=" + gameId;
+            query += "WHERE g." + GameTable.Cols.ID + "= ?";
         }
         query += "ORDER BY g." + GameTable.Cols.ID;
         return query;

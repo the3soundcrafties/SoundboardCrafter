@@ -15,15 +15,15 @@ import de.soundboardcrafter.model.GameWithSoundboards;
  * Adapter for a GameItem.
  */
 class GameListItemAdapter extends BaseAdapter {
-    private List<GameWithSoundboards> games;
+    private List<GameWithSoundboards> gamesWithSoundboards;
 
-    GameListItemAdapter(List<GameWithSoundboards> games) {
-        this.games = games;
+    GameListItemAdapter(List<GameWithSoundboards> gamesWithSoundboards) {
+        this.gamesWithSoundboards = gamesWithSoundboards;
     }
 
     @Override
     public int getCount() {
-        return games.size();
+        return gamesWithSoundboards.size();
     }
 
     @Override
@@ -33,7 +33,7 @@ class GameListItemAdapter extends BaseAdapter {
 
     @Override
     public GameWithSoundboards getItem(int position) {
-        return games.get(position);
+        return gamesWithSoundboards.get(position);
     }
 
     @Override
@@ -43,7 +43,17 @@ class GameListItemAdapter extends BaseAdapter {
             convertView = new GameListItemRow(parent.getContext());
         }
         GameListItemRow itemRow = (GameListItemRow) convertView;
-        itemRow.setGameWithSoundboards(games.get(position));
+        itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
         return convertView;
+    }
+
+    public void remove(GameWithSoundboards gameWithSoundboards) {
+        gamesWithSoundboards.stream()
+                .filter(g -> g.getGame().getId().equals(gameWithSoundboards.getGame().getId()))
+                .findFirst()
+                .ifPresent(obj -> {
+                    gamesWithSoundboards.remove(obj);
+                    notifyDataSetChanged();
+                });
     }
 }

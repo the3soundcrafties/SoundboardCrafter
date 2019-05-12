@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.game.edit;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -62,6 +63,11 @@ public class GameEditView extends ConstraintLayout {
         cancel.setOnClickListener(l -> {
             runnable.run();
         });
+    }
+
+    void setButtonsInvisible() {
+        save.setVisibility(View.INVISIBLE);
+        cancel.setVisibility(View.INVISIBLE);
     }
 
     /**

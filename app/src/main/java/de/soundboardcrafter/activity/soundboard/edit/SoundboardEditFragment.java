@@ -21,7 +21,6 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -71,12 +70,13 @@ public class SoundboardEditFragment extends Fragment {
             isNew = true;
             soundboard = new Soundboard(getString(R.string.new_soundboard_name));
         }
-        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
         if (isNew) {
+            Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
             getActivity().setResult(
                     Activity.RESULT_CANCELED,
                     intent);
         } else {
+            Intent intent = new Intent(getActivity(), SoundboardEditActivity.class);
             getActivity().setResult(
                     Activity.RESULT_OK,
                     intent);
@@ -103,10 +103,11 @@ public class SoundboardEditFragment extends Fragment {
         soundboardEditView = rootView.findViewById(R.id.edit_view);
 
         if (isNew) {
+            soundboardEditView.setName(soundboard.getName());
             soundboardEditView.setOnClickListenerSave(
                     () -> {
                         saveNewSoundboard();
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
                         getActivity().setResult(
@@ -117,7 +118,7 @@ public class SoundboardEditFragment extends Fragment {
             );
             soundboardEditView.setOnClickListenerCancel(
                     () -> {
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
                         getActivity().setResult(
@@ -128,9 +129,6 @@ public class SoundboardEditFragment extends Fragment {
             );
         } else {
             soundboardEditView.setButtonsInvisible();
-        }
-        if (isNew) {
-            soundboardEditView.setName(soundboard.getName());
         }
 
 

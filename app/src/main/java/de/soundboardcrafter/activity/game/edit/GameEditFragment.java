@@ -25,7 +25,8 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.main.MainActivity;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
@@ -44,8 +45,8 @@ public class GameEditFragment extends Fragment {
     private static final String EXTRA_EDIT_FRAGMENT = "gameEditFragment";
 
     private GameEditView gameEditView;
-
     private GameWithSoundboards gameWithSoundboards;
+    private boolean isNew;
 
 
     static GameEditFragment newInstance(UUID gameId) {
@@ -75,16 +76,22 @@ public class GameEditFragment extends Fragment {
             UUID gameId = UUID.fromString(gameIdArg);
             new FindGameTask(getActivity(), gameId).execute();
         } else {
+            isNew = true;
             gameWithSoundboards = new GameWithSoundboards(getString(R.string.new_game_name));
             new FindAllSoundboardsTask(getContext()).execute();
-
         }
-        Intent intent = new Intent(getActivity(), GameCreateActivity.class);
-        getActivity().setResult(
-                Activity.RESULT_CANCELED,
-                intent);
 
-
+        if (isNew) {
+            Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
+            getActivity().setResult(
+                    Activity.RESULT_CANCELED,
+                    intent);
+        } else {
+            Intent intent = new Intent(getActivity(), SoundboardEditActivity.class);
+            getActivity().setResult(
+                    Activity.RESULT_OK,
+                    intent);
+        }
     }
 
     @Override
@@ -103,32 +110,35 @@ public class GameEditFragment extends Fragment {
                 container, false);
 
         gameEditView = rootView.findViewById(R.id.edit_view);
-        gameEditView.setName(gameWithSoundboards.getGame().getName());
+        if (isNew) {
+            gameEditView.setName(gameWithSoundboards.getGame().getName());
+            gameEditView.setOnClickListenerSave(
+                    () -> {
+                        saveNewGame();
+                        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
+                        intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                        getActivity().setResult(
+                                Activity.RESULT_OK,
+                                intent);
+                        getActivity().finish();
+                    }
+            );
+            gameEditView.setOnClickListenerCancel(
+                    () -> {
+                        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
+                        intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                        getActivity().setResult(
+                                Activity.RESULT_CANCELED,
+                                intent);
+                        getActivity().finish();
+                    }
+            );
+        } else {
+            gameEditView.setButtonsInvisible();
+        }
 
-
-        gameEditView.setOnClickListenerSave(
-                () -> {
-                    saveGame();
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
-                    intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                    getActivity().setResult(
-                            Activity.RESULT_OK,
-                            intent);
-                    getActivity().finish();
-                }
-        );
-        gameEditView.setOnClickListenerCancel(
-                () -> {
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
-                    intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                    getActivity().setResult(
-                            Activity.RESULT_CANCELED,
-                            intent);
-                    getActivity().finish();
-                }
-        );
 
         return rootView;
     }
@@ -156,7 +166,23 @@ public class GameEditFragment extends Fragment {
 
     }
 
-    private void saveGame() {
+    private void saveNewGame() {
+        updateGameWithSoundboards();
+        new SaveNewGameTask(getActivity(), gameWithSoundboards).execute();
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the user returns to the calling activity.
+    public void onPause() {
+        super.onPause();
+        if (!isNew) {
+            updateGameWithSoundboards();
+            new UpdateGameTask(getActivity(), gameWithSoundboards).execute();
+        }
+    }
+
+    private void updateGameWithSoundboards() {
         String nameEntered = gameEditView.getName();
         if (!nameEntered.isEmpty()) {
             gameWithSoundboards.getGame().setName(nameEntered);
@@ -168,15 +194,6 @@ public class GameEditFragment extends Fragment {
                 gameWithSoundboards.addSoundboard(soundboard.getSoundboard());
             }
         }
-        new SaveNewGameTask(getActivity(), gameWithSoundboards).execute();
-    }
-
-
-    @Override
-    @UiThread
-    // Called especially when the user returns to the calling activity.
-    public void onPause() {
-        super.onPause();
     }
 
 
@@ -312,6 +329,37 @@ public class GameEditFragment extends Fragment {
 
             Log.d(TAG, "Saving gameWithSoundboards " + gameWithSoundboards);
             GameDao.getInstance(appContext).insertWithSoundboards(gameWithSoundboards);
+
+            return null;
+        }
+    }
+
+    /**
+     * A background task, used to save the gameWithSoundboards
+     */
+    class UpdateGameTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = UpdateGameTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final GameWithSoundboards gameWithSoundboards;
+
+        UpdateGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.gameWithSoundboards = gameWithSoundboards;
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            Log.d(TAG, "Saving gameWithSoundboards " + gameWithSoundboards);
+            GameDao.getInstance(appContext).updateWithSoundboards(gameWithSoundboards);
 
             return null;
         }

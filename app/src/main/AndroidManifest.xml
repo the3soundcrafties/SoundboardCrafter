@@ -45,7 +45,12 @@
         <activity
             android:name=".activity.game.edit.GameCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="stateVisible" />
+
+        <activity
+            android:name=".activity.game.edit.GameEditActivity"
+            android:parentActivityName=".activity.main.MainActivity"
+            android:windowSoftInputMode="stateVisible" />
 
         <activity
             android:name=".activity.soundboard.edit.SoundboardCreateActivity"

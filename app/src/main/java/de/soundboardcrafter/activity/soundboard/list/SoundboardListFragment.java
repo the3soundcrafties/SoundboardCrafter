@@ -114,7 +114,7 @@ public class SoundboardListFragment extends Fragment
                 startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_soundboard:
-                new RemoveSoundboardTask(getActivity(), soundboardWithSounds.getId()).execute();
+                new RemoveSoundboardTask(getActivity(), soundboardWithSounds).execute();
                 adapter.remove(soundboardWithSounds);
                 return true;
             default:
@@ -178,10 +178,10 @@ public class SoundboardListFragment extends Fragment
         private final WeakReference<Context> appContextRef;
         private UUID soundboardId;
 
-        RemoveSoundboardTask(Context context, UUID soundboardId) {
+        RemoveSoundboardTask(Context context, SoundboardWithSounds soundboard) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.soundboardId = soundboardId;
+            soundboardId = soundboard.getId();
         }
 
         @Override
@@ -194,7 +194,6 @@ public class SoundboardListFragment extends Fragment
             }
 
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
-            soundboardDao.unlinkAllSounds(soundboardId);
             soundboardDao.remove(soundboardId);
             return null;
         }

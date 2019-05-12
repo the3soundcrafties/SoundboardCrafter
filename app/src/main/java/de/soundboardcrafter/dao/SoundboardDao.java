@@ -265,7 +265,7 @@ public class SoundboardDao extends AbstractDao {
         getDatabase().delete(SoundboardSoundTable.NAME, null, new String[]{});
     }
 
-    public void unlinkAllSounds(UUID soundboardId) {
+    private void unlinkAllSounds(UUID soundboardId) {
         getDatabase().delete(SoundboardSoundTable.NAME, SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ?", new String[]{soundboardId.toString()});
     }
 
@@ -361,6 +361,7 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public void remove(UUID soundboardId) {
+        unlinkAllSounds(soundboardId);
         getDatabase().delete(SoundboardTable.NAME, SoundboardTable.Cols.ID + " = ?", new String[]{soundboardId.toString()});
     }
 

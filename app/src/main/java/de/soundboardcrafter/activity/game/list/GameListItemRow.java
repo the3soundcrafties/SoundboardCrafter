@@ -65,4 +65,7 @@ class GameListItemRow extends RelativeLayout {
 
     }
 
+    GameWithSoundboards getGameWithSoundboards() {
+        return gameWithSoundboards;
+    }
 }
