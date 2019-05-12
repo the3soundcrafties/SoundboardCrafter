@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/toolbar_menu_sound_sort"
+        android:icon="@drawable/ic_menu_sort"
+        android:title="@string/toolbar_menu_audiofiles_sort"
+        app:showAsAction="ifRoom|withText">
+        <menu>
+            <item
+                android:id="@+id/toolbar_menu_sound_sort_alpha"
+                android:title="@string/toolbar_menu_audiofiles_sort_alpha"
+                app:showAsAction="always" />
+
+        </menu>
+
+    </item>
+</menu>

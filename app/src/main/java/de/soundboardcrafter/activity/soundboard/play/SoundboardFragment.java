@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
@@ -27,6 +29,7 @@ import com.google.common.collect.ImmutableCollection;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -52,11 +55,28 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
+    private enum SortOrder {
+        BY_NAME(Comparator.comparing(Sound::getName));
+
+        private Comparator<Sound> comparator;
+
+        SortOrder(Comparator<Sound> comparator) {
+            this.comparator = comparator;
+        }
+
+        public Comparator<Sound> getComparator() {
+            return comparator;
+        }
+    }
+
     private GridView gridView;
     // TODO Allow for zero soundboards
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
+    private static final String ARG_SORT_ORDER = "sortOrder";
+    private SortOrder sortOrder;
+
 
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
@@ -130,12 +150,32 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard,
                 container, false);
-
+        Bundle args = getArguments();
+        if (args != null) {
+            sortOrder = (SortOrder) args.getSerializable(ARG_SORT_ORDER);
+        }
+        if (sortOrder == null) {
+            sortOrder = SortOrder.BY_NAME;
+        }
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
         initSoundboardItemAdapter();
         registerForContextMenu(gridView);
         return rootView;
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.toolbar_menu_sound_sort_alpha:
+                new SoundSortInSoundboardTask(getContext(), soundboard, SortOrder.BY_NAME).execute();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
     private SoundboardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
         return new SoundboardItemRow.MediaPlayerServiceCallback() {
@@ -207,6 +247,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
         gridView.setAdapter(soundboardItemAdapter);
         updateUI();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.fragment_sound, menu);
     }
 
 
@@ -292,6 +339,58 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             bindService();
         }
         return mediaPlayerService;
+    }
+
+
+    class SoundSortInSoundboardTask extends AsyncTask<Void, Void, SoundboardWithSounds> {
+        private final String TAG = UpdateSoundsTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        SoundboardWithSounds soundboardWithSounds;
+        SortOrder order;
+
+        SoundSortInSoundboardTask(Context context, SoundboardWithSounds soundboardWithSounds, SortOrder order) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.soundboardWithSounds = soundboardWithSounds;
+            this.order = order;
+        }
+
+        @Override
+        @WorkerThread
+        protected SoundboardWithSounds doInBackground(Void... v) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+
+            Log.d(TAG, "Sorting sounds: " + soundboardWithSounds);
+            soundboardWithSounds.sortSoundsBy(order.comparator);
+
+            SoundboardDao.getInstance(appContext).linkSoundsInOrder(soundboardWithSounds);
+
+            return soundboardWithSounds;
+        }
+
+        @Override
+        @UiThread
+        protected void onPostExecute(SoundboardWithSounds soundboardWithSounds) {
+            if (!isAdded()) {
+                // fragment is no longer linked to an activity
+                return;
+            }
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            soundboardItemAdapter.updateSounds(soundboardWithSounds.getSounds());
+        }
     }
 
     /**

@@ -162,21 +162,6 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
-    /**
-     * Inserts an empty soundboard with this name.
-     *
-     * @throws RuntimeException if inserting does not succeed
-     */
-    private void insertSoundboard(UUID id, String name) {
-        // TODO throw exception if soundboard name already exists
-
-        ContentValues values = new ContentValues();
-        values.put(SoundboardTable.Cols.ID, id.toString());
-        values.put(SoundboardTable.Cols.NAME, name);
-
-        insertOrThrow(SoundboardTable.NAME, values);
-    }
-
 
     /**
      * Updates the soundboard links for this sound. The soundboards must already exist.
@@ -198,6 +183,15 @@ public class SoundboardDao extends AbstractDao {
         }
 
         unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+    }
+
+    public void linkSoundsInOrder(SoundboardWithSounds soundboardWithSounds) {
+        Soundboard soundboard = soundboardWithSounds.getSoundboard();
+        unlinkAllSounds(soundboard.getId());
+        for (int i = 0; i < soundboardWithSounds.getSounds().size(); i++) {
+            Sound sound = soundboardWithSounds.getSounds().get(i);
+            linkSoundToSoundboard(soundboard.getId(), i, sound.getId());
+        }
     }
 
     private void linkSound(Soundboard soundboard, Sound sound) {
