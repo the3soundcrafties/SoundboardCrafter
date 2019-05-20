@@ -34,8 +34,6 @@ class SoundboardItemRow extends RelativeLayout {
 
         boolean isPlaying(Soundboard soundboard, Sound sound);
 
-        void play(Soundboard soundboard, Sound sound);
-
         void setOnPlayingStopped(Soundboard soundboard, Sound sound,
                                  SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
 
