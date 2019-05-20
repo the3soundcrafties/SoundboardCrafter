@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
+                pagerAdapter.getAudioFileListFragment()
+                        .ifPresent(AudioFileListFragment::stopPlaying);
+
                 @Nullable Page tmp = pagerAdapter.getPage(position);
                 if (tmp != null) {
                     selectedPage = tmp;
@@ -182,12 +186,22 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
             super.destroyItem(container, position, object);
         }
 
+        @Nullable
+        Optional<AudioFileListFragment> getAudioFileListFragment() {
+            return registeredFragments.stream()
+                    .filter(f -> f instanceof AudioFileListFragment)
+                    .map(AudioFileListFragment.class::cast)
+                    .findAny();
+        }
+
+
         @Override
         public @NonNull
         Iterator<Fragment> iterator() {
             return registeredFragments.stream()
                     .filter(Objects::nonNull).iterator();
         }
+
     }
 
     @Override

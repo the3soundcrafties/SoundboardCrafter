@@ -240,7 +240,7 @@ public class AudioFileListFragment extends Fragment implements
         }
     }
 
-    private void stopPlaying() {
+    public void stopPlaying() {
         if (mediaPlayer == null) {
             return;
         }
