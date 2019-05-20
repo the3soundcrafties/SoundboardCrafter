@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
 
 /**
@@ -23,6 +24,12 @@ class AudioFileListItemAdapter extends BaseAdapter {
     private final List<AudioModelAndSound> audioModelAndSounds;
 
     /**
+     * Is an audio file being played (as a preview)? Then this is
+     * its position in the list.
+     */
+    private Integer positionPlaying;
+
+    /**
      * Creates an adapter that's initially empty
      */
     AudioFileListItemAdapter(AudioFileItemRow.Callback callback) {
@@ -33,6 +40,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
     void setAudioFiles(Collection<AudioModelAndSound> audioModelAndSounds) {
         this.audioModelAndSounds.clear();
         this.audioModelAndSounds.addAll(audioModelAndSounds);
+        positionPlaying = null;
 
         notifyDataSetChanged();
     }
@@ -65,10 +73,22 @@ class AudioFileListItemAdapter extends BaseAdapter {
     }
 
     private void configureItemRow(AudioFileItemRow itemRow, int position) {
-        configureItemRow(itemRow, audioModelAndSounds.get(position));
+        itemRow.setAudioFile(audioModelAndSounds.get(position), callback);
+
+        itemRow.setImage(isPlaying(position) ?
+                R.drawable.ic_stop : R.drawable.ic_play);
     }
 
-    private void configureItemRow(AudioFileItemRow itemRow, AudioModelAndSound audioModelAndSound) {
-        itemRow.setAudioFile(audioModelAndSound, callback);
+    void setPositionPlaying(Integer positionPlaying) {
+        this.positionPlaying = positionPlaying;
+        notifyDataSetChanged();
+    }
+
+    Integer getPositionPlaying() {
+        return positionPlaying;
+    }
+
+    boolean isPlaying(int position) {
+        return positionPlaying != null && positionPlaying.intValue() == position;
     }
 }

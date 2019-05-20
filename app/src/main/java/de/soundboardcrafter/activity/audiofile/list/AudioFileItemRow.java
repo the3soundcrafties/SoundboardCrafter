@@ -24,6 +24,8 @@ class AudioFileItemRow extends RelativeLayout {
     }
 
     @NonNull
+    private final ImageView playingImage;
+    @NonNull
     private final TextView audioName;
     @Nonnull
     private final TextView audioArtistAndLength;
@@ -35,6 +37,7 @@ class AudioFileItemRow extends RelativeLayout {
         LayoutInflater inflater = LayoutInflater.from(context);
         // Inflate the view into this object
         inflater.inflate(R.layout.audiofile_list_item, this, true);
+        playingImage = findViewById(R.id.icon);
         audioName = findViewById(R.id.audio_name);
         audioArtistAndLength = findViewById(R.id.audio_artist_and_length);
     }
@@ -79,5 +82,10 @@ class AudioFileItemRow extends RelativeLayout {
         }
 
         return name;
+    }
+
+    @UiThread
+    void setImage(int imageResource) {
+        playingImage.setImageResource(imageResource);
     }
 }

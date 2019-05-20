@@ -51,7 +51,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundboardFragment.class.getName();
 
-    private static final String ARG_SOUNDBOADRD = "Soundboard";
+    private static final String ARG_SOUNDBOARD = "Soundboard";
 
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
@@ -83,7 +83,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
      */
     static SoundboardFragment createFragment(SoundboardWithSounds soundboard) {
         Bundle args = new Bundle();
-        args.putSerializable(ARG_SOUNDBOADRD, soundboard);
+        args.putSerializable(ARG_SOUNDBOARD, soundboard);
         SoundboardFragment fragment = new SoundboardFragment();
         fragment.setArguments(args);
         return fragment;
@@ -123,7 +123,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        soundboard = (SoundboardWithSounds) getArguments().getSerializable(ARG_SOUNDBOADRD);
+        soundboard = (SoundboardWithSounds) getArguments().getSerializable(ARG_SOUNDBOARD);
 
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         getActivity().startService(intent);
@@ -161,32 +161,30 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         initSoundboardItemAdapter();
         registerForContextMenu(gridView);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (!(view instanceof SoundboardItemRow)) {
-                    return;
-                }
-
-                SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
-
-                MediaPlayerService service = getService();
-                if (service == null) {
-                    return;
-                }
-
-                Sound sound = soundboardItemAdapter.getItem(position);
-
-                if (!service.isPlaying(soundboard.getSoundboard(), sound)) {
-                    soundboardItemRow.setImage(R.drawable.ic_stop);
-                    service.play(soundboard.getSoundboard(), sound,
-                            soundboardItemAdapter::notifyDataSetChanged);
-                } else {
-                    service.stopPlaying(soundboard.getSoundboard(), sound);
-                }
+        gridView.setOnItemClickListener((parent, view, position, id) -> {
+            if (!(view instanceof SoundboardItemRow)) {
+                return;
             }
+            SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
+
+            onClickSoundboard(soundboardItemRow, soundboardItemAdapter.getItem(position));
         });
         return rootView;
+    }
+
+    private void onClickSoundboard(SoundboardItemRow soundboardItemRow, Sound sound) {
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        if (!service.isPlaying(soundboard.getSoundboard(), sound)) {
+            soundboardItemRow.setImage(R.drawable.ic_stop);
+            service.play(soundboard.getSoundboard(), sound,
+                    soundboardItemAdapter::notifyDataSetChanged);
+        } else {
+            service.stopPlaying(soundboard.getSoundboard(), sound);
+        }
     }
 
 

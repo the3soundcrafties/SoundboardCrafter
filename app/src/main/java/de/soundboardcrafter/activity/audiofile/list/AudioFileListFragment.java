@@ -1,10 +1,13 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,6 +34,8 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
@@ -41,6 +46,7 @@ import de.soundboardcrafter.model.Sound;
  * Shows Soundboard in a Grid
  */
 public class AudioFileListFragment extends Fragment implements
+        ServiceConnection,
         AudioFileItemRow.Callback,
         SoundEventListener {
     private enum SortOrder {
@@ -69,6 +75,9 @@ public class AudioFileListFragment extends Fragment implements
 
     private ListView listView;
     private AudioFileListItemAdapter adapter;
+    private MediaPlayerService mediaPlayerService;
+    private @Nullable
+    SoundboardMediaPlayer mediaPlayer;
 
     private @Nullable
     SoundEventListener soundEventListenerActivity;
@@ -84,9 +93,55 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     @Override
+    @UiThread
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
+        mediaPlayerService = b.getService();
+        //as soon the media player service is connected, the play/stop icons can be set correctly
+        updateUI();
+
+        Log.d(TAG, "MediaPlayerService is connected");
+    }
+
+    @Override
+    @UiThread
+    public void onServiceDisconnected(ComponentName name) {
+        // TODO What to do on Service Disconnected?
+    }
+
+    @Override
+    @UiThread
+    public void onBindingDied(ComponentName name) {
+        // TODO What to do on Service Died?
+    }
+
+    @Override
+    @UiThread
+    public void onNullBinding(ComponentName name) {
+        // TODO What to do on Null Binding?
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        // TODO Necessary?! Also done in onResume()
+        bindService();
+    }
+
+    private void bindService() {
+        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    @UiThread
+    public void onPause() {
+        super.onPause();
+        stopPlaying();
+
+        getActivity().unbindService(this);
     }
 
     @Override
@@ -108,7 +163,13 @@ public class AudioFileListFragment extends Fragment implements
         initAudioFileListItemAdapter();
 
         listView.setOnItemClickListener(
-                (parent, view, position, id) -> onClickAudioFile(adapter.getItem(position)));
+                (parent, view, position, id) -> {
+                    if (!(view instanceof AudioFileItemRow)) {
+                        return;
+                    }
+                    AudioFileItemRow audioFileItemRow = (AudioFileItemRow) view;
+                    onClickAudioFile(audioFileItemRow, position);
+                });
 
         new FindAudioFileTask(getContext(), sortOrder).execute();
 
@@ -155,9 +216,52 @@ public class AudioFileListFragment extends Fragment implements
         new FindAudioFileTask(getContext(), sortOrder).execute();
     }
 
-    private void onClickAudioFile(AudioModelAndSound audioModelAndSound) {
-        Log.d(TAG, "Test");
+    private void onClickAudioFile(AudioFileItemRow audioFileItemRow,
+                                  int position) {
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        @Nullable boolean positionWasPlaying = adapter.isPlaying(position);
+        stopPlaying();
+
+        if (!positionWasPlaying) {
+            adapter.setPositionPlaying(position);
+
+            AudioModelAndSound audioModelAndSound = adapter.getItem(position);
+            audioFileItemRow.setImage(R.drawable.ic_stop);
+            mediaPlayer = service.play(audioModelAndSound.getName(),
+                    audioModelAndSound.getAudioModel().getPath(),
+                    () -> {
+                        adapter.setPositionPlaying(null);
+                        mediaPlayer = null;
+                    });
+        }
     }
+
+    private void stopPlaying() {
+        if (mediaPlayer == null) {
+            return;
+        }
+        mediaPlayer.stop();
+        mediaPlayer = null;
+    }
+
+    private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+
+    }
+
+    // TODO Inherit from some MediaPlayerFragment?! Use some MediaPlayerSupport??!
+    private MediaPlayerService getService() {
+        if (mediaPlayerService == null) {
+            // TODO Necessary?! Also done in onResume()
+            bindService();
+        }
+        return mediaPlayerService;
+    }
+
 
     @Override
     @UiThread
@@ -216,6 +320,7 @@ public class AudioFileListFragment extends Fragment implements
 
     @UiThread
     private void setAudioFiles(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
+        stopPlaying();
         adapter.setAudioFiles(audioFilesAndSounds);
     }
 
@@ -225,6 +330,15 @@ public class AudioFileListFragment extends Fragment implements
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the edit activity returns.
+    public void onResume() {
+        super.onResume();
+        // updateUI();
+        bindService();
     }
 
     @Override

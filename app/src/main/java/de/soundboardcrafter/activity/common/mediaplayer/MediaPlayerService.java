@@ -13,18 +13,19 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
-
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.model.Sound;
@@ -203,6 +204,30 @@ public class MediaPlayerService extends Service {
         updateNotificationAndForegroundService();
     }
 
+    /**
+     * Starts playing from the path - without adding a media player and without
+     * necessarily starting a foreground service etc.
+     */
+    public SoundboardMediaPlayer play(@NonNull String name,
+                                      @NonNull String path,
+                                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+        checkNotNull(path, "path is null");
+
+        SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
+        mediaPlayer.setOnPlayingStopped(new SoundboardMediaPlayer.OnPlayingStopped() {
+            @Override
+            public void stop() {
+                onPlayingStopped.stop();
+                removeMediaPlayer(mediaPlayer);
+            }
+        });
+        initMediaPlayer(mediaPlayer, name, path, 100, false);
+
+        mediaPlayer.prepareAsync();
+
+        return mediaPlayer;
+    }
+
     private void updateNotificationAndForegroundService() {
         if (mediaPlayers.isEmpty()) {
             stopForeground(true);
@@ -266,17 +291,30 @@ public class MediaPlayerService extends Service {
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
      */
     private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
-        mediaPlayer.setSoundName(sound.getName());
+        String soundName = sound.getName();
+        String soundPath = sound.getPath();
+        int volumePercentage = sound.getVolumePercentage();
+        boolean loop = sound.isLoop();
+
+        initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
+    }
+
+    /**
+     * Initializes this mediaPlayer. Does not start playing yet.
+     */
+    private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
+                                 String soundPath, int volumePercentage, boolean loop) {
+        mediaPlayer.setSoundName(soundName);
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
         try {
-            mediaPlayer.setDataSource(sound.getPath());
+            mediaPlayer.setDataSource(soundPath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-        setVolume(mediaPlayer, percentageToVolume(sound.getVolumePercentage()));
-        mediaPlayer.setLooping(sound.isLoop());
+        setVolume(mediaPlayer, percentageToVolume(volumePercentage));
+        mediaPlayer.setLooping(loop);
         mediaPlayer.setOnPreparedListener(this::onPrepared);
         mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
