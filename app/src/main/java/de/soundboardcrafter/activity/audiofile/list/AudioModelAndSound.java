@@ -10,7 +10,7 @@ import de.soundboardcrafter.model.Sound;
 /**
  * Metadateien einer Audio-Datei, ggf. mit einem Sound.
  */
-public class AudioModelAndSound {
+class AudioModelAndSound {
     private AudioModel audioModel;
     private @Nullable
     Sound sound;

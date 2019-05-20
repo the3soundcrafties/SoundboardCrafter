@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * An audio file data / metadata.
  */
-public class AudioModel {
+class AudioModel {
     private String path;
     private String name;
     private String album;
@@ -54,7 +54,7 @@ public class AudioModel {
         this.dateAdded = dateAdded;
     }
 
-    public long getDurationSecs() {
+    long getDurationSecs() {
         return durationSecs;
     }
 

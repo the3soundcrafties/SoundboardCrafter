@@ -48,12 +48,7 @@ class AudioFileItemRow extends RelativeLayout {
         audioName.setText(formatName());
         audioArtistAndLength.setText(formatArtistAndLength());
 
-        // TODO Choose appropriate image: + or - ?!
-        /*
-        setImage(is...() ? R.drawable.... : R.drawable....);
-        */
-
-        ImageView iconAdd = findViewById(R.id.icon_add);
+        ImageView iconAdd = findViewById(R.id.icon_link_sound_to_soundboards);
         iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
     }
 

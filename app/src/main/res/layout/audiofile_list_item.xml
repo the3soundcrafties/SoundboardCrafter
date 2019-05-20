@@ -15,14 +15,14 @@
         android:src="@drawable/ic_sound_list_item" />
 
     <ImageView
-        android:id="@+id/icon_add"
+        android:id="@+id/icon_link_sound_to_soundboards"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="6dip"
         android:contentDescription="Sound add"
-        android:src="@drawable/ic_add_black" />
+        android:src="@drawable/ic_link_sound_to_soundboards" />
 
     <TextView
         android:id="@+id/audio_artist_and_length"
