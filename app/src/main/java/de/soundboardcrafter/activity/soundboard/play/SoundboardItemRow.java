@@ -56,25 +56,10 @@ class SoundboardItemRow extends RelativeLayout {
 
         setImage(mediaPlayerServiceCallback.isPlaying(soundboard, sound) ?
                 R.drawable.ic_stop : R.drawable.ic_play);
-
-        setOnClickListener(l -> {
-            if (!mediaPlayerServiceCallback.isPlaying(soundboard, sound)) {
-                setImage(R.drawable.ic_stop);
-                mediaPlayerServiceCallback.play(soundboard, sound);
-            } else {
-                mediaPlayerServiceCallback.stopPlaying(soundboard, this.sound);
-            }
-        });
-
-        setOnLongClickListener(l -> {
-            // Do NOT consume long clicks.
-            // Without this, this context menu on the grid view won't work
-            return false;
-        });
     }
 
     @UiThread
-    private void setImage(int p) {
+    void setImage(int p) {
         soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
     }
 

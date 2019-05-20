@@ -1,7 +1,6 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -12,7 +11,6 @@ import androidx.annotation.UiThread;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
@@ -48,18 +46,6 @@ public class SoundboardListItemRow extends RelativeLayout {
         this.soundboard = soundboard;
         soundboardName.setText(this.soundboard.getName());
         soundCount.setText(getSoundCountText());
-
-        setOnClickListener(l -> {
-            Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
-            intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-            getContext().startActivity(intent);
-        });
-
-        setOnLongClickListener(l -> {
-            // Do NOT consume long clicks.
-            // Without this, this context menu on the list view won't work
-            return false;
-        });
     }
 
     private String getSoundCountText() {

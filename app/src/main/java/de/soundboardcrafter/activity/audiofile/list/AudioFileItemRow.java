@@ -20,7 +20,7 @@ class AudioFileItemRow extends RelativeLayout {
     private static final int MINS_PER_SEC = 60;
 
     public interface Callback {
-        public void onEditAudioFile(AudioModelAndSound audioModelAndSound);
+        void onEditAudioFile(AudioModelAndSound audioModelAndSound);
     }
 
     @NonNull

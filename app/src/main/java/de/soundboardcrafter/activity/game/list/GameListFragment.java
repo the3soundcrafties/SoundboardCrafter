@@ -15,12 +15,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -61,6 +63,15 @@ public class GameListFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_game_list,
                 container, false);
         listView = rootView.findViewById(R.id.listview_games);
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            if (adapter == null) {
+                return;
+            }
+
+            onClickGame(adapter.getItem(position));
+        });
+
         addNewGame = rootView.findViewById(R.id.new_game);
         addNewGame.setOnClickListener(e -> {
             startActivityForResult(GameCreateActivity.newIntent(getContext()), CREATE_SOUNDBOARD_REQUEST_CODE);
@@ -68,6 +79,14 @@ public class GameListFragment extends Fragment {
         registerForContextMenu(listView);
 
         return rootView;
+    }
+
+    private void onClickGame(GameWithSoundboards gameWithSoundboards) {
+        Toast toast = Toast.makeText(
+                getContext(),
+                Joiner.on(" ").join(gameWithSoundboards.getSoundboards()),
+                Toast.LENGTH_LONG);
+        toast.show();
     }
 
     @Override

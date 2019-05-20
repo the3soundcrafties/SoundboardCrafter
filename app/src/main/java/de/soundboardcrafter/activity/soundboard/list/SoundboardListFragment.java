@@ -33,6 +33,7 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
+import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -42,6 +43,8 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
     private static final String TAG = SoundboardListFragment.class.getName();
+
+    private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 25;
     private static final int EDIT_SOUNDBOARD_REQUEST_CODE = 26;
     private Button addNewSoundboard;
@@ -75,6 +78,17 @@ public class SoundboardListFragment extends Fragment
         });
         initSoundboardItemAdapter();
         registerForContextMenu(listView);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                SoundboardWithSounds soundboard = adapter.getItem(position);
+
+                Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
+                intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
+                getContext().startActivity(intent);
+            }
+        });
 
         new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
 

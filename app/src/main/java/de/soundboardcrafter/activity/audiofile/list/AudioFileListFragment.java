@@ -106,6 +106,10 @@ public class AudioFileListFragment extends Fragment implements
         listView = rootView.findViewById(R.id.listview_audiofile);
 
         initAudioFileListItemAdapter();
+
+        listView.setOnItemClickListener(
+                (parent, view, position, id) -> onClickAudioFile(adapter.getItem(position)));
+
         new FindAudioFileTask(getContext(), sortOrder).execute();
 
         return rootView;
@@ -149,6 +153,10 @@ public class AudioFileListFragment extends Fragment implements
 
     private void sort(SortOrder sortOrder) {
         new FindAudioFileTask(getContext(), sortOrder).execute();
+    }
+
+    private void onClickAudioFile(AudioModelAndSound audioModelAndSound) {
+        Log.d(TAG, "Test");
     }
 
     @Override

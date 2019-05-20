@@ -160,6 +160,32 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         gridView = rootView.findViewById(R.id.grid_view_soundboard);
         initSoundboardItemAdapter();
         registerForContextMenu(gridView);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (!(view instanceof SoundboardItemRow)) {
+                    return;
+                }
+
+                SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
+
+                MediaPlayerService service = getService();
+                if (service == null) {
+                    return;
+                }
+
+                Sound sound = soundboardItemAdapter.getItem(position);
+
+                if (!service.isPlaying(soundboard.getSoundboard(), sound)) {
+                    soundboardItemRow.setImage(R.drawable.ic_stop);
+                    service.play(soundboard.getSoundboard(), sound,
+                            soundboardItemAdapter::notifyDataSetChanged);
+                } else {
+                    service.stopPlaying(soundboard.getSoundboard(), sound);
+                }
+            }
+        });
         return rootView;
     }
 

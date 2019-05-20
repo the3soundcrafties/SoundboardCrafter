@@ -59,7 +59,16 @@ class AudioFileListItemAdapter extends BaseAdapter {
             convertView = new AudioFileItemRow(parent.getContext());
         }
         AudioFileItemRow itemRow = (AudioFileItemRow) convertView;
-        itemRow.setAudioFile(audioModelAndSounds.get(position), callback);
+
+        configureItemRow(itemRow, position);
         return convertView;
+    }
+
+    private void configureItemRow(AudioFileItemRow itemRow, int position) {
+        configureItemRow(itemRow, audioModelAndSounds.get(position));
+    }
+
+    private void configureItemRow(AudioFileItemRow itemRow, AudioModelAndSound audioModelAndSound) {
+        itemRow.setAudioFile(audioModelAndSound, callback);
     }
 }
