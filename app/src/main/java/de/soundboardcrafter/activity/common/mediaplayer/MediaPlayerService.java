@@ -263,7 +263,7 @@ public class MediaPlayerService extends Service {
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         .setShowWhen(false)
                         .setTicker(summary)
-                        // TODO .setStyle(new NotificationCompat.
+                        // TODO .setStyle(new NotificationCompat. does not exist??!
                         .build();
 
         // Without this, the service will be killed shortly when the
