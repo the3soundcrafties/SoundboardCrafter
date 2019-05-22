@@ -43,7 +43,9 @@ public class MediaPlayerService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "mediaPlayerNotificationChannel";
 
     private static final int ONGOING_NOTIFICATION_ID = 1;
-    private static final int MAX_NOTIFICATION_LENGTH = 60;
+    // https://material.io/design/platform-guidance/android-notifications.html#style :
+    // "Avoid exceeding the 40-character limit"
+    private static final int MAX_NOTIFICATION_LENGTH = 40;
 
     /**
      * The interface through which other components can interact with the service
@@ -261,6 +263,7 @@ public class MediaPlayerService extends Service {
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         .setShowWhen(false)
                         .setTicker(summary)
+                        // TODO .setStyle(new NotificationCompat.
                         .build();
 
         // Without this, the service will be killed shortly when the
