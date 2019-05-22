@@ -259,6 +259,7 @@ public class MediaPlayerService extends Service {
                         .setContentIntent(pendingIntent)
                         .setChannelId(NOTIFICATION_CHANNEL_ID)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
+                        .setShowWhen(false)
                         .setTicker(summary)
                         .build();
 
