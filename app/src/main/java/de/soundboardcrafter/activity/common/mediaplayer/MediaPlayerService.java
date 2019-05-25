@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import androidx.annotation.MainThread;
@@ -19,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -71,11 +73,8 @@ public class MediaPlayerService extends Service {
                     getString(R.string.media_player_notification_channel_name),
                     NotificationManager.IMPORTANCE_LOW);
             channel.setDescription(getString(R.string.media_player_notification_channel_description));
-            /*
-            NotificationManager notificationManager =
-                    getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-            */
+            channel.setShowBadge(false);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
             NotificationManagerCompat.from(this)
                     .createNotificationChannel(channel);
@@ -253,23 +252,51 @@ public class MediaPlayerService extends Service {
 
         CharSequence summary = buildSummaryForNotification();
 
+
         Notification notification =
                 new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                        // .setColor(ContextCompat.getColor(mContext, R.color.notification_bg))
                         .setSmallIcon(R.drawable.ic_media_player_notification_icon)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setContentTitle(getString(R.string.media_player_notification_title))
                         .setContentText(summary)
+                        // .setSubText(“...”)
+                        // .setLargeIcon(MusicLibrary.getAlbumBitmap(mContext, description.getMediaId()))
                         .setContentIntent(pendingIntent)
                         .setChannelId(NOTIFICATION_CHANNEL_ID)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         .setShowWhen(false)
                         .setTicker(summary)
-                        // TODO .setStyle(new NotificationCompat. does not exist??!
+                        .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                                        // .setMediaSession(token)
+                                        .setShowCancelButton(true)
+                                        .setCancelButtonIntent(
+                                                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                                        this, PlaybackStateCompat.ACTION_STOP)
+                                        )
+                        /*
+                        .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                mService, PlaybackStateCompat.ACTION_STOP)
+                                */
+                        )
+                        // .addAction(generateAction(android.R.drawable.ic_media_pause, "Stop", "ACTION_NEXT"))
                         .build();
+
+        // https://medium.com/androiddevelopers/migrating-mediastyle-notifications-to-support-android-o-29c7edeca9b7
 
         // Without this, the service will be killed shortly when the
         // user leaves the app and closes the devices
         startForeground(ONGOING_NOTIFICATION_ID, notification);
     }
+
+
+    private NotificationCompat.Action generateAction(int icon, String title, String intentAction) {
+        Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
+        intent.setAction(intentAction);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        return new NotificationCompat.Action(icon, title, pendingIntent);
+    }
+
 
     private CharSequence buildSummaryForNotification() {
         StringBuilder res = new StringBuilder();
