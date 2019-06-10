@@ -20,8 +20,5 @@ public class SoundboardPlaySoundEditActivity extends AbstractSoundEditActivity {
         return intent;
     }
 
-    @Override
-    protected boolean userCanChangeSoundboardSelection() {
-        return false;
-    }
+
 }

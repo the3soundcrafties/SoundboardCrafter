@@ -102,9 +102,9 @@ public class SoundEditView extends ConstraintLayout {
     /**
      * Sets the soundboards and the info whether they can be changed.
      */
-    void setSoundboards(List<SelectableSoundboard> soundboards, boolean soundboardsEditable) {
+    void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards, soundboardsEditable);
+        adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

@@ -75,7 +75,7 @@ public class GameEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards, true);
+        adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

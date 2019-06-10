@@ -53,7 +53,6 @@ class SelectableSoundboardListItemRow extends LinearLayout {
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-
         checkboxSoundboard.setEnabled(enabled);
     }
 }

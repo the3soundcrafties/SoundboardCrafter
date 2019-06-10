@@ -30,8 +30,7 @@ abstract public class AbstractSoundEditActivity extends SingleFragmentActivity {
     protected Fragment createFragment() {
         UUID soundId = UUID.fromString(getIntent().getStringExtra(EXTRA_SOUND_ID));
 
-        return SoundEditFragment.newInstance(soundId, userCanChangeSoundboardSelection());
+        return SoundEditFragment.newInstance(soundId);
     }
 
-    protected abstract boolean userCanChangeSoundboardSelection();
 }

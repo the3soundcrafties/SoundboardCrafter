@@ -18,14 +18,8 @@ import de.soundboardcrafter.model.SelectableSoundboard;
 public class SelectableSoundboardListItemAdapter extends BaseAdapter {
     private List<SelectableSoundboard> soundboards;
 
-    /**
-     * Whether the soundboards can be changed.
-     */
-    private boolean editable;
-
-    public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards, boolean editable) {
+    public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards) {
         this.soundboards = soundboards;
-        this.editable = editable;
     }
 
     @Override
@@ -51,7 +45,7 @@ public class SelectableSoundboardListItemAdapter extends BaseAdapter {
         }
         SelectableSoundboardListItemRow itemRow = (SelectableSoundboardListItemRow) convertView;
         itemRow.setSoundboard(soundboards.get(position));
-        itemRow.setEnabled(editable);
+        itemRow.setEnabled(true);
         return convertView;
     }
 }

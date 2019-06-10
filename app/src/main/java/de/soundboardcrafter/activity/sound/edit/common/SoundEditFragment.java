@@ -37,21 +37,17 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String TAG = SoundEditFragment.class.getName();
 
     private static final String ARG_SOUND_ID = "soundId";
-    private static final String ARG_SOUNDBOARDS_EDITABLE = "soundboardsEditable";
-
     public static final String EXTRA_SOUND_ID = "soundId";
 
     private SoundEditView soundEditView;
 
     private SoundWithSelectableSoundboards sound;
-    private boolean soundboardsEditable;
 
     private MediaPlayerService mediaPlayerService;
 
-    static SoundEditFragment newInstance(UUID soundId, boolean soundboardsEditable) {
+    static SoundEditFragment newInstance(UUID soundId) {
         Bundle args = new Bundle();
         args.putString(ARG_SOUND_ID, soundId.toString());
-        args.putBoolean(ARG_SOUNDBOARDS_EDITABLE, soundboardsEditable);
 
         SoundEditFragment fragment = new SoundEditFragment();
         fragment.setArguments(args);
@@ -90,7 +86,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final UUID soundId = UUID.fromString(getArguments().getString(ARG_SOUND_ID));
-        soundboardsEditable = getArguments().getBoolean(ARG_SOUNDBOARDS_EDITABLE);
 
         new FindSoundTask(getActivity(), soundId).execute();
 
@@ -151,7 +146,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         soundEditView.setVolumePercentage(soundWithSelectableSoundboards.getSound().getVolumePercentage());
         soundEditView.setLoop(soundWithSelectableSoundboards.getSound().isLoop());
 
-        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards(), soundboardsEditable);
+        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards());
 
         soundEditView.setEnabled(true);
     }
@@ -310,12 +305,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Saving sound " + sound);
 
-            if (soundboardsEditable) {
-                SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
-            } else {
-                SoundDao.getInstance(appContext).update(sound.getSound());
-            }
-
+            SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
             return null;
         }
     }
