@@ -11,7 +11,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import androidx.annotation.MainThread;
@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.media.session.MediaButtonReceiver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,6 +47,13 @@ public class MediaPlayerService extends Service {
     // https://material.io/design/platform-guidance/android-notifications.html#style :
     // "Avoid exceeding the 40-character limit"
     private static final int MAX_NOTIFICATION_LENGTH = 40;
+    private static final String MEDIA_SESSION_TAG = "SOUNDBOARD_CRAFTER_MEDIA_SESSION";
+
+    private static final String ACTION_STOP = "action_stop";
+
+    private Intent notificationIntent;
+    private PendingIntent pendingIntent;
+    private MediaSessionCompat mediaSession;
 
     /**
      * The interface through which other components can interact with the service
@@ -61,8 +67,43 @@ public class MediaPlayerService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        notificationIntent = new Intent(this, SoundboardPlayActivity.class);
+
+        // TODO Click on the notification returns to the main activity -
+        // even if the user is currently in a different activity.
+        // How can we just return TO THE APP?
+
+        // notificationIntent.setFlags( ?!
+        // PendingIntent.FLAG?!
+        //Intent.FLAG?!
+
+        pendingIntent =
+                PendingIntent.getActivity(this, 0,
+                        notificationIntent, 0);
+
+        mediaSession =
+                new MediaSessionCompat(this, MEDIA_SESSION_TAG);
+        mediaSession.setSessionActivity(pendingIntent);
+        mediaSession.setActive(true);
+        /*
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onStop() {
+                Log.d("Hallo", "Hallo");
+                super.onStop();
+            }
+        });
+        */
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChanel();
+
+        handleIntent(intent);
 
         return Service.START_STICKY;
     }
@@ -85,6 +126,24 @@ public class MediaPlayerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+
+
+    private void handleIntent(@Nullable Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
+        @Nullable String action = intent.getAction();
+        if (action == null) {
+            return;
+        }
+
+        switch (action) {
+            case ACTION_STOP:
+                stopPlaying();
+                break;
+        }
     }
 
     public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
@@ -235,51 +294,43 @@ public class MediaPlayerService extends Service {
             return;
         }
 
-        Intent notificationIntent =
-                new Intent(this, SoundboardPlayActivity.class);
-
-        // TODO Click on the notification returns to the main activity -
-        // even if the user is currently in a different activity.
-        // How can we just return TO THE APP?
-
-        // notificationIntent.setFlags( ?!
-        // PendingIntent.FLAG?!
-        //Intent.FLAG?!
-
-
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
         CharSequence summary = buildSummaryForNotification();
 
+        PendingIntent stopPendingIntent = createStopPendingIntent();
+
+        MediaSessionCompat.Token sessionToken = mediaSession.getSessionToken();
+
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
+                new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setCancelButtonIntent(stopPendingIntent)
+                        .setMediaSession(sessionToken)
+                        .setShowActionsInCompactView(0)
+                        .setShowCancelButton(true);
+
+        NotificationCompat.Action stopAction =
+                new NotificationCompat.Action(R.drawable.ic_stop,
+                        // TODO localize title
+                        "Stop",
+                        stopPendingIntent);
 
         Notification notification =
                 new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                         // .setColor(ContextCompat.getColor(mContext, R.color.notification_bg))
-                        .setSmallIcon(R.drawable.ic_media_player_notification_icon)
-                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setContentTitle(getString(R.string.media_player_notification_title))
                         .setContentText(summary)
                         // .setSubText(“...”)
+                        .setTicker(summary)
+                        .setDeleteIntent(stopPendingIntent)
                         // .setLargeIcon(MusicLibrary.getAlbumBitmap(mContext, description.getMediaId()))
+                        .setOnlyAlertOnce(true)
+                        .setSmallIcon(R.drawable.ic_media_player_notification_icon)
+                        .addAction(stopAction)
+                        .setStyle(mediaStyle)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setContentIntent(pendingIntent)
                         .setChannelId(NOTIFICATION_CHANNEL_ID)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         .setShowWhen(false)
-                        .setTicker(summary)
-                        .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                                        // .setMediaSession(token)
-                                        .setShowCancelButton(true)
-                                        .setCancelButtonIntent(
-                                                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                                                        this, PlaybackStateCompat.ACTION_STOP)
-                                        )
-                        /*
-                        .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
-                                mService, PlaybackStateCompat.ACTION_STOP)
-                                */
-                        )
-                        // .addAction(generateAction(android.R.drawable.ic_media_pause, "Stop", "ACTION_NEXT"))
                         .build();
 
         // https://medium.com/androiddevelopers/migrating-mediastyle-notifications-to-support-android-o-29c7edeca9b7
@@ -289,13 +340,21 @@ public class MediaPlayerService extends Service {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
     }
 
-
-    private NotificationCompat.Action generateAction(int icon, String title, String intentAction) {
+    private PendingIntent createStopPendingIntent() {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
-        intent.setAction(intentAction);
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-        return new NotificationCompat.Action(icon, title, pendingIntent);
+        intent.setAction(ACTION_STOP);
+        return PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        // return MediaButtonReceiver.buildMediaButtonPendingIntent(this, ACTION_STOP);
     }
+
+    /*
+    private NotificationCompat.Action generateStopAction() {
+        Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
+        intent.setAction("ACTION_NEXT");
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        return new NotificationCompat.Action(android.R.drawable.ic_media_, "Stop", pendingIntent);
+    }
+    */
 
 
     private CharSequence buildSummaryForNotification() {
@@ -407,6 +466,18 @@ public class MediaPlayerService extends Service {
 
     @Override
     public void onDestroy() {
+        stopPlaying();
+
+        mediaSession.setActive(false);
+        mediaSession.release();
+
+        super.onDestroy();
+    }
+
+    /**
+     * Stops all playing sounds in all soundboards
+     */
+    private void stopPlaying() {
         for (Iterator<SoundboardMediaPlayer> playerIt =
              mediaPlayers.values().iterator(); playerIt.hasNext(); ) {
             SoundboardMediaPlayer player = playerIt.next();
@@ -415,8 +486,8 @@ public class MediaPlayerService extends Service {
             playerIt.remove();
         }
 
-        updateNotificationAndForegroundService();
+        mediaPlayers.clear();
 
-        super.onDestroy();
+        updateNotificationAndForegroundService();
     }
 }
