@@ -15,7 +15,7 @@
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by date</string>
     <string name="reset_all_title">Delete all data?</string>
-    <string name="reset_all_message">All gamesWithSoundboards, soundboards and sound data will be deleted
+    <string name="reset_all_message">All games, soundboards and sound data will be deleted
         from the app. Settings like the volume will be lost. Sound files won\'t be touched.</string>
     <string name="reset_all_title_cancel">Cancel</string>
     <string name="reset_all_title_ok">OK</string>
