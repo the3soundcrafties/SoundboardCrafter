@@ -335,16 +335,16 @@ public class MediaPlayerService extends Service {
             return;
         }
 
-        String summary = buildSummaryForNotification();
+        String shortSummary = buildSummary(SummaryStyle.SHORT);
+        String longSummary = buildSummary(SummaryStyle.LONG);
 
         PendingIntent stopPendingIntent = createStopPendingIntent();
 
         mediaSession.setPlaybackState(createPlaybackStatePlaying());
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, summary)
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, summary)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, longSummary)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, longSummary)
                 .build());
-
 
         MediaSessionCompat.Token sessionToken = mediaSession.getSessionToken();
 
@@ -364,8 +364,8 @@ public class MediaPlayerService extends Service {
                 new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                         // .setColor(ContextCompat.getColor(mContext, R.color.notification_bg))
                         .setContentTitle(getString(R.string.media_player_notification_title))
-                        .setContentText(summary)
-                        .setTicker(summary)
+                        .setContentText(shortSummary)
+                        .setTicker(shortSummary)
                         // .setDeleteIntent() Deletion impossible for FOREGROUND notification!
                         .setOnlyAlertOnce(true)
                         // TODO Use application icon
@@ -417,7 +417,11 @@ public class MediaPlayerService extends Service {
         // return MediaButtonReceiver.buildMediaButtonPendingIntent(this, ACTION_STOP);
     }
 
-    private String buildSummaryForNotification() {
+    private enum SummaryStyle {
+        SHORT, LONG
+    }
+
+    private String buildSummary(SummaryStyle style) {
         StringBuilder res = new StringBuilder();
         for (SoundboardMediaPlayer player : mediaPlayers.values()) {
             if (res.length() > 0) {
@@ -425,7 +429,7 @@ public class MediaPlayerService extends Service {
             }
 
             res.append(player.getSoundName());
-            if (res.length() > MAX_NOTIFICATION_LENGTH) {
+            if (style == SummaryStyle.SHORT && res.length() > MAX_NOTIFICATION_LENGTH) {
                 int numSoundsPlaying = mediaPlayers.size();
                 return getResources().getQuantityString(
                         R.plurals.media_player_notification_default_text,
