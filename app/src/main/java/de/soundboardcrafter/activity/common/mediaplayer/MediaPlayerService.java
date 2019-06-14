@@ -123,6 +123,15 @@ public class MediaPlayerService extends Service {
             }
 
             @Override
+            public void onPause() {
+                Log.d(TAG, "onPause");
+                // As many speakers do not have a stop button, we stop the playing here.
+                // We do not offer resuming anyway.
+                stopPlaying();
+                super.onPause();
+            }
+
+            @Override
             public void onStop() {
                 Log.d(TAG, "onStop");
                 stopPlaying();
