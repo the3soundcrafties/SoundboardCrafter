@@ -326,7 +326,6 @@ public class MediaPlayerService extends Service {
                         .setStyle(mediaStyle)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setContentIntent(pendingIntent)
-                        .setChannelId(NOTIFICATION_CHANNEL_ID)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         // Do not show time
                         .setShowWhen(false)
