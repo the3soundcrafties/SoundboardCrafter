@@ -110,14 +110,14 @@ public class MediaPlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        createNotificationChanel();
+        createNotificationChannel();
 
         handleIntent(intent);
 
         return Service.START_STICKY;
     }
 
-    private void createNotificationChanel() {
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
                     getString(R.string.media_player_notification_channel_name),
@@ -364,12 +364,8 @@ public class MediaPlayerService extends Service {
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
      */
     private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
-        String soundName = sound.getName();
-        String soundPath = sound.getPath();
-        int volumePercentage = sound.getVolumePercentage();
-        boolean loop = sound.isLoop();
-
-        initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
+        initMediaPlayer(mediaPlayer, sound.getName(), sound.getPath(),
+                sound.getVolumePercentage(), sound.isLoop());
     }
 
     /**
