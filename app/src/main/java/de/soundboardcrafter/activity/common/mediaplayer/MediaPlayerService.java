@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
@@ -23,10 +22,6 @@ import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
 
 import de.soundboardcrafter.R;
@@ -62,7 +57,7 @@ public class MediaPlayerService extends Service {
      */
     private final IBinder binder = new Binder();
 
-    private final HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
+    private final SoundboardMediaPlayers mediaPlayers = new SoundboardMediaPlayers();
 
     public MediaPlayerService() {
         Log.d(TAG, "MediaPlayerService is created");
@@ -162,10 +157,7 @@ public class MediaPlayerService extends Service {
 
     public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
                                     SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
-        SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        if (player != null) {
-            player.setOnPlayingStopped(onPlayingStopped);
-        }
+        mediaPlayers.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
     }
 
     /**
@@ -174,7 +166,7 @@ public class MediaPlayerService extends Service {
     public void setVolumePercentage(UUID soundId, int volumePercentage) {
         checkNotNull(soundId, "soundId is null");
 
-        setVolume(soundId, percentageToVolume(volumePercentage));
+        mediaPlayers.setVolumePercentage(soundId, volumePercentage);
     }
 
     /**
@@ -183,35 +175,14 @@ public class MediaPlayerService extends Service {
     private void setVolume(UUID soundId, float volume) {
         checkNotNull(soundId, "soundId is null");
 
-        mediaPlayers.entrySet().stream()
-                .filter(e -> e.getKey().getSoundId().equals(soundId))
-                .map(Map.Entry::getValue)
-                .forEach(m -> setVolume(m, volume));
+        mediaPlayers.setVolume(soundId, volume);
     }
 
     /**
      * Stops all playing sounds in these soundboards
      */
     public void stopPlaying(Iterable<Soundboard> soundboards) {
-        for (Soundboard soundboard : soundboards) {
-            stopPlaying(soundboard);
-        }
-    }
-
-    /**
-     * Stops all playing sounds in this soundboard
-     */
-    private void stopPlaying(@NonNull Soundboard soundboard) {
-        for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
-             mediaPlayers.entrySet().iterator(); entryIt.hasNext(); ) {
-            Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry = entryIt.next();
-            if (soundboard.getId().equals(entry.getKey().getSoundboardId())) {
-                SoundboardMediaPlayer player = entry.getValue();
-                player.stop();
-                player.release();
-                entryIt.remove();
-            }
-        }
+        mediaPlayers.stopPlaying(soundboards);
 
         updateMediaSessionNotificationAndForegroundService();
     }
@@ -222,23 +193,7 @@ public class MediaPlayerService extends Service {
     public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
-        SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        if (player != null) {
-            stop(player);
-        }
-    }
-
-    /**
-     * Stops this player and removes it.
-     */
-    private void stop(SoundboardMediaPlayer player) {
-        player.stop();
-        removeMediaPlayer(player);
-    }
-
-    private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
-        mediaPlayer.release();
-        mediaPlayers.values().remove(mediaPlayer);
+        mediaPlayers.stopPlaying(soundboard, sound);
         updateMediaSessionNotificationAndForegroundService();
     }
 
@@ -292,7 +247,7 @@ public class MediaPlayerService extends Service {
             if (onPlayingStopped != null) {
                 onPlayingStopped.stop();
             }
-            removeMediaPlayer(mediaPlayer);
+            updateMediaSessionNotificationAndForegroundService();
         });
         initMediaPlayer(mediaPlayer, name, path, 100, false);
 
@@ -388,7 +343,7 @@ public class MediaPlayerService extends Service {
 
     private String buildSummary(SummaryStyle style) {
         StringBuilder res = new StringBuilder();
-        for (SoundboardMediaPlayer player : mediaPlayers.values()) {
+        for (SoundboardMediaPlayer player : mediaPlayers) {
             if (res.length() > 0) {
                 res.append(", ");
             }
@@ -422,56 +377,25 @@ public class MediaPlayerService extends Service {
      */
     private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
                                  String soundPath, int volumePercentage, boolean loop) {
-        mediaPlayer.setSoundName(soundName);
+        SoundboardMediaPlayers.initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
+
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
-        try {
-            mediaPlayer.setDataSource(soundPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-        setVolume(mediaPlayer, percentageToVolume(volumePercentage));
-        mediaPlayer.setLooping(loop);
         mediaPlayer.setOnPreparedListener(this::onPrepared);
         mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
-    }
-
-    private static float percentageToVolume(int volumePercentage) {
-        return (float) volumePercentage / 100f;
-    }
-
-    /**
-     * Sets the volume for this <code>mediaPlayer</code>.
-     */
-    private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
-        checkNotNull(mediaPlayer, "mediaPlayer is null");
-        mediaPlayer.setVolume(volume, volume);
     }
 
     public boolean isPlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
-        return mediaPlayers.entrySet().stream()
-                .filter(e -> e.getKey().getSoundId().equals(sound.getId()))
-                .map(Map.Entry::getValue)
-                .anyMatch(SoundboardMediaPlayer::isPlaying);
+        return mediaPlayers.isPlaying(sound);
     }
 
     public boolean isPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
 
-        return isPlaying(soundboard, sound.getId());
-    }
-
-    private boolean isPlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
-                new MediaPlayerSearchId(soundboard.getId(), soundId));
-        if (mediaPlayer != null) {
-            return mediaPlayer.isPlaying();
-        }
-        return false;
+        return mediaPlayers.isPlaying(soundboard, sound.getId());
     }
 
     /**
@@ -484,12 +408,14 @@ public class MediaPlayerService extends Service {
     private boolean onError(SoundboardMediaPlayer player, int what, int extra) {
         Log.e(TAG, "Error in media player: what: " + what + " extra: " + extra);
 
-        removeMediaPlayer(player);
+        mediaPlayers.remove(player);
+        updateMediaSessionNotificationAndForegroundService();
         return true;
     }
 
     private void onCompletion(SoundboardMediaPlayer player) {
-        removeMediaPlayer(player);
+        mediaPlayers.remove(player);
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     @Override
@@ -506,15 +432,7 @@ public class MediaPlayerService extends Service {
      * Stops all playing sounds in all soundboards
      */
     private void stopPlaying() {
-        for (Iterator<SoundboardMediaPlayer> playerIt =
-             mediaPlayers.values().iterator(); playerIt.hasNext(); ) {
-            SoundboardMediaPlayer player = playerIt.next();
-            player.stop();
-            player.release();
-            playerIt.remove();
-        }
-
-        mediaPlayers.clear();
+        mediaPlayers.stopPlaying();
 
         updateMediaSessionNotificationAndForegroundService();
     }
