@@ -9,19 +9,22 @@
     <Button
         android:id="@+id/new_soundboard"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:orientation="vertical"
         android:text="@string/new_soundboard"
         app:layout_constraintBottom_toTopOf="@+id/listview_soundboard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+
+        />
 
     <ListView
         android:id="@+id/listview_soundboard"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
+        android:layout_marginTop="40dp"
         app:layout_constraintHeight_max="wrap"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/new_soundboard" />
