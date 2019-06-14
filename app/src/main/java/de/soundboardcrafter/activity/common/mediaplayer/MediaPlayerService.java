@@ -9,9 +9,12 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import androidx.annotation.MainThread;
@@ -20,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -87,20 +91,55 @@ public class MediaPlayerService extends Service {
         mediaSession =
                 new MediaSessionCompat(this, MEDIA_SESSION_TAG);
         mediaSession.setSessionActivity(pendingIntent);
-        mediaSession.setActive(true);
-        /*
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
+            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+                Log.d(TAG, "onMediaButtonEvent");
+                return super.onMediaButtonEvent(mediaButtonEvent);
+            }
+
+            @Override
+            public void onPlay() {
+                Log.d(TAG, "onPlay");
+                super.onPlay();
+            }
+
+            @Override
+            public void onPlayFromSearch(String query, Bundle extras) {
+                Log.d(TAG, "onPlayFromSearch");
+                super.onPlayFromSearch(query, extras);
+            }
+
+            @Override
+            public void onPrepare() {
+                Log.d(TAG, "onPrepare");
+                super.onPrepare();
+            }
+
+            @Override
+            public void onPrepareFromSearch(String query, Bundle extras) {
+                Log.d(TAG, "onPrepareFromSearch");
+                super.onPrepareFromSearch(query, extras);
+            }
+
+            @Override
             public void onStop() {
-                Log.d("Hallo", "Hallo");
+                Log.d(TAG, "onStop");
+                stopPlaying();
                 super.onStop();
             }
         });
-        */
+        mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
+        mediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setActive(true);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        MediaButtonReceiver.handleIntent(mediaSession, intent);
+
         createNotificationChanel();
 
         handleIntent(intent);
@@ -199,7 +238,7 @@ public class MediaPlayerService extends Service {
             }
         }
 
-        updateNotificationAndForegroundService();
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -225,7 +264,7 @@ public class MediaPlayerService extends Service {
     private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
         mediaPlayer.release();
         mediaPlayers.values().remove(mediaPlayer);
-        updateNotificationAndForegroundService();
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -261,7 +300,7 @@ public class MediaPlayerService extends Service {
 
         mediaPlayer.prepareAsync();
 
-        updateNotificationAndForegroundService();
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -288,15 +327,24 @@ public class MediaPlayerService extends Service {
         return mediaPlayer;
     }
 
-    private void updateNotificationAndForegroundService() {
+    private void updateMediaSessionNotificationAndForegroundService() {
         if (mediaPlayers.isEmpty()) {
+            mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
+            mediaSession.setMetadata(null);
             stopForeground(true);
             return;
         }
 
-        CharSequence summary = buildSummaryForNotification();
+        String summary = buildSummaryForNotification();
 
         PendingIntent stopPendingIntent = createStopPendingIntent();
+
+        mediaSession.setPlaybackState(createPlaybackStatePlaying());
+        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, summary)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, summary)
+                .build());
+
 
         MediaSessionCompat.Token sessionToken = mediaSession.getSessionToken();
 
@@ -338,6 +386,30 @@ public class MediaPlayerService extends Service {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
     }
 
+    private PlaybackStateCompat createPlaybackStateNotPlaying() {
+        return new PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY |
+                        PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH |
+                        PlaybackStateCompat.ACTION_PREPARE |
+                        PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
+                        | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_PLAY_PAUSE)
+                .setState(PlaybackStateCompat.STATE_STOPPED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
+                        1.0f)
+                .build();
+    }
+
+    private PlaybackStateCompat createPlaybackStatePlaying() {
+        return new PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY |
+                        PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH |
+                        PlaybackStateCompat.ACTION_PREPARE |
+                        PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
+                        | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_PLAY_PAUSE)
+                .setState(PlaybackStateCompat.STATE_PLAYING,
+                        PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
+                .build();
+    }
+
     private PendingIntent createStopPendingIntent() {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
         intent.setAction(ACTION_STOP);
@@ -345,17 +417,7 @@ public class MediaPlayerService extends Service {
         // return MediaButtonReceiver.buildMediaButtonPendingIntent(this, ACTION_STOP);
     }
 
-    /*
-    private NotificationCompat.Action generateStopAction() {
-        Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
-        intent.setAction("ACTION_NEXT");
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-        return new NotificationCompat.Action(android.R.drawable.ic_media_, "Stop", pendingIntent);
-    }
-    */
-
-
-    private CharSequence buildSummaryForNotification() {
+    private String buildSummaryForNotification() {
         StringBuilder res = new StringBuilder();
         for (SoundboardMediaPlayer player : mediaPlayers.values()) {
             if (res.length() > 0) {
@@ -371,7 +433,7 @@ public class MediaPlayerService extends Service {
             }
         }
 
-        return res;
+        return res.toString();
     }
 
     /**
@@ -485,6 +547,6 @@ public class MediaPlayerService extends Service {
 
         mediaPlayers.clear();
 
-        updateNotificationAndForegroundService();
+        updateMediaSessionNotificationAndForegroundService();
     }
 }
