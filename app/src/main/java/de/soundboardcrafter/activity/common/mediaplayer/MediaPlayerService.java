@@ -308,9 +308,8 @@ public class MediaPlayerService extends Service {
                         .setShowCancelButton(true);
 
         NotificationCompat.Action stopAction =
-                new NotificationCompat.Action(R.drawable.ic_stop,
-                        // TODO localize title
-                        "Stop",
+                new NotificationCompat.Action(R.drawable.ic_stop_notification,
+                        getString(R.string.media_player_notification_stop_action_title),
                         stopPendingIntent);
 
         Notification notification =
@@ -318,11 +317,10 @@ public class MediaPlayerService extends Service {
                         // .setColor(ContextCompat.getColor(mContext, R.color.notification_bg))
                         .setContentTitle(getString(R.string.media_player_notification_title))
                         .setContentText(summary)
-                        // .setSubText(“...”)
                         .setTicker(summary)
-                        .setDeleteIntent(stopPendingIntent)
-                        // .setLargeIcon(MusicLibrary.getAlbumBitmap(mContext, description.getMediaId()))
+                        // .setDeleteIntent() Deletion impossible for FOREGROUND notification!
                         .setOnlyAlertOnce(true)
+                        // TODO Use application icon
                         .setSmallIcon(R.drawable.ic_media_player_notification_icon)
                         .addAction(stopAction)
                         .setStyle(mediaStyle)
@@ -330,6 +328,7 @@ public class MediaPlayerService extends Service {
                         .setContentIntent(pendingIntent)
                         .setChannelId(NOTIFICATION_CHANNEL_ID)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
+                        // Do not show time
                         .setShowWhen(false)
                         .build();
 
@@ -365,7 +364,6 @@ public class MediaPlayerService extends Service {
             }
 
             res.append(player.getSoundName());
-
             if (res.length() > MAX_NOTIFICATION_LENGTH) {
                 int numSoundsPlaying = mediaPlayers.size();
                 return getResources().getQuantityString(
