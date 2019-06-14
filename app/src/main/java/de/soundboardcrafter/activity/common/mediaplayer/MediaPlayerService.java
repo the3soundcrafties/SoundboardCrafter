@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.media.MediaMetadataCompat;
@@ -23,7 +22,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.media.session.MediaButtonReceiver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -54,9 +52,9 @@ public class MediaPlayerService extends Service {
     private static final String MEDIA_SESSION_TAG = "SOUNDBOARD_CRAFTER_MEDIA_SESSION";
 
     private static final String ACTION_STOP = "action_stop";
+    private static final int REQUEST_CODE_STOP = 1;
 
-    private Intent notificationIntent;
-    private PendingIntent pendingIntent;
+    private PendingIntent launchUIPendingIntent;
     private MediaSessionCompat mediaSession;
 
     /**
@@ -74,7 +72,7 @@ public class MediaPlayerService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        notificationIntent = new Intent(this, SoundboardPlayActivity.class);
+        Intent notificationIntent = new Intent(this, SoundboardPlayActivity.class);
 
         // TODO Click on the notification returns to the main activity -
         // even if the user is currently in a different activity.
@@ -84,44 +82,14 @@ public class MediaPlayerService extends Service {
         // PendingIntent.FLAG?!
         //Intent.FLAG?!
 
-        pendingIntent =
+        launchUIPendingIntent =
                 PendingIntent.getActivity(this, 0,
                         notificationIntent, 0);
 
         mediaSession =
                 new MediaSessionCompat(this, MEDIA_SESSION_TAG);
-        mediaSession.setSessionActivity(pendingIntent);
+        mediaSession.setSessionActivity(launchUIPendingIntent);
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
-            @Override
-            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-                Log.d(TAG, "onMediaButtonEvent");
-                return super.onMediaButtonEvent(mediaButtonEvent);
-            }
-
-            @Override
-            public void onPlay() {
-                Log.d(TAG, "onPlay");
-                super.onPlay();
-            }
-
-            @Override
-            public void onPlayFromSearch(String query, Bundle extras) {
-                Log.d(TAG, "onPlayFromSearch");
-                super.onPlayFromSearch(query, extras);
-            }
-
-            @Override
-            public void onPrepare() {
-                Log.d(TAG, "onPrepare");
-                super.onPrepare();
-            }
-
-            @Override
-            public void onPrepareFromSearch(String query, Bundle extras) {
-                Log.d(TAG, "onPrepareFromSearch");
-                super.onPrepareFromSearch(query, extras);
-            }
-
             @Override
             public void onPause() {
                 Log.d(TAG, "onPause");
@@ -147,8 +115,6 @@ public class MediaPlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MediaButtonReceiver.handleIntent(mediaSession, intent);
-
         createNotificationChanel();
 
         handleIntent(intent);
@@ -322,12 +288,11 @@ public class MediaPlayerService extends Service {
         checkNotNull(path, "path is null");
 
         SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
-        mediaPlayer.setOnPlayingStopped(new SoundboardMediaPlayer.OnPlayingStopped() {
-            @Override
-            public void stop() {
+        mediaPlayer.setOnPlayingStopped(() -> {
+            if (onPlayingStopped != null) {
                 onPlayingStopped.stop();
-                removeMediaPlayer(mediaPlayer);
             }
+            removeMediaPlayer(mediaPlayer);
         });
         initMediaPlayer(mediaPlayer, name, path, 100, false);
 
@@ -382,7 +347,7 @@ public class MediaPlayerService extends Service {
                         .addAction(stopAction)
                         .setStyle(mediaStyle)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                        .setContentIntent(pendingIntent)
+                        .setContentIntent(launchUIPendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
                         // Do not show time
                         .setShowWhen(false)
@@ -414,8 +379,7 @@ public class MediaPlayerService extends Service {
     private PendingIntent createStopPendingIntent() {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
         intent.setAction(ACTION_STOP);
-        return PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-        // return MediaButtonReceiver.buildMediaButtonPendingIntent(this, ACTION_STOP);
+        return PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, 0);
     }
 
     private enum SummaryStyle {
