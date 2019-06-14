@@ -397,11 +397,7 @@ public class MediaPlayerService extends Service {
 
     private PlaybackStateCompat createPlaybackStateNotPlaying() {
         return new PlaybackStateCompat.Builder()
-                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY |
-                        PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH |
-                        PlaybackStateCompat.ACTION_PREPARE |
-                        PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
-                        | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_PLAY_PAUSE)
+                .setActions(0)
                 .setState(PlaybackStateCompat.STATE_STOPPED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
                         1.0f)
                 .build();
@@ -409,11 +405,7 @@ public class MediaPlayerService extends Service {
 
     private PlaybackStateCompat createPlaybackStatePlaying() {
         return new PlaybackStateCompat.Builder()
-                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PLAY |
-                        PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH |
-                        PlaybackStateCompat.ACTION_PREPARE |
-                        PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH
-                        | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_PLAY_PAUSE)
+                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PAUSE)
                 .setState(PlaybackStateCompat.STATE_PLAYING,
                         PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
                 .build();
