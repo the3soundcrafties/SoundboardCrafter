@@ -88,7 +88,7 @@ class SoundboardMediaPlayers implements Iterable<SoundboardMediaPlayer> {
      */
     private void stop(SoundboardMediaPlayer player) {
         player.stop();
-        mediaPlayers.remove(player);
+        remove(player);
     }
 
     void remove(SoundboardMediaPlayer mediaPlayer) {
