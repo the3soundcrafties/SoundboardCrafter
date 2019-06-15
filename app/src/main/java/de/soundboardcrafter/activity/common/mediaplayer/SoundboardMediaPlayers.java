@@ -46,8 +46,8 @@ class SoundboardMediaPlayers implements Iterable<SoundboardMediaPlayer> {
         mediaPlayer.setLooping(loop);
     }
 
-    void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                             SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+    void setOnPlayingStopped(@Nullable Soundboard soundboard, Sound sound,
+                             @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
         if (player != null) {
             player.setOnPlayingStopped(onPlayingStopped);

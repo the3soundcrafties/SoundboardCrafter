@@ -183,7 +183,6 @@ public class MediaPlayerService extends Service {
      */
     public void stopPlaying(Iterable<Soundboard> soundboards) {
         mediaPlayers.stopPlaying(soundboards);
-
         updateMediaSessionNotificationAndForegroundService();
     }
 
@@ -429,7 +428,6 @@ public class MediaPlayerService extends Service {
      */
     private void stopPlaying() {
         mediaPlayers.stopPlaying();
-
         updateMediaSessionNotificationAndForegroundService();
     }
 }
