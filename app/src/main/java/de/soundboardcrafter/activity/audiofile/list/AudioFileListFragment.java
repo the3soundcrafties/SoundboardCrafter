@@ -66,7 +66,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private static final String TAG = AudioFileListFragment.class.getName();
 
-    private static final String ARG_SORT_ORDER = "sortOrder";
+    private static final String STATE_SORT_ORDER = "sortOrder";
 
     /**
      * Request code used whenever a sound edit
@@ -149,11 +149,9 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Bundle args = getArguments();
-        if (args != null) {
-            sortOrder = (SortOrder) args.getSerializable(ARG_SORT_ORDER);
-        }
-        if (sortOrder == null) {
+        if (savedInstanceState != null) {
+            sortOrder = (SortOrder) savedInstanceState.getSerializable(STATE_SORT_ORDER);
+        } else {
             sortOrder = SortOrder.BY_NAME;
         }
 
@@ -214,6 +212,8 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private void sort(SortOrder sortOrder) {
+        this.sortOrder = sortOrder;
+
         new FindAudioFileTask(getContext(), sortOrder).execute();
     }
 
@@ -347,7 +347,7 @@ public class AudioFileListFragment extends Fragment implements
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        // TODO save ARG_SORT_ORDER?!
+        outState.putSerializable(STATE_SORT_ORDER, sortOrder);
         super.onSaveInstanceState(outState);
     }
 
