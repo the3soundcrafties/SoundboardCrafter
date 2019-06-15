@@ -75,6 +75,7 @@ public class AudioFileListFragment extends Fragment implements
      */
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
+    private MenuItem byFolderMenuItem;
     private ListView listView;
     private AudioFileListItemAdapter adapter;
     private MediaPlayerService mediaPlayerService;
@@ -163,6 +164,8 @@ public class AudioFileListFragment extends Fragment implements
 
         View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
+
+        byFolderMenuItem = null;
         listView = rootView.findViewById(R.id.listview_audiofile);
 
         initAudioFileListItemAdapter();
@@ -176,9 +179,23 @@ public class AudioFileListFragment extends Fragment implements
                     onClickAudioFile(audioFileItemRow, position);
                 });
 
-        new FindAudioFileTask(getContext(), sortOrder).execute();
+        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
 
         return rootView;
+    }
+
+    private void updateByFolderMenuItem() {
+        if (byFolderMenuItem == null) {
+            return;
+        }
+
+        if (folder == null) {
+            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all);
+            byFolderMenuItem.setIcon(R.drawable.ic_menu_delete_forever); // TODO
+        } else {
+            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
+            byFolderMenuItem.setIcon(R.drawable.ic_menu_add); // TODO
+        }
     }
 
     @Override
@@ -186,6 +203,9 @@ public class AudioFileListFragment extends Fragment implements
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.fragment_audiofile_file, menu);
+
+        byFolderMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_by_folder);
+        updateByFolderMenuItem();
     }
 
     @Override
@@ -206,6 +226,9 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.toolbar_menu_audiofiles_by_folder:
+                toggleByFolder();
+                return true;
             case R.id.toolbar_menu_audiofiles_sort_alpha:
                 sort(SortOrder.BY_NAME);
                 return true;
@@ -217,10 +240,20 @@ public class AudioFileListFragment extends Fragment implements
         }
     }
 
+    private void toggleByFolder() {
+        if (folder == null) {
+            folder = "/storage/emulated/0/Android/media/com.google.android.talk/Notifications/";
+        } else {
+            folder = null;
+        }
+
+        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
+    }
+
     private void sort(SortOrder sortOrder) {
         this.sortOrder = sortOrder;
 
-        new FindAudioFileTask(getContext(), sortOrder).execute();
+        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
     }
 
     private void onClickAudioFile(AudioFileItemRow audioFileItemRow,
@@ -257,7 +290,6 @@ public class AudioFileListFragment extends Fragment implements
 
     private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
         mediaPlayer.release();
-
     }
 
     // TODO Inherit from some MediaPlayerFragment?! Use some MediaPlayerSupport??!
@@ -315,7 +347,7 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public void soundChanged(UUID soundId) {
         // The sound NAME may have been changed.
-        new FindAudioFileTask(getContext(), sortOrder).execute();
+        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
     }
 
     @UiThread
@@ -368,10 +400,14 @@ public class AudioFileListFragment extends Fragment implements
         private final WeakReference<Context> appContextRef;
         private SortOrder sortOrder;
 
-        FindAudioFileTask(Context context, SortOrder sortOrder) {
+        @Nullable
+        private String folder;
+
+        FindAudioFileTask(Context context, SortOrder sortOrder, @Nullable String folder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.sortOrder = sortOrder;
+            this.folder = folder;
         }
 
         @Override
@@ -388,7 +424,7 @@ public class AudioFileListFragment extends Fragment implements
             Log.d(TAG, "Loading audio files from file system...");
 
             ImmutableList<AudioModel> audioModels =
-                    audioLoader.getAllAudioFromDevice(appContext);
+                    audioLoader.getAudioFromDevice(appContext, folder);
 
             Log.d(TAG, "Audio files loaded.");
 
@@ -419,6 +455,7 @@ public class AudioFileListFragment extends Fragment implements
                 // will be of no use to anyone
                 return;
             }
+            updateByFolderMenuItem();
             setAudioFiles(audioFilesAndSounds);
         }
     }
