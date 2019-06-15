@@ -191,10 +191,10 @@ public class AudioFileListFragment extends Fragment implements
 
         if (folder == null) {
             byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all);
-            byFolderMenuItem.setIcon(R.drawable.ic_menu_delete_forever); // TODO
+            byFolderMenuItem.setIcon(R.drawable.ic_long_list);
         } else {
             byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
-            byFolderMenuItem.setIcon(R.drawable.ic_menu_add); // TODO
+            byFolderMenuItem.setIcon(R.drawable.ic_by_folder);
         }
     }
 
