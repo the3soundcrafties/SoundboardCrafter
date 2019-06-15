@@ -53,7 +53,7 @@ public class AudioFileListFragment extends Fragment implements
     private enum SortOrder {
         BY_NAME(Comparator.comparing(AudioModelAndSound::getName)),
         BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded).reversed());
-        private Comparator<AudioModelAndSound> comparator;
+        private final Comparator<AudioModelAndSound> comparator;
 
         SortOrder(Comparator<AudioModelAndSound> comparator) {
             this.comparator = comparator;
@@ -67,6 +67,7 @@ public class AudioFileListFragment extends Fragment implements
     private static final String TAG = AudioFileListFragment.class.getName();
 
     private static final String STATE_SORT_ORDER = "sortOrder";
+    private static final String STATE_FOLDER = "folder";
 
     /**
      * Request code used whenever a sound edit
@@ -84,6 +85,9 @@ public class AudioFileListFragment extends Fragment implements
     SoundEventListener soundEventListenerActivity;
 
     private SortOrder sortOrder;
+
+    private @Nullable
+    String folder;
 
     /**
      * Creates an <code>AudioFileListFragment</code>.
@@ -151,8 +155,10 @@ public class AudioFileListFragment extends Fragment implements
                              Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             sortOrder = (SortOrder) savedInstanceState.getSerializable(STATE_SORT_ORDER);
+            folder = savedInstanceState.getString(STATE_FOLDER);
         } else {
             sortOrder = SortOrder.BY_NAME;
+            folder = null;
         }
 
         View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
@@ -348,6 +354,7 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(STATE_SORT_ORDER, sortOrder);
+        outState.putString(STATE_FOLDER, folder);
         super.onSaveInstanceState(outState);
     }
 
