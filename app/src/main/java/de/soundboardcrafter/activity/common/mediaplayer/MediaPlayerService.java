@@ -163,7 +163,7 @@ public class MediaPlayerService extends Service {
     /**
      * Sets the volume for this sound.
      */
-    public void setVolumePercentage(UUID soundId, int volumePercentage) {
+    public void setVolumePercentage(@NonNull UUID soundId, int volumePercentage) {
         checkNotNull(soundId, "soundId is null");
 
         mediaPlayers.setVolumePercentage(soundId, volumePercentage);
@@ -213,13 +213,12 @@ public class MediaPlayerService extends Service {
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         checkNotNull(sound, "sound is null");
 
-        MediaPlayerSearchId key = new MediaPlayerSearchId(soundboard, sound);
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(key);
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(soundboard, sound);
         if (mediaPlayer == null) {
             mediaPlayer = new SoundboardMediaPlayer();
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             initMediaPlayer(sound, mediaPlayer);
-            mediaPlayers.put(key, mediaPlayer);
+            mediaPlayers.put(soundboard, sound, mediaPlayer);
         } else {
             // update the callbacks
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);

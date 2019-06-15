@@ -63,12 +63,14 @@ class SoundboardMediaPlayers implements Iterable<SoundboardMediaPlayer> {
         return false;
     }
 
-    SoundboardMediaPlayer get(MediaPlayerSearchId searchId) {
+    SoundboardMediaPlayer get(@Nullable Soundboard soundboard, Sound sound) {
+        MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
         return mediaPlayers.get(searchId);
     }
 
-    SoundboardMediaPlayer put(MediaPlayerSearchId searchId, SoundboardMediaPlayer mediaPlayer) {
-        return mediaPlayers.put(searchId, mediaPlayer);
+    void put(@Nullable Soundboard soundboard, Sound sound, SoundboardMediaPlayer mediaPlayer) {
+        MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
+        mediaPlayers.put(searchId, mediaPlayer);
     }
 
     /**
@@ -117,7 +119,7 @@ class SoundboardMediaPlayers implements Iterable<SoundboardMediaPlayer> {
     /**
      * Sets the volume for this sound.
      */
-    void setVolume(UUID soundId, float volume) {
+    void setVolume(@NonNull UUID soundId, float volume) {
         checkNotNull(soundId, "soundId is null");
 
         mediaPlayers.entrySet().stream()
@@ -129,7 +131,7 @@ class SoundboardMediaPlayers implements Iterable<SoundboardMediaPlayer> {
     /**
      * Sets the volume for this <code>mediaPlayer</code>.
      */
-    private static void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
+    private static void setVolume(@NonNull SoundboardMediaPlayer mediaPlayer, float volume) {
         checkNotNull(mediaPlayer, "mediaPlayer is null");
         mediaPlayer.setVolume(volume, volume);
     }
