@@ -245,7 +245,6 @@ public class MediaPlayerService extends Service {
             if (onPlayingStopped != null) {
                 onPlayingStopped.stop();
             }
-            updateMediaSessionNotificationAndForegroundService();
         });
         initMediaPlayer(mediaPlayer, name, path, 100, false);
 
@@ -253,6 +252,10 @@ public class MediaPlayerService extends Service {
 
         return mediaPlayer;
     }
+/*
+    For apps that target Android 5.0 (API level 21) and later, audio apps should use AudioAttributes to describe the type of audio your app is playing. For example, apps that play speech should specify CONTENT_TYPE_SPEECH.
+    Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method, which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about the audio context and capabilities of your app. The system uses this information to manage the gain and loss of audio focus automatically.
+    */
 
     private void updateMediaSessionNotificationAndForegroundService() {
         if (mediaPlayers.isEmpty()) {

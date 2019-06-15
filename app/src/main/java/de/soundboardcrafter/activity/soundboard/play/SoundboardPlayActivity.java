@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -310,6 +311,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
                 finishAndRemoveTask();
+                return;
             }
         }
     }
@@ -324,6 +326,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @UiThread
     public void onResume() {
         super.onResume();
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         bindService();
     }
 

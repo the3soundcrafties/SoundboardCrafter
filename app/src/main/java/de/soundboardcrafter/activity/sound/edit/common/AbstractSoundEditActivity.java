@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.sound.edit.common;
 
 import android.content.Intent;
+import android.media.AudioManager;
 
 import androidx.annotation.UiThread;
 import androidx.fragment.app.Fragment;
@@ -23,6 +24,14 @@ abstract public class AbstractSoundEditActivity extends SingleFragmentActivity {
      */
     protected static void putExtras(Intent intent, Sound sound) {
         intent.putExtra(EXTRA_SOUND_ID, sound.getId().toString());
+    }
+
+    @Override
+    @UiThread
+    public void onResume() {
+        super.onResume();
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -337,6 +338,9 @@ public class AudioFileListFragment extends Fragment implements
     // Called especially when the edit activity returns.
     public void onResume() {
         super.onResume();
+
+        getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         // updateUI();
         bindService();
     }
