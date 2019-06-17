@@ -14,9 +14,10 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 
 /**
- * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
+ * Row in the list of audio files representing one audio file.
+ * Allows the file to be played and stopped again.
  */
-class AudioFileItemRow extends RelativeLayout {
+class AudioFileRow extends RelativeLayout {
     private static final int MINS_PER_SEC = 60;
 
     public interface Callback {
@@ -32,11 +33,11 @@ class AudioFileItemRow extends RelativeLayout {
 
     private AudioModelAndSound audioModelAndSound;
 
-    AudioFileItemRow(Context context) {
+    AudioFileRow(Context context) {
         super(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         // Inflate the view into this object
-        inflater.inflate(R.layout.audiofile_list_item, this, true);
+        inflater.inflate(R.layout.audiofile_list_file, this, true);
         playingImage = findViewById(R.id.icon);
         audioName = findViewById(R.id.audio_name);
         audioArtistAndLength = findViewById(R.id.audio_artist_and_length);

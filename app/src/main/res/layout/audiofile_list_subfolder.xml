@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/subfolder"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:padding="6dip">
@@ -11,42 +12,32 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="6dip"
-        android:contentDescription="Sound name"
-        android:src="@drawable/ic_sound_list_item" />
-
-    <ImageView
-        android:id="@+id/icon_link_sound_to_soundboards"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="6dip"
-        android:contentDescription="Sound add"
-        android:src="@drawable/ic_link_sound_to_soundboards" />
+        android:contentDescription="Subfolder name"
+        android:src="@drawable/ic_sound_list_subfolder" />
 
     <TextView
-        android:id="@+id/audio_artist_and_length"
+        android:id="@+id/num_audiofiles"
         android:layout_width="fill_parent"
         android:layout_height="26dip"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="30dp"
         android:layout_toEndOf="@id/icon"
-        android:text="Sound Artist · 00:14"
+        android:text="9999 sounds"
         android:textSize="12sp" />
 
     <TextView
-        android:id="@+id/audio_name"
+        android:id="@+id/path"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_above="@id/audio_artist_and_length"
+        android:layout_above="@id/num_audiofiles"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="30dp"
+        android:layout_marginEnd="6dp"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        android:text="Name"
+        android:text="/some/folder/name"
         android:textSize="16sp" />
 
 

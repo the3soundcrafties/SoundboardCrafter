@@ -6,7 +6,7 @@
     <string name="media_player_notification_title">Spielt</string>
     <plurals name="media_player_notification_default_text">
         <item quantity="one">1 Sound</item>
-        <item quantity="other">%d Sounds</item>
+        <item quantity="other">%,d Sounds</item>
     </plurals>
     <string name="media_player_notification_stop_action_title">Stopp</string>
     <string name="toolbar_menu_reset_all">Alles zurücksetzen</string>
@@ -28,6 +28,10 @@
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
+    <plurals name="subfolder_num_sounds">
+        <item quantity="one">1 Sound</item>
+        <item quantity="other">%,d Sounds</item>
+    </plurals>
     <string name="games_tab_title">Spiele</string>
     <string name="new_game">neues Spiel hinzufügen</string>
     <string name="cancel">Abbrechen</string>

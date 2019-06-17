@@ -12,16 +12,15 @@ import java.util.Collection;
 import java.util.List;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.soundboard.list.SoundboardListItemRow;
 
 /**
- * Adapter for a SoundBoardItem. Display a Button with Text and Icon
+ * Adapter for the list of audio files (and audio folders).
  */
 class AudioFileListItemAdapter extends BaseAdapter {
     private static final String TAG = AudioFileListItemAdapter.class.getName();
 
-    private final AudioFileItemRow.Callback callback;
-    private final List<AudioModelAndSound> audioModelAndSounds;
+    private final AudioFileRow.Callback callback;
+    private final List<AbstractAudioFolderEntry> audioFolderEntries;
 
     /**
      * Is an audio file being played (as a preview)? Then this is
@@ -32,14 +31,14 @@ class AudioFileListItemAdapter extends BaseAdapter {
     /**
      * Creates an adapter that's initially empty
      */
-    AudioFileListItemAdapter(AudioFileItemRow.Callback callback) {
-        audioModelAndSounds = new ArrayList<>();
+    AudioFileListItemAdapter(AudioFileRow.Callback callback) {
+        audioFolderEntries = new ArrayList<>();
         this.callback = callback;
     }
 
-    void setAudioFiles(Collection<AudioModelAndSound> audioModelAndSounds) {
-        this.audioModelAndSounds.clear();
-        this.audioModelAndSounds.addAll(audioModelAndSounds);
+    void setAudioFolderEntries(Collection<? extends AbstractAudioFolderEntry> audioFolderEntries) {
+        this.audioFolderEntries.clear();
+        this.audioFolderEntries.addAll(audioFolderEntries);
         positionPlaying = null;
 
         notifyDataSetChanged();
@@ -47,7 +46,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return audioModelAndSounds.size();
+        return audioFolderEntries.size();
     }
 
     @Override
@@ -56,27 +55,59 @@ class AudioFileListItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public AudioModelAndSound getItem(int position) {
-        return audioModelAndSounds.get(position);
+    public AbstractAudioFolderEntry getItem(int position) {
+        return audioFolderEntries.get(position);
     }
 
     @Override
     @UiThread
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
-        if (!(convertView instanceof SoundboardListItemRow)) {
-            convertView = new AudioFileItemRow(parent.getContext());
+        AbstractAudioFolderEntry entry = audioFolderEntries.get(position);
+        if (entry instanceof AudioModelAndSound) {
+            return getAudioFileRow((AudioModelAndSound) entry, isPlaying(position), convertView, parent);
         }
-        AudioFileItemRow itemRow = (AudioFileItemRow) convertView;
 
-        configureItemRow(itemRow, position);
+        return getAudioSubfolderRow((AudioFolder) entry,
+                convertView, parent);
+    }
+
+    boolean isPlaying(int position) {
+        return positionPlaying != null && positionPlaying.intValue() == position;
+    }
+
+    @UiThread
+    private View getAudioFileRow(AudioModelAndSound audioModelAndSound, boolean isPlaying,
+                                 @Nullable View convertView, ViewGroup parent) {
+        if (!(convertView instanceof AudioFileRow)) {
+            convertView = new AudioFileRow(parent.getContext());
+        }
+        AudioFileRow itemRow = (AudioFileRow) convertView;
+
+        configureItemRow(itemRow, audioModelAndSound, isPlaying);
         return convertView;
     }
 
-    private void configureItemRow(AudioFileItemRow itemRow, int position) {
-        itemRow.setAudioFile(audioModelAndSounds.get(position), callback);
-
-        itemRow.setImage(isPlaying(position) ?
+    private void configureItemRow(AudioFileRow itemRow, AudioModelAndSound audioModelAndSound,
+                                  boolean isPlaying) {
+        itemRow.setAudioFile(audioModelAndSound, callback);
+        itemRow.setImage(isPlaying ?
                 R.drawable.ic_stop : R.drawable.ic_play);
+    }
+
+    @UiThread
+    private View getAudioSubfolderRow(AudioFolder audioFolder,
+                                      @Nullable View convertView, ViewGroup parent) {
+        if (!(convertView instanceof AudioSubfolderRow)) {
+            convertView = new AudioSubfolderRow(parent.getContext());
+        }
+        AudioSubfolderRow itemRow = (AudioSubfolderRow) convertView;
+
+        configureItemRow(itemRow, audioFolder);
+        return convertView;
+    }
+
+    private void configureItemRow(AudioSubfolderRow itemRow, AudioFolder audioFolder) {
+        itemRow.setData(audioFolder);
     }
 
     void setPositionPlaying(Integer positionPlaying) {
@@ -86,9 +117,5 @@ class AudioFileListItemAdapter extends BaseAdapter {
 
     Integer getPositionPlaying() {
         return positionPlaying;
-    }
-
-    boolean isPlaying(int position) {
-        return positionPlaying != null && positionPlaying.intValue() == position;
     }
 }

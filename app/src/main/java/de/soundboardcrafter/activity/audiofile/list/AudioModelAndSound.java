@@ -8,9 +8,9 @@ import java.util.Objects;
 import de.soundboardcrafter.model.Sound;
 
 /**
- * Metadateien einer Audio-Datei, ggf. mit einem Sound.
+ * Meta data of an audio file, perhaps with a sound.
  */
-class AudioModelAndSound {
+class AudioModelAndSound extends AbstractAudioFolderEntry {
     private AudioModel audioModel;
     private @Nullable
     Sound sound;
@@ -51,6 +51,9 @@ class AudioModelAndSound {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         AudioModelAndSound that = (AudioModelAndSound) o;
         return Objects.equals(audioModel, that.audioModel) &&
                 Objects.equals(sound, that.sound);
@@ -58,7 +61,7 @@ class AudioModelAndSound {
 
     @Override
     public int hashCode() {
-        return Objects.hash(audioModel, sound);
+        return Objects.hash(super.hashCode(), audioModel, sound);
     }
 
     @Override

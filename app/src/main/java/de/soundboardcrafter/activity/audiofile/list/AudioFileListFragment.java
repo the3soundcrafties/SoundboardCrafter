@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,7 +49,7 @@ import de.soundboardcrafter.model.Sound;
  */
 public class AudioFileListFragment extends Fragment implements
         ServiceConnection,
-        AudioFileItemRow.Callback,
+        AudioFileRow.Callback,
         SoundEventListener {
     private enum SortOrder {
         BY_NAME(Comparator.comparing(AudioModelAndSound::getName)),
@@ -63,6 +64,35 @@ public class AudioFileListFragment extends Fragment implements
             return comparator;
         }
     }
+
+    private static Comparator<AudioFolder> FOLDER_COMPARATOR =
+            Comparator.comparing(AudioFolder::getPath)
+                    .thenComparing(AudioFolder::getNumAudioFiles);
+
+    private Comparator<AbstractAudioFolderEntry> entryComparator =
+            new Comparator<AbstractAudioFolderEntry>() {
+                @Override
+                public int compare(AbstractAudioFolderEntry one, AbstractAudioFolderEntry other) {
+                    if (one instanceof AudioFolder) {
+                        // one instanceof AudioFolder
+                        if (!(other instanceof AudioFolder)) {
+                            return -1;
+                        }
+
+                        // one and other instanceof AudioFolder
+                        return FOLDER_COMPARATOR.compare((AudioFolder) one, (AudioFolder) other);
+                    }
+
+                    // one instanceof AudioModelAndSound
+                    if (!(other instanceof AudioModelAndSound)) {
+                        return 1;
+                    }
+
+                    // one and other instanceof AudioModelAndSound
+                    return sortOrder.getComparator()
+                            .compare((AudioModelAndSound) one, (AudioModelAndSound) other);
+                }
+            };
 
     private static final String TAG = AudioFileListFragment.class.getName();
 
@@ -172,11 +202,16 @@ public class AudioFileListFragment extends Fragment implements
 
         listView.setOnItemClickListener(
                 (parent, view, position, id) -> {
-                    if (!(view instanceof AudioFileItemRow)) {
+                    if (view instanceof AudioFileRow) {
+                        AudioFileRow audioFileItemRow = (AudioFileRow) view;
+                        onClickAudioFile(audioFileItemRow, position);
                         return;
                     }
-                    AudioFileItemRow audioFileItemRow = (AudioFileItemRow) view;
-                    onClickAudioFile(audioFileItemRow, position);
+                    if (view instanceof AudioSubfolderRow) {
+                        AudioSubfolderRow audioSubfolderRow = (AudioSubfolderRow) view;
+                        onClickAudioSubfolder(audioSubfolderRow);
+                        return;
+                    }
                 });
 
         new FindAudioFileTask(getContext(), sortOrder, folder).execute();
@@ -242,7 +277,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private void toggleByFolder() {
         if (folder == null) {
-            folder = "/storage/emulated/0/Android/media/com.google.android.talk/Notifications/";
+            folder = "/";
         } else {
             folder = null;
         }
@@ -256,7 +291,22 @@ public class AudioFileListFragment extends Fragment implements
         new FindAudioFileTask(getContext(), sortOrder, folder).execute();
     }
 
-    private void onClickAudioFile(AudioFileItemRow audioFileItemRow,
+    private void onClickAudioSubfolder(AudioSubfolderRow audioSubfolderRow) {
+        @Nullable String subfolderPath = audioSubfolderRow.getPath();
+        if (subfolderPath == null) {
+            return;
+        }
+
+        if (folder == null) {
+            sortOrder = SortOrder.BY_NAME;
+        }
+
+        folder = subfolderPath;
+
+        new FindAudioFileTask(getContext(), sortOrder, subfolderPath).execute();
+    }
+
+    private void onClickAudioFile(AudioFileRow audioFileItemRow,
                                   int position) {
         MediaPlayerService service = getService();
         if (service == null) {
@@ -269,7 +319,7 @@ public class AudioFileListFragment extends Fragment implements
         if (!positionWasPlaying) {
             adapter.setPositionPlaying(position);
 
-            AudioModelAndSound audioModelAndSound = adapter.getItem(position);
+            AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
             audioFileItemRow.setImage(R.drawable.ic_stop);
             mediaPlayer = service.play(audioModelAndSound.getName(),
                     audioModelAndSound.getAudioModel().getPath(),
@@ -288,10 +338,6 @@ public class AudioFileListFragment extends Fragment implements
         mediaPlayer = null;
     }
 
-    private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
-        mediaPlayer.release();
-    }
-
     // TODO Inherit from some MediaPlayerFragment?! Use some MediaPlayerSupport??!
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
@@ -300,7 +346,6 @@ public class AudioFileListFragment extends Fragment implements
         }
         return mediaPlayerService;
     }
-
 
     @Override
     @UiThread
@@ -358,11 +403,10 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     @UiThread
-    private void setAudioFiles(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
+    private void setAudioFolderEntries(ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
         stopPlaying();
-        adapter.setAudioFiles(audioFilesAndSounds);
+        adapter.setAudioFolderEntries(audioFolderEntries);
     }
-
 
     @UiThread
     private void updateUI() {
@@ -391,10 +435,10 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     /**
-     * A background task, used to retrieve audio files from the file system
+     * A background task, used to retrieve audio files (and audio folders) from the file system
      * and corresponding sounds from the database.
      */
-    class FindAudioFileTask extends AsyncTask<Void, Void, ImmutableList<AudioModelAndSound>> {
+    class FindAudioFileTask extends AsyncTask<Void, Void, ImmutableList<AbstractAudioFolderEntry>> {
         private final String TAG = FindAudioFileTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -412,7 +456,7 @@ public class AudioFileListFragment extends Fragment implements
 
         @Override
         @WorkerThread
-        protected ImmutableList<AudioModelAndSound> doInBackground(Void... voids) {
+        protected ImmutableList<AbstractAudioFolderEntry> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -423,7 +467,7 @@ public class AudioFileListFragment extends Fragment implements
 
             Log.d(TAG, "Loading audio files from file system...");
 
-            ImmutableList<AudioModel> audioModels =
+            Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> audioModelsAndFolders =
                     audioLoader.getAudioFromDevice(appContext, folder);
 
             Log.d(TAG, "Audio files loaded.");
@@ -435,19 +479,23 @@ public class AudioFileListFragment extends Fragment implements
 
             Log.d(TAG, "Sounds loaded.");
 
-            ArrayList<AudioModelAndSound> res = new ArrayList<>(audioModels.size());
-            for (AudioModel audioModel : audioModels) {
+            ArrayList<AbstractAudioFolderEntry> res =
+                    new ArrayList<>(
+                            audioModelsAndFolders.first.size() +
+                                    audioModelsAndFolders.second.size());
+            res.addAll(audioModelsAndFolders.second);
+            for (AudioModel audioModel : audioModelsAndFolders.first) {
                 res.add(new AudioModelAndSound(audioModel, soundMap.get(audioModel.getPath())));
             }
 
-            res.sort(sortOrder.getComparator());
+            res.sort(entryComparator);
 
             return ImmutableList.copyOf(res);
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<AudioModelAndSound> audioFilesAndSounds) {
+        protected void onPostExecute(ImmutableList<AbstractAudioFolderEntry> audioFolderEntries) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -456,7 +504,7 @@ public class AudioFileListFragment extends Fragment implements
                 return;
             }
             updateByFolderMenuItem();
-            setAudioFiles(audioFilesAndSounds);
+            setAudioFolderEntries(audioFolderEntries);
         }
     }
 
