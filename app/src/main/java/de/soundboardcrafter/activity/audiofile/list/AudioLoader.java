@@ -65,6 +65,10 @@ class AudioLoader {
         return ImmutableList.copyOf(tempAudioList);
     }
 
+    /**
+     * Checks whether this <code>path</code> is in this <code>folder</code>
+     * (not in a sub-folder).
+     */
     private boolean isInFolder(@NonNull String path, @NonNull String folder) {
         if (!path.startsWith(folder)) {
             // /other/stuff
