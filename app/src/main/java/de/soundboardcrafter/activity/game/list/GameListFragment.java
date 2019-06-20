@@ -53,7 +53,7 @@ public class GameListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new GameListFragment.FindGamesTask(getContext()).execute();
+        new GameListFragment.FindGamesTask(requireContext()).execute();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class GameListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_game_list,
                 container, false);
-        listView = rootView.findViewById(R.id.listview_games);
+        listView = rootView.findViewById(R.id.list_view_games);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             if (adapter == null) {
@@ -73,9 +73,10 @@ public class GameListFragment extends Fragment {
         });
 
         addNewGame = rootView.findViewById(R.id.new_game);
-        addNewGame.setOnClickListener(e -> {
-            startActivityForResult(GameCreateActivity.newIntent(getContext()), CREATE_SOUNDBOARD_REQUEST_CODE);
-        });
+        addNewGame.setOnClickListener(e ->
+                startActivityForResult(
+                        GameCreateActivity.newIntent(getContext()),
+                        CREATE_SOUNDBOARD_REQUEST_CODE));
         registerForContextMenu(listView);
 
         return rootView;
@@ -94,7 +95,7 @@ public class GameListFragment extends Fragment {
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.fragment_game_list_context, menu);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
@@ -118,11 +119,11 @@ public class GameListFragment extends Fragment {
         GameWithSoundboards gameWithSoundboards = itemRow.getGameWithSoundboards();
         switch (item.getItemId()) {
             case R.id.context_menu_edit_game:
-                Intent intent = GameEditActivity.newIntent(getActivity(), gameWithSoundboards.getGame());
+                Intent intent = GameEditActivity.newIntent(requireActivity(), gameWithSoundboards.getGame());
                 startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_game:
-                new RemoveGameTask(getActivity(), gameWithSoundboards).execute();
+                new RemoveGameTask(requireActivity(), gameWithSoundboards).execute();
                 adapter.remove(gameWithSoundboards);
                 return true;
             default:
@@ -140,11 +141,11 @@ public class GameListFragment extends Fragment {
         switch (requestCode) {
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new game " + this);
-                new FindGamesTask(getContext()).execute();
+                new FindGamesTask(requireContext()).execute();
                 break;
             case EDIT_GAME_REQUEST_CODE:
                 Log.d(TAG, "Editing game " + this + ": Returned from game edit fragment with OK");
-                new FindGamesTask(getContext()).execute();
+                new FindGamesTask(requireContext()).execute();
                 break;
         }
     }
@@ -173,7 +174,7 @@ public class GameListFragment extends Fragment {
         private final String TAG = RemoveGameTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private UUID gameId;
+        private final UUID gameId;
 
         RemoveGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
             super();

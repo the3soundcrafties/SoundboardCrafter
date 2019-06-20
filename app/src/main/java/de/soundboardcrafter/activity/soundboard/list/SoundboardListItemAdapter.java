@@ -17,7 +17,6 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  * Adapter for a SoundBoardItem. Display a Button with Text and Icon
  */
 class SoundboardListItemAdapter extends BaseAdapter {
-    private static final String TAG = SoundboardListItemAdapter.class.getName();
     private final List<SoundboardWithSounds> soundboards;
 
     SoundboardListItemAdapter() {

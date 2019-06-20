@@ -2,7 +2,6 @@ package de.soundboardcrafter.activity.sound.edit.common;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
@@ -21,8 +20,6 @@ class SelectableSoundboardListItemRow extends LinearLayout {
     @NonNull
     private final CheckBox checkboxSoundboard;
 
-    private SelectableSoundboard soundboard;
-
     SelectableSoundboardListItemRow(Context context) {
         super(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -36,16 +33,12 @@ class SelectableSoundboardListItemRow extends LinearLayout {
      */
     @UiThread
     void setSoundboard(SelectableSoundboard soundboard) {
-        this.soundboard = soundboard;
-        checkboxSoundboard.setText(this.soundboard.getSoundboard().getName());
-        checkboxSoundboard.setChecked(this.soundboard.isSelected());
+        checkboxSoundboard.setText(soundboard.getSoundboard().getName());
+        checkboxSoundboard.setChecked(soundboard.isSelected());
 
-        checkboxSoundboard.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkboxSoundboard.isEnabled()) {
-                    soundboard.setSelected(checkboxSoundboard.isChecked());
-                }
+        checkboxSoundboard.setOnClickListener(v -> {
+            if (checkboxSoundboard.isEnabled()) {
+                soundboard.setSelected(checkboxSoundboard.isChecked());
             }
         });
     }

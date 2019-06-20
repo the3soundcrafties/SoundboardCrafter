@@ -39,6 +39,11 @@
     <string name="new_soundboard">add new Soundboard</string>
     <string name="new_soundboard_name">NEW</string>
     <string name="new_game_name">NEW</string>
+    <string name="sound_name">Sound name</string>
+    <string name="sound_add">Add to soundboard</string>
+    <string name="subfolder_name">Subfolder name</string>
+    <string name="sound_list_item_icon">Soundboard</string>
+    <string name="soundboard_name">Soundboard name</string>
     <plurals name="sound_count_text">
         <item quantity="one">1 Sound</item>
         <item quantity="other">%d Sounds</item>

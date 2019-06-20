@@ -11,8 +11,8 @@ import java.util.Objects;
  * Sound with all soundboards, of which some may be selected.
  */
 public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundboard> {
-    private Sound sound;
-    private List<SelectableSoundboard> soundboards;
+    private final Sound sound;
+    private final List<SelectableSoundboard> soundboards;
 
     public SoundWithSelectableSoundboards(Sound sound, List<SelectableSoundboard> soundboards) {
         this.sound = sound;

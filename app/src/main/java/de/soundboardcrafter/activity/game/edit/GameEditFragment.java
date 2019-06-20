@@ -36,9 +36,7 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Activity for editing a single gameWithSoundboards (name, volume etc.).
  */
-public class GameEditFragment extends Fragment {
-    private static final String TAG = GameEditFragment.class.getName();
-
+class GameEditFragment extends Fragment {
     private static final String ARG_GAME_ID = "gameId";
 
     private static final String EXTRA_GAME_ID = "gameId";
@@ -74,21 +72,21 @@ public class GameEditFragment extends Fragment {
         if (getArguments() != null) {
             String gameIdArg = getArguments().getString(ARG_GAME_ID);
             UUID gameId = UUID.fromString(gameIdArg);
-            new FindGameTask(getActivity(), gameId).execute();
+            new FindGameTask(requireActivity(), gameId).execute();
         } else {
             isNew = true;
             gameWithSoundboards = new GameWithSoundboards(getString(R.string.new_game_name));
-            new FindAllSoundboardsTask(getContext()).execute();
+            new FindAllSoundboardsTask(requireContext()).execute();
         }
 
         if (isNew) {
             Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
-            getActivity().setResult(
+            requireActivity().setResult(
                     Activity.RESULT_CANCELED,
                     intent);
         } else {
             Intent intent = new Intent(getActivity(), SoundboardEditActivity.class);
-            getActivity().setResult(
+            requireActivity().setResult(
                     Activity.RESULT_OK,
                     intent);
         }
@@ -118,10 +116,10 @@ public class GameEditFragment extends Fragment {
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                        getActivity().setResult(
+                        requireActivity().setResult(
                                 Activity.RESULT_OK,
                                 intent);
-                        getActivity().finish();
+                        requireActivity().finish();
                     }
             );
             gameEditView.setOnClickListenerCancel(
@@ -129,10 +127,10 @@ public class GameEditFragment extends Fragment {
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
-                        getActivity().setResult(
+                        requireActivity().setResult(
                                 Activity.RESULT_CANCELED,
                                 intent);
-                        getActivity().finish();
+                        requireActivity().finish();
                     }
             );
         } else {
@@ -168,7 +166,7 @@ public class GameEditFragment extends Fragment {
 
     private void saveNewGame() {
         updateGameWithSoundboards();
-        new SaveNewGameTask(getActivity(), gameWithSoundboards).execute();
+        new SaveNewGameTask(requireActivity(), gameWithSoundboards).execute();
     }
 
     @Override
@@ -178,7 +176,7 @@ public class GameEditFragment extends Fragment {
         super.onPause();
         if (!isNew) {
             updateGameWithSoundboards();
-            new UpdateGameTask(getActivity(), gameWithSoundboards).execute();
+            new UpdateGameTask(requireActivity(), gameWithSoundboards).execute();
         }
     }
 
@@ -299,7 +297,7 @@ public class GameEditFragment extends Fragment {
             }
 
             updateUIGameInfo(gameWithSoundboards);
-            new FindAllSoundboardsTask(getContext()).execute();
+            new FindAllSoundboardsTask(requireContext()).execute();
         }
     }
 

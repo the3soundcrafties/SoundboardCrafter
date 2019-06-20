@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import androidx.annotation.NonNull;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -7,59 +9,43 @@ import java.util.Objects;
  * An audio file data / metadata.
  */
 class AudioModel {
-    private String path;
-    private String name;
-    private String album;
-    private String artist;
-    private Date dateAdded;
-    private long durationSecs;
+    private final String path;
+
+    @NonNull
+    private final String name;
+
+    private final String artist;
+    private final Date dateAdded;
+    private final
+    long durationSecs;
+
+    AudioModel(String path, @NonNull String name, String artist, Date dateAdded, long durationSecs) {
+        this.path = path;
+        this.name = name;
+        this.artist = artist;
+        this.dateAdded = dateAdded;
+        this.durationSecs = durationSecs;
+    }
 
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
-
+    @NonNull
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAlbum() {
-        return album;
-    }
-
-    void setAlbum(String album) {
-        this.album = album;
     }
 
     String getArtist() {
         return artist;
     }
 
-    void setArtist(String artist) {
-        this.artist = artist;
-    }
-
     Date getDateAdded() {
         return dateAdded;
     }
 
-    void setDateAdded(Date dateAdded) {
-        this.dateAdded = dateAdded;
-    }
-
     long getDurationSecs() {
         return durationSecs;
-    }
-
-    void setDurationSecs(long durationSecs) {
-        this.durationSecs = durationSecs;
     }
 
     @Override
@@ -73,7 +59,6 @@ class AudioModel {
         AudioModel that = (AudioModel) o;
         return Objects.equals(path, that.path) &&
                 Objects.equals(name, that.name) &&
-                Objects.equals(album, that.album) &&
                 Objects.equals(artist, that.artist) &&
                 Objects.equals(dateAdded, that.dateAdded) &&
                 Objects.equals(durationSecs, that.durationSecs);
@@ -81,15 +66,15 @@ class AudioModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, name, album, artist, dateAdded, durationSecs);
+        return Objects.hash(path, name, artist, dateAdded, durationSecs);
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "AudioModel{" +
                 "path='" + path + '\'' +
                 ", name='" + name + '\'' +
-                ", album='" + album + '\'' +
                 ", artist='" + artist + '\'' +
                 ", dateAdded='" + dateAdded + '\'' +
                 ", durationSecs='" + durationSecs + '\'' +

@@ -54,15 +54,11 @@ public class GameEditView extends ConstraintLayout {
     }
 
     void setOnClickListenerSave(Runnable runnable) {
-        save.setOnClickListener(l -> {
-            runnable.run();
-        });
+        save.setOnClickListener(l -> runnable.run());
     }
 
     void setOnClickListenerCancel(Runnable runnable) {
-        cancel.setOnClickListener(l -> {
-            runnable.run();
-        });
+        cancel.setOnClickListener(l -> runnable.run());
     }
 
     void setButtonsInvisible() {

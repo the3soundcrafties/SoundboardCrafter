@@ -13,6 +13,8 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 
+import static androidx.core.util.Preconditions.checkState;
+
 /**
  * Row in the list of audio files representing one subfolder.
  */
@@ -53,6 +55,8 @@ class AudioSubfolderRow extends RelativeLayout {
     }
 
     private String formatNumSounds() {
+        checkState(audioSubfolder != null, "audioSubfolder (still) null");
+
         return getResources().getQuantityString(R.plurals.subfolder_num_sounds,
                 audioSubfolder.getNumAudioFiles(), audioSubfolder.getNumAudioFiles());
     }

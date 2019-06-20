@@ -26,7 +26,6 @@ public class SoundEditView extends ConstraintLayout {
     // TODO Show Path
 
     private ListView soundboardsListView;
-    private SelectableSoundboardListItemAdapter adapter;
 
     private int maxVolumePercentage;
     private SeekBarChangeListener seekBarChangeListener;
@@ -104,7 +103,7 @@ public class SoundEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards, boolean soundboardsEditable) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards, soundboardsEditable);
+        SelectableSoundboardListItemAdapter adapter = new SelectableSoundboardListItemAdapter(soundboards, soundboardsEditable);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

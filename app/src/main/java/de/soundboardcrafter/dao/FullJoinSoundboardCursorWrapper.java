@@ -112,6 +112,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
         }
 
         @Override
+        @NonNull
         public String toString() {
             return "Row{" +
                     "soundboard=" + soundboard +
@@ -144,6 +145,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
         }
 
         @Override
+        @NonNull
         public String toString() {
             return "IndexedSound{" +
                     "index=" + index +

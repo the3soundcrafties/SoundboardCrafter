@@ -30,7 +30,6 @@ class AudioLoader {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.Audio.AudioColumns.DATA,
                 MediaStore.Audio.AudioColumns.TITLE,
-                MediaStore.Audio.AudioColumns.ALBUM,
                 MediaStore.Audio.AudioColumns.DATE_ADDED,
                 MediaStore.Audio.ArtistColumns.ARTIST,
                 MediaStore.Audio.AudioColumns.DURATION};
@@ -45,19 +44,13 @@ class AudioLoader {
                 while (c.moveToNext()) {
                     String path = c.getString(0);
                     if (folder == null || isInFolder(path, folder)) {
-                        AudioModel audioModel = new AudioModel();
-
-                        audioModel.setPath(path);
-                        audioModel.setName(c.getString(1));
-                        audioModel.setAlbum(c.getString(2));
-
-                        int rawDateAdded = c.getInt(3);
-                        audioModel.setDateAdded(new Date(rawDateAdded * 1000L));
-
-                        audioModel.setArtist(c.getString(4));
-
-                        long durationMillis = c.getLong(5);
-                        audioModel.setDurationSecs((long) Math.ceil(durationMillis / 1000f));
+                        long durationMillis = c.getLong(4);
+                        AudioModel audioModel =
+                                new AudioModel(path,
+                                        c.getString(1),
+                                        c.getString(3),
+                                        new Date(c.getInt(2) * 1000L),
+                                        (long) Math.ceil(durationMillis / 1000f));
 
                         tempAudioList.add(audioModel);
                     }
@@ -79,7 +72,7 @@ class AudioLoader {
         }
 
 
-        ImmutableList.Builder audioFolders = ImmutableList.builder();
+        ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
         if (folder != null) {
             for (Map.Entry<String, Integer> pathAndCount : tempAudioMap.entrySet()) {
                 audioFolders.add(new AudioFolder(pathAndCount.getKey(), pathAndCount.getValue()));
@@ -92,7 +85,7 @@ class AudioLoader {
     private ImmutableList<String> calcAncestorFolders(String path) {
         ImmutableList.Builder<String> res = ImmutableList.builder();
 
-        String[] pathElements = path.split("\\/");
+        String[] pathElements = path.split("/");
 
         res.add("/");
         String ancestor = "";
@@ -118,12 +111,6 @@ class AudioLoader {
             return false;
         }
 
-        if (path.indexOf("/", folder.length()) >= 0) {
-            // /the/folder/subfolder/stuff
-            return false;
-        }
-
-        // /the/folder/stuff
-        return true;
+        return path.indexOf("/", folder.length()) < 0;
     }
 }

@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
+import java.util.Locale;
+
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
@@ -63,10 +65,10 @@ class AudioFileRow extends RelativeLayout {
     private String formatArtistAndLength() {
         return audioModelAndSound.getAudioModel().getArtist()
                 + " · " +
-                formatLenght();
+                formatLength();
     }
 
-    private String formatLenght() {
+    private String formatLength() {
         return formatMinSecs(audioModelAndSound.getAudioModel().getDurationSecs());
     }
 
@@ -74,7 +76,7 @@ class AudioFileRow extends RelativeLayout {
         long mins = durationSecs / MINS_PER_SEC;
         long secs = durationSecs - mins * MINS_PER_SEC;
 
-        return String.format("%02d:%02d", mins, secs);
+        return String.format(Locale.getDefault(), "%02d:%02d", mins, secs);
     }
 
     private static String abbreviateName(String name) {

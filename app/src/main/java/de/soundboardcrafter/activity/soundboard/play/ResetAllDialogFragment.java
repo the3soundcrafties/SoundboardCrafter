@@ -15,7 +15,7 @@ import de.soundboardcrafter.R;
 /**
  * Fragment showing a yes/no-question dialog whether all data shall be deleted.
  */
-public class ResetAllDialogFragment extends DialogFragment {
+class ResetAllDialogFragment extends DialogFragment {
     /**
      * Callback interface, an activity that wants to use this fragment has to
      * implement this interface
@@ -31,7 +31,7 @@ public class ResetAllDialogFragment extends DialogFragment {
     @UiThread
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return
-                new AlertDialog.Builder(getActivity())
+                new AlertDialog.Builder(requireActivity())
                         .setTitle(R.string.reset_all_title)
                         .setMessage(R.string.reset_all_message)
                         .setPositiveButton(R.string.reset_all_title_ok, (dialog, which) -> sendResultOK())

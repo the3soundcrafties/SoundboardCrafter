@@ -170,15 +170,6 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * Sets the volume for this sound.
-     */
-    private void setVolume(UUID soundId, float volume) {
-        checkNotNull(soundId, "soundId is null");
-
-        mediaPlayers.setVolume(soundId, volume);
-    }
-
-    /**
      * Stops all playing sounds in these soundboards
      */
     public void stopPlaying(Iterable<Soundboard> soundboards) {

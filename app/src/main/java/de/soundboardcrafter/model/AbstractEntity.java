@@ -14,7 +14,7 @@ public abstract class AbstractEntity implements Serializable {
     private final @NonNull
     UUID id;
 
-    public AbstractEntity(UUID id) {
+    AbstractEntity(UUID id) {
         this.id = checkNotNull(id, "id is null");
     }
 

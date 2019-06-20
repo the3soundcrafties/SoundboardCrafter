@@ -60,39 +60,14 @@ public class AudioFileListFragment extends Fragment implements
             this.comparator = comparator;
         }
 
-        public Comparator<AudioModelAndSound> getComparator() {
+        Comparator<AudioModelAndSound> getComparator() {
             return comparator;
         }
     }
 
-    private static Comparator<AudioFolder> FOLDER_COMPARATOR =
+    private static final Comparator<AudioFolder> FOLDER_COMPARATOR =
             Comparator.comparing(AudioFolder::getPath)
                     .thenComparing(AudioFolder::getNumAudioFiles);
-
-    private Comparator<AbstractAudioFolderEntry> entryComparator =
-            new Comparator<AbstractAudioFolderEntry>() {
-                @Override
-                public int compare(AbstractAudioFolderEntry one, AbstractAudioFolderEntry other) {
-                    if (one instanceof AudioFolder) {
-                        // one instanceof AudioFolder
-                        if (!(other instanceof AudioFolder)) {
-                            return -1;
-                        }
-
-                        // one and other instanceof AudioFolder
-                        return FOLDER_COMPARATOR.compare((AudioFolder) one, (AudioFolder) other);
-                    }
-
-                    // one instanceof AudioModelAndSound
-                    if (!(other instanceof AudioModelAndSound)) {
-                        return 1;
-                    }
-
-                    // one and other instanceof AudioModelAndSound
-                    return sortOrder.getComparator()
-                            .compare((AudioModelAndSound) one, (AudioModelAndSound) other);
-                }
-            };
 
     private static final String TAG = AudioFileListFragment.class.getName();
 
@@ -124,8 +99,7 @@ public class AudioFileListFragment extends Fragment implements
      * Creates an <code>AudioFileListFragment</code>.
      */
     public static AudioFileListFragment createFragment() {
-        AudioFileListFragment fragment = new AudioFileListFragment();
-        return fragment;
+        return new AudioFileListFragment();
     }
 
     @Override
@@ -168,7 +142,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private void bindService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+        requireActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -177,7 +151,7 @@ public class AudioFileListFragment extends Fragment implements
         super.onPause();
         stopPlaying();
 
-        getActivity().unbindService(this);
+        requireActivity().unbindService(this);
     }
 
     @Override
@@ -196,7 +170,7 @@ public class AudioFileListFragment extends Fragment implements
                 container, false);
 
         byFolderMenuItem = null;
-        listView = rootView.findViewById(R.id.listview_audiofile);
+        listView = rootView.findViewById(R.id.list_view_audiofile);
 
         initAudioFileListItemAdapter();
 
@@ -205,16 +179,13 @@ public class AudioFileListFragment extends Fragment implements
                     if (view instanceof AudioFileRow) {
                         AudioFileRow audioFileItemRow = (AudioFileRow) view;
                         onClickAudioFile(audioFileItemRow, position);
-                        return;
-                    }
-                    if (view instanceof AudioSubfolderRow) {
+                    } else if (view instanceof AudioSubfolderRow) {
                         AudioSubfolderRow audioSubfolderRow = (AudioSubfolderRow) view;
                         onClickAudioSubfolder(audioSubfolderRow);
-                        return;
                     }
                 });
 
-        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
+        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
 
         return rootView;
     }
@@ -282,13 +253,13 @@ public class AudioFileListFragment extends Fragment implements
             folder = null;
         }
 
-        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
+        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
     }
 
     private void sort(SortOrder sortOrder) {
         this.sortOrder = sortOrder;
 
-        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
+        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
     }
 
     private void onClickAudioSubfolder(AudioSubfolderRow audioSubfolderRow) {
@@ -303,7 +274,7 @@ public class AudioFileListFragment extends Fragment implements
 
         folder = subfolderPath;
 
-        new FindAudioFileTask(getContext(), sortOrder, subfolderPath).execute();
+        new FindAudioFileTask(requireContext(), subfolderPath, sortOrder).execute();
     }
 
     private void onClickAudioFile(AudioFileRow audioFileItemRow,
@@ -355,7 +326,7 @@ public class AudioFileListFragment extends Fragment implements
             // Create and save new sound
             sound = new Sound(audioModelAndSound.getAudioModel().getPath(),
                     audioModelAndSound.getAudioModel().getName());
-            new AudioFileListFragment.SaveNewSoundTask(getActivity(), sound).execute();
+            new AudioFileListFragment.SaveNewSoundTask(requireActivity(), sound).execute();
         } else {
             // Use existing sound
             sound = audioModelAndSound.getSound();
@@ -391,8 +362,13 @@ public class AudioFileListFragment extends Fragment implements
 
     @Override
     public void soundChanged(UUID soundId) {
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
         // The sound NAME may have been changed.
-        new FindAudioFileTask(getContext(), sortOrder, folder).execute();
+        new FindAudioFileTask(context, folder, sortOrder).execute();
     }
 
     @UiThread
@@ -421,7 +397,7 @@ public class AudioFileListFragment extends Fragment implements
     public void onResume() {
         super.onResume();
 
-        getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // updateUI();
         bindService();
@@ -442,16 +418,41 @@ public class AudioFileListFragment extends Fragment implements
         private final String TAG = FindAudioFileTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private SortOrder sortOrder;
 
         @Nullable
-        private String folder;
+        private final String folder;
 
-        FindAudioFileTask(Context context, SortOrder sortOrder, @Nullable String folder) {
+        private final Comparator<AbstractAudioFolderEntry> entryComparator =
+                new Comparator<AbstractAudioFolderEntry>() {
+                    @Override
+                    public int compare(AbstractAudioFolderEntry one, AbstractAudioFolderEntry other) {
+                        if (one instanceof AudioFolder) {
+                            // one instanceof AudioFolder
+                            if (!(other instanceof AudioFolder)) {
+                                return -1;
+                            }
+
+                            // one and other instanceof AudioFolder
+                            return FOLDER_COMPARATOR.compare((AudioFolder) one, (AudioFolder) other);
+                        }
+
+                        // one instanceof AudioModelAndSound
+                        if (!(other instanceof AudioModelAndSound)) {
+                            return 1;
+                        }
+
+                        // one and other instanceof AudioModelAndSound
+                        return sortOrder.getComparator()
+                                .compare((AudioModelAndSound) one, (AudioModelAndSound) other);
+                    }
+                };
+        private final SortOrder sortOrder;
+
+        FindAudioFileTask(Context context, @Nullable String folder, @NonNull SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.sortOrder = sortOrder;
             this.folder = folder;
+            this.sortOrder = sortOrder;
         }
 
         @Override

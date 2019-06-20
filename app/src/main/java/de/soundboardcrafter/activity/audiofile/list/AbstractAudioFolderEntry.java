@@ -1,15 +1,14 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import androidx.annotation.NonNull;
+
 class AbstractAudioFolderEntry {
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        return true;
+        return o != null && getClass() == o.getClass();
     }
 
     @Override
@@ -18,6 +17,7 @@ class AbstractAudioFolderEntry {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "AbstractAudioFolderEntry";
     }

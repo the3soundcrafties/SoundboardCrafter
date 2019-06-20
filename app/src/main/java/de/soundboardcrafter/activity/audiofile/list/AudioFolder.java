@@ -1,13 +1,15 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 /**
  * A folder containing audio files - or folders with (folders with...) audio files.
  */
 class AudioFolder extends AbstractAudioFolderEntry {
-    private String path;
-    private int numAudioFiles;
+    private final String path;
+    private final int numAudioFiles;
 
     AudioFolder(String path, int numAudioFiles) {
         this.path = path;
@@ -44,6 +46,7 @@ class AudioFolder extends AbstractAudioFolderEntry {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "AudioFolder{" +
                 "path='" + path + '\'' +

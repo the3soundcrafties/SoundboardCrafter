@@ -101,6 +101,7 @@ class GameCursorWrapper extends CursorWrapper {
         }
 
         @Override
+        @NonNull
         public String toString() {
             return "Row{" +
                     "game=" + game +

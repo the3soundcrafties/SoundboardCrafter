@@ -17,8 +17,6 @@ import de.soundboardcrafter.R;
  * Adapter for the list of audio files (and audio folders).
  */
 class AudioFileListItemAdapter extends BaseAdapter {
-    private static final String TAG = AudioFileListItemAdapter.class.getName();
-
     private final AudioFileRow.Callback callback;
     private final List<AbstractAudioFolderEntry> audioFolderEntries;
 
@@ -72,7 +70,7 @@ class AudioFileListItemAdapter extends BaseAdapter {
     }
 
     boolean isPlaying(int position) {
-        return positionPlaying != null && positionPlaying.intValue() == position;
+        return positionPlaying != null && positionPlaying == position;
     }
 
     @UiThread
@@ -113,9 +111,5 @@ class AudioFileListItemAdapter extends BaseAdapter {
     void setPositionPlaying(Integer positionPlaying) {
         this.positionPlaying = positionPlaying;
         notifyDataSetChanged();
-    }
-
-    Integer getPositionPlaying() {
-        return positionPlaying;
     }
 }

@@ -27,9 +27,7 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Activity for editing a single soundboard (name, volume etc.).
  */
-public class SoundboardEditFragment extends Fragment {
-    private static final String TAG = SoundboardEditFragment.class.getName();
-
+class SoundboardEditFragment extends Fragment {
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
@@ -65,19 +63,19 @@ public class SoundboardEditFragment extends Fragment {
 
         if (getArguments() != null) {
             UUID soundboardId = UUID.fromString(getArguments().getString(ARG_SOUNDBOARD_ID));
-            new FindSoundboardTask(getActivity(), soundboardId).execute();
+            new FindSoundboardTask(requireActivity(), soundboardId).execute();
         } else {
             isNew = true;
             soundboard = new Soundboard(getString(R.string.new_soundboard_name));
         }
         if (isNew) {
-            Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
-            getActivity().setResult(
+            Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
+            requireActivity().setResult(
                     Activity.RESULT_CANCELED,
                     intent);
         } else {
-            Intent intent = new Intent(getActivity(), SoundboardEditActivity.class);
-            getActivity().setResult(
+            Intent intent = new Intent(requireActivity(), SoundboardEditActivity.class);
+            requireActivity().setResult(
                     Activity.RESULT_OK,
                     intent);
         }
@@ -110,21 +108,21 @@ public class SoundboardEditFragment extends Fragment {
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                        getActivity().setResult(
+                        requireActivity().setResult(
                                 Activity.RESULT_OK,
                                 intent);
-                        getActivity().finish();
+                        requireActivity().finish();
                     }
             );
             soundboardEditView.setOnClickListenerCancel(
                     () -> {
-                        Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
+                        Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
-                        getActivity().setResult(
+                        requireActivity().setResult(
                                 Activity.RESULT_CANCELED,
                                 intent);
-                        getActivity().finish();
+                        requireActivity().finish();
                     }
             );
         } else {
@@ -148,7 +146,7 @@ public class SoundboardEditFragment extends Fragment {
         if (!nameEntered.isEmpty()) {
             soundboard.setName(nameEntered);
         }
-        new SaveNewSoundboardTask(getActivity(), soundboard).execute();
+        new SaveNewSoundboardTask(requireActivity(), soundboard).execute();
     }
 
 
@@ -163,7 +161,7 @@ public class SoundboardEditFragment extends Fragment {
                 soundboard.setName(nameEntered);
             }
 
-            new UpdateSoundboardTask(getActivity(), soundboard).execute();
+            new UpdateSoundboardTask(requireActivity(), soundboard).execute();
         }
 
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/subfolder"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:padding="6dip">
@@ -12,7 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="6dip"
-        android:contentDescription="Subfolder name"
+        android:contentDescription="@string/subfolder_name"
         android:src="@drawable/ic_sound_list_subfolder" />
 
     <TextView
@@ -23,7 +23,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="30dp"
         android:layout_toEndOf="@id/icon"
-        android:text="9999 sounds"
+        tools:text="9,999 sounds"
         android:textSize="12sp" />
 
     <TextView
@@ -37,7 +37,7 @@
         android:layout_marginEnd="6dp"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        android:text="/some/folder/name"
+        tools:text="/some/folder/name"
         android:textSize="16sp" />
 
 

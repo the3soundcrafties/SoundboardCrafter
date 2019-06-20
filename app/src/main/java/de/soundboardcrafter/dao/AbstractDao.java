@@ -18,7 +18,7 @@ abstract class AbstractDao {
         database = new DBHelper(appContext).getWritableDatabase();
     }
 
-    public SQLiteDatabase getDatabase() {
+    SQLiteDatabase getDatabase() {
         return database;
     }
 
@@ -37,12 +37,12 @@ abstract class AbstractDao {
     /**
      * Inserts these values as a new entry into this table.
      *
-     * @throws RuntimeException if inserting does not succeed
+     * @throws IllegalStateException if inserting does not succeed
      */
     void insertOrThrow(final String table, final ContentValues values) {
         final long rowId = database.insertOrThrow(table, null, values);
         if (rowId == -1) {
-            throw new RuntimeException("Could not insert into database: " + values);
+            throw new IllegalStateException("Could not insert into database: " + values);
         }
     }
 }

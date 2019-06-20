@@ -14,14 +14,14 @@ import de.soundboardcrafter.model.SelectableSoundboard;
 /**
  * Adapter for a {@link SelectableSoundboardListItemRow}.
  */
-// TODO: 05.05.2019 move to another package it is also used in the gameeditview
+// TODO: 05.05.2019 move to another package it is also used in the game edit view
 public class SelectableSoundboardListItemAdapter extends BaseAdapter {
-    private List<SelectableSoundboard> soundboards;
+    private final List<SelectableSoundboard> soundboards;
 
     /**
      * Whether the soundboards can be changed.
      */
-    private boolean editable;
+    private final boolean editable;
 
     public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards, boolean editable) {
         this.soundboards = soundboards;

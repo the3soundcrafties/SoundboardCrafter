@@ -16,8 +16,7 @@ public class GameCreateActivity extends SingleFragmentActivity {
      * Builds  an {@link Intent}, suitable for starting this activity.
      */
     public static Intent newIntent(Context packageContext) {
-        Intent intent = new Intent(packageContext, GameCreateActivity.class);
-        return intent;
+        return new Intent(packageContext, GameCreateActivity.class);
     }
 
     @Override
