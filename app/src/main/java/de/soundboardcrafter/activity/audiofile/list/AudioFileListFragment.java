@@ -17,7 +17,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,6 +84,8 @@ public class AudioFileListFragment extends Fragment implements
 
     private MenuItem byFolderMenuItem;
     private ListView listView;
+    private ImageView iconFolder;
+    private TextView folderPath;
     private AudioFileListItemAdapter adapter;
     private MediaPlayerService mediaPlayerService;
     private @Nullable
@@ -158,21 +162,41 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            sortOrder = (SortOrder) savedInstanceState.getSerializable(STATE_SORT_ORDER);
-            folder = savedInstanceState.getString(STATE_FOLDER);
-        } else {
-            sortOrder = SortOrder.BY_NAME;
-            folder = null;
-        }
-
         View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
-
-        byFolderMenuItem = null;
+        iconFolder = rootView.findViewById(R.id.icon_folder);
+        folderPath = rootView.findViewById(R.id.folder_path);
         listView = rootView.findViewById(R.id.list_view_audiofile);
 
+        if (savedInstanceState != null) {
+            sortOrder = (SortOrder) savedInstanceState.getSerializable(STATE_SORT_ORDER);
+            setFolder(savedInstanceState.getString(STATE_FOLDER));
+        } else {
+            sortOrder = SortOrder.BY_NAME;
+            setFolder(null);
+        }
+
+        byFolderMenuItem = null;
+
         initAudioFileListItemAdapter();
+
+        iconFolder.setOnClickListener(v -> {
+                    if (folder == null) {
+                        return;
+                    }
+
+                    int lastIndexOfSlash = folder.lastIndexOf("/");
+                    if (lastIndexOfSlash < 0) {
+                        return;
+                    }
+
+                    String newFolder = folder.substring(0, lastIndexOfSlash);
+                    if (newFolder.isEmpty()) {
+                        newFolder = "/";
+                    }
+                    changeFolder(newFolder);
+                }
+        );
 
         listView.setOnItemClickListener(
                 (parent, view, position, id) -> {
@@ -248,12 +272,17 @@ public class AudioFileListFragment extends Fragment implements
 
     private void toggleByFolder() {
         if (folder == null) {
-            folder = "/";
+            setFolder("/");
         } else {
-            folder = null;
+            setFolder(null);
         }
 
         new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
+    }
+
+    private void setFolder(String folder) {
+        this.folder = folder;
+        folderPath.setText(folder);
     }
 
     private void sort(SortOrder sortOrder) {
@@ -268,13 +297,17 @@ public class AudioFileListFragment extends Fragment implements
             return;
         }
 
+        changeFolder(subfolderPath);
+    }
+
+    private void changeFolder(@NonNull String newFolder) {
         if (folder == null) {
             sortOrder = SortOrder.BY_NAME;
         }
 
-        folder = subfolderPath;
+        setFolder(newFolder);
 
-        new FindAudioFileTask(requireContext(), subfolderPath, sortOrder).execute();
+        new FindAudioFileTask(requireContext(), newFolder, sortOrder).execute();
     }
 
     private void onClickAudioFile(AudioFileRow audioFileItemRow,

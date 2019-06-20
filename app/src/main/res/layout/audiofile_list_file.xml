@@ -2,33 +2,37 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
+    android:elevation="-10dp"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:padding="6dip">
 
     <ImageView
         android:id="@+id/icon"
+        android:elevation="-10dp"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
-        android:layout_marginEnd="6dip"
+        android:layout_marginEnd="6dp"
         android:contentDescription="@string/sound_name"
         android:src="@drawable/ic_sound_list_file" />
 
     <ImageView
         android:id="@+id/icon_link_sound_to_soundboards"
+        android:elevation="-10dp"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_marginEnd="6dip"
+        android:layout_marginEnd="6dp"
         android:contentDescription="@string/sound_add"
         android:src="@drawable/ic_link_sound_to_soundboards" />
 
     <TextView
         android:id="@+id/audio_artist_and_length"
+        android:elevation="-10dp"
         android:layout_width="fill_parent"
-        android:layout_height="26dip"
+        android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="30dp"
@@ -38,6 +42,7 @@
 
     <TextView
         android:id="@+id/audio_name"
+        android:elevation="-10dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"

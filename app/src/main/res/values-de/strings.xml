@@ -41,7 +41,8 @@
     <string name="new_game_name">NEU</string>
     <string name="sound_name">Name des Sounds</string>
     <string name="sound_add">Zum Soundboard hinzufügen</string>
-    <string name="subfolder_name">Name des Unterordners</string>
+    <string name="folder_name">Ordnername</string>
+    <string name="subfolder_icon">Unterordner</string>
     <string name="sound_list_item_icon">Soundboard</string>
     <string name="soundboard_name">Bezeichnung des Soundboards</string>
     <plurals name="sound_count_text">

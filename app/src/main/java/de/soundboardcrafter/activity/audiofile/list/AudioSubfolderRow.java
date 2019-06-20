@@ -41,7 +41,7 @@ class AudioSubfolderRow extends RelativeLayout {
     @UiThread
     void setData(AudioFolder audioSubfolder) {
         this.audioSubfolder = audioSubfolder;
-        path.setText(audioSubfolder.getPath());
+        path.setText(audioSubfolder.getName());
         numAudioFiles.setText(formatNumSounds());
     }
 

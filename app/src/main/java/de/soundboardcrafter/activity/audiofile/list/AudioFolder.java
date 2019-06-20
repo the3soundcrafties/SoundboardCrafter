@@ -16,6 +16,18 @@ class AudioFolder extends AbstractAudioFolderEntry {
         this.numAudioFiles = numAudioFiles;
     }
 
+    /**
+     * Returns only the folder name (not the whole path).
+     */
+    public String getName() {
+        int lastIndexOfSlash = path.lastIndexOf("/");
+        if (lastIndexOfSlash < 0) {
+            return path;
+        }
+
+        return path.substring(lastIndexOfSlash + 1);
+    }
+
     public String getPath() {
         return path;
     }
