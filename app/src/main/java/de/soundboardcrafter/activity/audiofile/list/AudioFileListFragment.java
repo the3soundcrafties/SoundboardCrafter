@@ -310,6 +310,9 @@ public class AudioFileListFragment extends Fragment implements
         this.folder = folder;
         folderPath.setText(folder);
         setVisibilityFolder(folder != null ? View.VISIBLE : View.GONE);
+        if ("/".equals(folder)) {
+            iconFolder.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void setVisibilityFolder(int visibility) {
