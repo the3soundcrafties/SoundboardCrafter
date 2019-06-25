@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
@@ -84,6 +85,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private MenuItem byFolderMenuItem;
     private ListView listView;
+    private ConstraintLayout folderLayout;
     private ImageView iconFolder;
     private TextView folderPath;
     private AudioFileListItemAdapter adapter;
@@ -162,8 +164,30 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_audiofile_list,
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
+
+        /*
+        Animator scaleUp = ObjectAnimator.ofPropertyValuesHolder((Object) null,
+                PropertyValuesHolder.ofFloat("translateY", 0, -300));
+        scaleUp.setDuration(3000);
+        scaleUp.setStartDelay(3000);
+        scaleUp.setInterpolator(new OvershootInterpolator());
+
+        Animator scaleDown = ObjectAnimator.ofPropertyValuesHolder((Object) null,
+                PropertyValuesHolder.ofFloat("translateY", -300, 0));
+        scaleDown.setDuration(3000);
+        scaleDown.setInterpolator(new OvershootInterpolator());
+
+
+        LayoutTransition itemLayoutTransition = new LayoutTransition();
+        itemLayoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp);
+        itemLayoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown);
+
+        rootView.setLayoutTransition(itemLayoutTransition);
+        */
+
+        folderLayout = rootView.findViewById(R.id.folderLayout);
         iconFolder = rootView.findViewById(R.id.icon_folder);
         folderPath = rootView.findViewById(R.id.folder_path);
         listView = rootView.findViewById(R.id.list_view_audiofile);
@@ -277,12 +301,21 @@ public class AudioFileListFragment extends Fragment implements
             setFolder(null);
         }
 
+        setAudioFolderEntries(ImmutableList.of());
+
         new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
     }
 
-    private void setFolder(String folder) {
+    private void setFolder(@Nullable String folder) {
         this.folder = folder;
         folderPath.setText(folder);
+        setVisibilityFolder(folder != null ? View.VISIBLE : View.GONE);
+    }
+
+    private void setVisibilityFolder(int visibility) {
+        folderLayout.setVisibility(visibility);
+        iconFolder.setVisibility(visibility);
+        folderPath.setVisibility(visibility);
     }
 
     private void sort(SortOrder sortOrder) {
