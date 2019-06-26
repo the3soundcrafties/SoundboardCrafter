@@ -18,23 +18,28 @@ import java.util.List;
 import java.util.Map;
 
 class AudioLoader {
+    /**
+     * Loads all audio files and subfolders in a given folder - or loads all audio files
+     * if no folder is given.
+     *
+     * @return The audio files and the subfolders (empty in the case of all audio files)
+     */
     Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> getAudioFromDevice(
             final Context context, @Nullable String folder) {
         if (folder != null && !folder.endsWith("/")) {
             folder += "/";
         }
 
-        final List<AudioModel> tempAudioList = new ArrayList<>();
-        final Map<String, Integer> tempAudioMap = new HashMap<>();
+        final List<AudioModel> audioFileList = new ArrayList<>();
+        final Map<String, Integer> subfoldersAndAudioFileCounts = new HashMap<>();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.Audio.AudioColumns.DATA,
                 MediaStore.Audio.AudioColumns.TITLE,
-                MediaStore.Audio.AudioColumns.DATE_ADDED,
                 MediaStore.Audio.ArtistColumns.ARTIST,
+                MediaStore.Audio.AudioColumns.DATE_ADDED,
                 MediaStore.Audio.AudioColumns.DURATION};
 
-//        Cursor c = context.getContentResolver().query(uri, projection, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%yourFolderName%"}, null);
         try (Cursor c = context.getContentResolver().query(uri,
                 projection,
                 folder != null ? MediaStore.Audio.Media.DATA + " like ? " : null,
@@ -44,42 +49,63 @@ class AudioLoader {
                 while (c.moveToNext()) {
                     String path = c.getString(0);
                     if (folder == null || isInFolder(path, folder)) {
-                        long durationMillis = c.getLong(4);
-                        AudioModel audioModel =
-                                new AudioModel(path,
-                                        c.getString(1),
-                                        c.getString(3),
-                                        new Date(c.getInt(2) * 1000L),
-                                        (long) Math.ceil(durationMillis / 1000f));
-
-                        tempAudioList.add(audioModel);
+                        audioFileList.add(createAudioModel(
+                                path, c.getString(1), c.getString(2),
+                                c.getInt(3), c.getLong(4)));
                     }
 
                     if (folder != null) {
-                        for (String ancestor : calcAncestorFolders(path)) {
-                            if (isInFolder(ancestor, folder)) {
-                                Integer old = tempAudioMap.get(ancestor);
-                                if (old == null) {
-                                    tempAudioMap.put(ancestor, 1);
-                                } else {
-                                    tempAudioMap.put(ancestor, old + 1);
-                                }
-                            }
-                        }
+                        incrementSubfolderAudioCountIfIsDescendant(folder,
+                                subfoldersAndAudioFileCounts, path);
                     }
                 }
             }
         }
 
 
-        ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
-        if (folder != null) {
-            for (Map.Entry<String, Integer> pathAndCount : tempAudioMap.entrySet()) {
-                audioFolders.add(new AudioFolder(pathAndCount.getKey(), pathAndCount.getValue()));
+        return toAudioFilesAndSubFolders(audioFileList, subfoldersAndAudioFileCounts);
+    }
+
+    private AudioModel createAudioModel(String path, String name, String artist, int dateAddedMillis, long durationMillis) {
+        return new AudioModel(path,
+                name,
+                artist,
+                new Date(dateAddedMillis * 1000L),
+                (long) Math.ceil(durationMillis / 1000f));
+    }
+
+    /**
+     * Checks whether the <code>audioFilePath</code> is in a subfolder of the folder - if it is,
+     * add the folder to the map - or increment the count held in the map.
+     */
+    private void incrementSubfolderAudioCountIfIsDescendant(
+            @NonNull String folder, @NonNull Map<String, Integer> subfoldersAndAudioFileCounts,
+            @NonNull String audioFilePath) {
+        for (String ancestor : calcAncestorFolders(audioFilePath)) {
+            if (isInFolder(ancestor, folder)) {
+                Integer old = subfoldersAndAudioFileCounts.get(ancestor);
+                if (old == null) {
+                    subfoldersAndAudioFileCounts.put(ancestor, 1);
+                } else {
+                    subfoldersAndAudioFileCounts.put(ancestor, old + 1);
+                }
             }
         }
+    }
 
-        return Pair.create(ImmutableList.copyOf(tempAudioList), audioFolders.build());
+    /**
+     * Converts a list of audio files and some subfolders with the number of
+     * audio file contained therein to a {@link Pair} of audio files and
+     * {@link AudioFolder}s.
+     */
+    private Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> toAudioFilesAndSubFolders(
+            List<AudioModel> audioListIn, Map<String, Integer> audioFolderMapIn) {
+        ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
+        for (Map.Entry<String, Integer> subfolderAndCount : audioFolderMapIn.entrySet()) {
+            audioFolders.add(new AudioFolder(subfolderAndCount.getKey(), subfolderAndCount.getValue()));
+        }
+
+        return Pair.create(ImmutableList.copyOf(audioListIn), audioFolders.build());
     }
 
     private ImmutableList<String> calcAncestorFolders(String path) {
