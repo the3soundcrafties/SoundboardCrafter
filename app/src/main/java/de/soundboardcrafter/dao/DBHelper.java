@@ -18,7 +18,7 @@ class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version
      */
-    private static final int VERSION = 12;
+    private static final int VERSION = 13;
 
     /**
      * Database name
@@ -63,6 +63,10 @@ class DBHelper extends SQLiteOpenHelper {
                     SoundTable.Cols.LOOP + " INTEGER NOT NULL, " + //
                     "PRIMARY KEY (" + SoundTable.Cols.ID + "));";
 
+    private static final String UPDATE_VOLUMES_RESET = //
+            "UPDATE " + SoundTable.NAME + " " + //
+                    " SET " + SoundTable.Cols.VOLUME_PERCENTAGE + " = 100;";
+
     private static final String DROP_TABLE_SOUND = //
             "DROP TABLE " + SoundTable.NAME + ";";
 
@@ -94,8 +98,16 @@ class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        dropTables(db);
-        createTables(db);
+        Log.e(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+
+        if (oldVersion < 12) {
+            dropTables(db);
+            createTables(db);
+        }
+
+        if (oldVersion < 13) {
+            resetVolumes(db);
+        }
     }
 
     private void createTables(SQLiteDatabase db) {
@@ -108,6 +120,10 @@ class DBHelper extends SQLiteOpenHelper {
         // TODO extra index on primary keys necessary / useful?
     }
 
+    private void resetVolumes(SQLiteDatabase db) {
+        db.execSQL(UPDATE_VOLUMES_RESET);
+    }
+
     private void dropTables(SQLiteDatabase db) {
         db.execSQL(DROP_TABLE_GAME);
         db.execSQL(DROP_TABLE_SOUNDBOARD);
@@ -115,4 +131,5 @@ class DBHelper extends SQLiteOpenHelper {
         db.execSQL(DROP_TABLE_SOUND);
         db.execSQL(DROP_TABLE_SOUNDBOARD_SOUND);
     }
+
 }
