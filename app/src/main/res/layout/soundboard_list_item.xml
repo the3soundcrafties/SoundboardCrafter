@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="6dip">
 
     <ImageView
@@ -11,7 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="6dip"
-        android:contentDescription="Soundboard name"
+        android:contentDescription="@string/sound_list_item_icon"
         android:src="@drawable/ic_soundboard_list_item" />
 
     <TextView
@@ -21,7 +22,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@id/icon"
-        android:text="Count Sounds"
+        tools:text="15 Sounds"
         android:textSize="12sp" />
 
     <TextView
@@ -34,7 +35,7 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        android:text="Soundboard name"
+        tools:text="Soundboard name"
         android:textSize="16sp" />
 
 </RelativeLayout>

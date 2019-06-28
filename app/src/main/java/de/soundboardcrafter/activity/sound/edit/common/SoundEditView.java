@@ -26,7 +26,6 @@ public class SoundEditView extends ConstraintLayout {
     // TODO Show Path
 
     private ListView soundboardsListView;
-    private SelectableSoundboardListItemAdapter adapter;
 
     private int maxVolumePercentage;
     private SeekBarChangeListener seekBarChangeListener;
@@ -104,7 +103,7 @@ public class SoundEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        SelectableSoundboardListItemAdapter adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -158,11 +157,16 @@ public class SoundEditView extends ConstraintLayout {
             return 0;
         }
 
-        // seekBar = log(volume)
-        int res = (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
+        // seekBar = log10(volume)
+        //int res = (int) (Math.log10((volumePercentage + 100) / 100.0) * 1000.0);
 
-        if (res > maxVolumePercentage) {
-            return maxVolumePercentage;
+        // seekBar 0 => volume 0
+        // seekBar 100 => volumePercentage 100
+        // exponentially in between
+        int res = Math.toIntExact(Math.round(Math.log(volumePercentage * (Math.E - 1.0) / maxVolumePercentage + 1.0) * 100.0));
+
+        if (res > 100) {
+            return 100;
         }
 
         return res;
@@ -173,8 +177,10 @@ public class SoundEditView extends ConstraintLayout {
             return 0;
         }
 
-        // 2 ^ seekBar = volume
-        int res = (int) (Math.pow(10, seekBar / 1000.0) * 100.0) - 100;
+        // seekBar 0 => volume 0
+        // seekBar 100 => volumePercentage 100
+        // exponentially in between
+        int res = Math.toIntExact(Math.round((Math.pow(Math.E, seekBar / 100.0) - 1.0) / (Math.E - 1.0) * maxVolumePercentage));
 
         if (res < 0) {
             return 0;

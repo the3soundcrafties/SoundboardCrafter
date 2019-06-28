@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -139,13 +140,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
             String selectedSoundboardIdPref = pref.getString(KEY_SELECTED_SOUNDBOARD_ID, null);
             if (selectedSoundboardIdPref != null) {
                 selectedSoundboardId = UUID.fromString(selectedSoundboardIdPref);
-                pref.edit().remove(KEY_SELECTED_SOUNDBOARD_ID);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.remove(KEY_SELECTED_SOUNDBOARD_ID);
+                editor.commit();
             }
         }
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
-        Intent parent = getParentActivityIntent();
-        String par = parent.toString();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -214,9 +215,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         /**
-         * add Soundboards to the soundboardlist and refreshes the soundboardplaylistview
-         *
-         * @param soundboards
+         * Add soundboards to the @link {@link #soundboardList} and refreshes the
+         * view
          */
         void addSoundboards(Collection<SoundboardWithSounds> soundboards) {
             soundboardList.addAll(soundboards);
@@ -310,6 +310,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
                 finishAndRemoveTask();
+                return;
             }
         }
     }
@@ -324,6 +325,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @UiThread
     public void onResume() {
         super.onResume();
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         bindService();
     }
 
@@ -342,7 +346,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         if (selectedSoundboardId != null) {
             editor.putString(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId.toString());
         }
-        editor.commit();
+        editor.apply();
         super.onDestroy();
     }
 

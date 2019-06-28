@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_constraintVertical_bias="1">
@@ -12,7 +11,7 @@
         android:layout_height="40dp"
         android:orientation="vertical"
         android:text="@string/new_soundboard"
-        app:layout_constraintBottom_toTopOf="@+id/listview_soundboard"
+        app:layout_constraintBottom_toTopOf="@+id/list_view_soundboard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,7 +19,7 @@
         />
 
     <ListView
-        android:id="@+id/listview_soundboard"
+        android:id="@+id/list_view_soundboard"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"

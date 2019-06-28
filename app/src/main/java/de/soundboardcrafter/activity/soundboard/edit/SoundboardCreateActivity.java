@@ -16,8 +16,7 @@ public class SoundboardCreateActivity extends SingleFragmentActivity {
      * Builds  an {@link Intent}, suitable for starting this activity.
      */
     public static Intent newIntent(Context packageContext) {
-        Intent intent = new Intent(packageContext, SoundboardCreateActivity.class);
-        return intent;
+        return new Intent(packageContext, SoundboardCreateActivity.class);
     }
 
     @Override

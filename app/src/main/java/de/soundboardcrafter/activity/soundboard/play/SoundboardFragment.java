@@ -57,15 +57,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private enum SortOrder {
         BY_NAME(Comparator.comparing(Sound::getName));
+        // TODO Have other sort orders?
 
-        private Comparator<Sound> comparator;
+        private final Comparator<Sound> comparator;
 
         SortOrder(Comparator<Sound> comparator) {
             this.comparator = comparator;
-        }
-
-        public Comparator<Sound> getComparator() {
-            return comparator;
         }
     }
 
@@ -123,24 +120,28 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        soundboard = (SoundboardWithSounds) getArguments().getSerializable(ARG_SOUNDBOARD);
+        Bundle arguments = getArguments();
+        if (arguments == null) {
+            throw new IllegalStateException("SoundboardFragment without arguments");
+        }
+        soundboard = (SoundboardWithSounds) arguments.getSerializable(ARG_SOUNDBOARD);
 
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-        getActivity().startService(intent);
+        requireActivity().startService(intent);
         // TODO Necessary?! Also done in onResume()
         bindService();
     }
 
     private void bindService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+        requireActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     @UiThread
     public void onPause() {
         super.onPause();
-        getActivity().unbindService(this);
+        requireActivity().unbindService(this);
     }
 
 
@@ -192,7 +193,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_menu_sound_sort_alpha:
-                new SoundSortInSoundboardTask(getContext(), soundboard, SortOrder.BY_NAME).execute();
+                new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME).execute();
                 return true;
 
             default:
@@ -278,7 +279,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
@@ -315,7 +316,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Log.d(TAG, "Removing sound " + menuInfo.position);
                 soundboardItemAdapter.remove(menuInfo.position);
-                new RemoveSoundsTask(getActivity()).execute(menuInfo.position);
+                new RemoveSoundsTask(requireActivity()).execute(menuInfo.position);
                 return true;
             default:
                 return false;
@@ -336,7 +337,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
                 // The sound details may have been changed, but not its soundboards!
-                new UpdateSoundsTask(getActivity()).execute(soundId);
+                new UpdateSoundsTask(requireActivity()).execute(soundId);
                 break;
         }
     }
@@ -362,8 +363,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         private final String TAG = UpdateSoundsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        SoundboardWithSounds soundboardWithSounds;
-        SortOrder order;
+        final SoundboardWithSounds soundboardWithSounds;
+        final SortOrder order;
 
         SoundSortInSoundboardTask(Context context, SoundboardWithSounds soundboardWithSounds, SortOrder order) {
             super();

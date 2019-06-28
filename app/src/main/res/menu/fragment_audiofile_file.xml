@@ -3,7 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/toolbar_menu_audiofiles_sort"
+        android:id="@+id/toolbar_menu_audiofiles_by_folder"
+        android:icon="@drawable/ic_long_list"
+        android:title="@string/toolbar_menu_audiofiles_folders_all"
+        app:showAsAction="ifRoom|withText" />
+    <item
         android:icon="@drawable/ic_menu_sort"
         android:title="@string/toolbar_menu_audiofiles_sort"
         app:showAsAction="ifRoom|withText">
@@ -17,6 +21,5 @@
                 android:title="@string/toolbar_menu_audiofiles_sort_date"
                 app:showAsAction="always" />
         </menu>
-
     </item>
 </menu>

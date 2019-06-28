@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
@@ -25,6 +26,8 @@ import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
+
+import static androidx.core.util.Preconditions.checkNotNull;
 
 /**
  * Database Access Object for accessing Soundboards in the database
@@ -80,39 +83,35 @@ public class SoundboardDao extends AbstractDao {
 
             while (cursor.moveToNext()) {
                 final FullJoinSoundboardCursorWrapper.Row row = cursor.getRow();
+                Soundboard soundboard = row.getSoundboard();
 
                 if (lastSoundboard != null &&
-                        row.getSoundboard().getId().equals(lastSoundboard.getId())) {
+                        soundboard.getId().equals(lastSoundboard.getId())) {
                     // Reuse existing sounds.
-                    UUID soundId = row.getIndexedSound().getSound().getId();
-                    @Nullable Sound sound = sounds.get(soundId);
-                    if (sound == null) {
-                        sound = row.getIndexedSound().getSound();
-                        sounds.put(soundId, sound);
+                    FullJoinSoundboardCursorWrapper.IndexedSound indexedSound = row.getIndexedSound();
+                    if (indexedSound == null) {
+                        throw new IllegalStateException(
+                                "indexedSound was null for second soundboard row");
                     }
 
-                    if (row.getIndexedSound().getIndex() != lastIndex + 1) {
-                        throw new IllegalStateException("Gap in indexes of soundboard " +
-                                row.getSoundboard().getId() + ". Expected next index " +
-                                (lastIndex + 1) + ", but was " + row.getIndexedSound().getIndex());
-                    }
+                    Sound sound = putAdditionalSound(sounds, lastIndex, soundboard, indexedSound);
 
-                    lastSoundboard = row.getSoundboard();
+                    lastSoundboard = soundboard;
                     lastSounds.add(sound);
-                    lastIndex = row.getIndexedSound().getIndex();
+                    lastIndex = indexedSound.getIndex();
                 } else {
                     if (lastSoundboard != null) {
                         lastSounds.trimToSize();
                         res.add(new SoundboardWithSounds(lastSoundboard, Lists.newArrayList(lastSounds)));
                     }
 
-                    lastSoundboard = row.getSoundboard();
+                    lastSoundboard = soundboard;
                     lastSounds = Lists.newArrayList();
 
                     if (row.getIndexedSound() != null) {
                         if (row.getIndexedSound().getIndex() > 0) {
                             throw new IllegalStateException("Lowest sound index of soundboard " +
-                                    row.getSoundboard().getId() + " invalid. Expected 0, but was "
+                                    soundboard.getId() + " invalid. Expected 0, but was "
                                     + row.getIndexedSound().getIndex());
                         }
 
@@ -133,6 +132,26 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
+    private Sound putAdditionalSound(Map<UUID, Sound> sounds, int lastIndex,
+                                     Soundboard soundboard,
+                                     @NonNull FullJoinSoundboardCursorWrapper.IndexedSound indexedSound) {
+        checkNotNull(indexedSound, "indexedSound was null");
+
+        UUID soundId = indexedSound.getSound().getId();
+        @Nullable Sound sound = sounds.get(soundId);
+        if (sound == null) {
+            sound = indexedSound.getSound();
+            sounds.put(soundId, sound);
+        }
+
+        if (indexedSound.getIndex() != lastIndex + 1) {
+            throw new IllegalStateException("Gap in indexes of soundboard " +
+                    soundboard.getId() + ". Expected next index " +
+                    (lastIndex + 1) + ", but was " + indexedSound.getIndex());
+        }
+        return sound;
+    }
+
     /**
      * Retrieves all soundboard, each with a mark, whether this sound is included.
      */
@@ -146,10 +165,8 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
     private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
-        final SelectableSoundboardCursorWrapper cursor =
-                new SelectableSoundboardCursorWrapper(rawCursor);
 
-        try {
+        try (SelectableSoundboardCursorWrapper cursor = new SelectableSoundboardCursorWrapper(rawCursor)) {
             final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
 
             while (cursor.moveToNext()) {
@@ -157,8 +174,6 @@ public class SoundboardDao extends AbstractDao {
             }
 
             return res.build();
-        } finally {
-            cursor.close();
         }
     }
 
@@ -229,11 +244,7 @@ public class SoundboardDao extends AbstractDao {
      */
     private boolean isLinked(Soundboard soundboard, Sound sound) {
         try (final Cursor cursor = queryIndex(soundboard, sound)) {
-            if (cursor.moveToNext()) {
-                return true;
-            }
-
-            return false;
+            return cursor.moveToNext();
         }
     }
 
@@ -241,7 +252,7 @@ public class SoundboardDao extends AbstractDao {
      * Adds this sound at this <code>index</code> in this
      * soundboard.
      *
-     * @throws RuntimeException if it does not succeed
+     * @throws IllegalStateException if it does not succeed
      */
     private void linkSoundToSoundboard(UUID soundboardId, int index, UUID soundId) {
         // TODO throw exception if the sound is already contained in the soundboard

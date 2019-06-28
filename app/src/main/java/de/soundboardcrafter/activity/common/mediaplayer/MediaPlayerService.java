@@ -6,11 +6,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import androidx.annotation.MainThread;
@@ -20,10 +22,6 @@ import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
 
 import de.soundboardcrafter.R;
@@ -43,37 +41,90 @@ public class MediaPlayerService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "mediaPlayerNotificationChannel";
 
     private static final int ONGOING_NOTIFICATION_ID = 1;
-    private static final int MAX_NOTIFICATION_LENGTH = 60;
+    // https://material.io/design/platform-guidance/android-notifications.html#style :
+    // "Avoid exceeding the 40-character limit"
+    private static final int MAX_NOTIFICATION_LENGTH = 40;
+    private static final String MEDIA_SESSION_TAG = "SOUNDBOARD_CRAFTER_MEDIA_SESSION";
+
+    private static final String ACTION_STOP = "action_stop";
+    private static final int REQUEST_CODE_STOP = 1;
+
+    private PendingIntent launchUIPendingIntent;
+    private MediaSessionCompat mediaSession;
 
     /**
      * The interface through which other components can interact with the service
      */
     private final IBinder binder = new Binder();
 
-    private final HashMap<MediaPlayerSearchId, SoundboardMediaPlayer> mediaPlayers = new HashMap<>();
+    private final SoundboardMediaPlayers mediaPlayers = new SoundboardMediaPlayers();
 
     public MediaPlayerService() {
         Log.d(TAG, "MediaPlayerService is created");
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        Intent notificationIntent = new Intent(this, SoundboardPlayActivity.class);
+
+        // TODO Click on the notification returns to the main activity -
+        // even if the user is currently in a different activity.
+        // How can we just return TO THE APP?
+
+        // notificationIntent.setFlags( ?!
+        // PendingIntent.FLAG?!
+        //Intent.FLAG?!
+
+        launchUIPendingIntent =
+                PendingIntent.getActivity(this, 0,
+                        notificationIntent, 0);
+
+        mediaSession =
+                new MediaSessionCompat(this, MEDIA_SESSION_TAG);
+        mediaSession.setSessionActivity(launchUIPendingIntent);
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onPause() {
+                Log.d(TAG, "onPause");
+                // As many speakers do not have a stop button, we stop the playing here.
+                // We do not offer resuming anyway.
+                stopPlaying();
+                super.onPause();
+            }
+
+            @Override
+            public void onStop() {
+                Log.d(TAG, "onStop");
+                stopPlaying();
+                super.onStop();
+            }
+        });
+        mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
+        mediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setActive(true);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        createNotificationChanel();
+        createNotificationChannel();
+
+        handleIntent(intent);
 
         return Service.START_STICKY;
     }
 
-    private void createNotificationChanel() {
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
                     getString(R.string.media_player_notification_channel_name),
                     NotificationManager.IMPORTANCE_LOW);
             channel.setDescription(getString(R.string.media_player_notification_channel_description));
-            /*
-            NotificationManager notificationManager =
-                    getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-            */
+            channel.setShowBadge(false);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
             NotificationManagerCompat.from(this)
                     .createNotificationChannel(channel);
@@ -86,60 +137,44 @@ public class MediaPlayerService extends Service {
         return binder;
     }
 
-    public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                    SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
-        SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        if (player != null) {
-            player.setOnPlayingStopped(onPlayingStopped);
+
+    private void handleIntent(@Nullable Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
+        @Nullable String action = intent.getAction();
+        if (action == null) {
+            return;
+        }
+
+        switch (action) {
+            case ACTION_STOP:
+                stopPlaying();
+                break;
         }
     }
 
-    /**
-     * Sets the volume for this sound.
-     */
-    public void setVolumePercentage(UUID soundId, int volumePercentage) {
-        checkNotNull(soundId, "soundId is null");
-
-        setVolume(soundId, percentageToVolume(volumePercentage));
+    public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
+                                    SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+        mediaPlayers.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
     }
 
     /**
      * Sets the volume for this sound.
      */
-    private void setVolume(UUID soundId, float volume) {
+    public void setVolumePercentage(@NonNull UUID soundId, int volumePercentage) {
         checkNotNull(soundId, "soundId is null");
 
-        mediaPlayers.entrySet().stream()
-                .filter(e -> e.getKey().getSoundId().equals(soundId))
-                .map(Map.Entry::getValue)
-                .forEach(m -> setVolume(m, volume));
+        mediaPlayers.setVolumePercentage(soundId, volumePercentage);
     }
 
     /**
      * Stops all playing sounds in these soundboards
      */
     public void stopPlaying(Iterable<Soundboard> soundboards) {
-        for (Soundboard soundboard : soundboards) {
-            stopPlaying(soundboard);
-        }
-    }
-
-    /**
-     * Stops all playing sounds in this soundboard
-     */
-    private void stopPlaying(@NonNull Soundboard soundboard) {
-        for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
-             mediaPlayers.entrySet().iterator(); entryIt.hasNext(); ) {
-            Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry = entryIt.next();
-            if (soundboard.getId().equals(entry.getKey().getSoundboardId())) {
-                SoundboardMediaPlayer player = entry.getValue();
-                player.stop();
-                player.release();
-                entryIt.remove();
-            }
-        }
-
-        updateNotificationAndForegroundService();
+        mediaPlayers.stopPlaying(soundboards);
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -148,24 +183,8 @@ public class MediaPlayerService extends Service {
     public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
-        SoundboardMediaPlayer player = mediaPlayers.get(new MediaPlayerSearchId(soundboard, sound));
-        if (player != null) {
-            stop(player);
-        }
-    }
-
-    /**
-     * Stops this player and removes it.
-     */
-    private void stop(SoundboardMediaPlayer player) {
-        player.stop();
-        removeMediaPlayer(player);
-    }
-
-    private void removeMediaPlayer(@NonNull SoundboardMediaPlayer mediaPlayer) {
-        mediaPlayer.release();
-        mediaPlayers.values().remove(mediaPlayer);
-        updateNotificationAndForegroundService();
+        mediaPlayers.stopPlaying(soundboard, sound);
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -185,13 +204,12 @@ public class MediaPlayerService extends Service {
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         checkNotNull(sound, "sound is null");
 
-        MediaPlayerSearchId key = new MediaPlayerSearchId(soundboard, sound);
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(key);
+        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(soundboard, sound);
         if (mediaPlayer == null) {
             mediaPlayer = new SoundboardMediaPlayer();
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             initMediaPlayer(sound, mediaPlayer);
-            mediaPlayers.put(key, mediaPlayer);
+            mediaPlayers.put(soundboard, sound, mediaPlayer);
         } else {
             // update the callbacks
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
@@ -201,7 +219,7 @@ public class MediaPlayerService extends Service {
 
         mediaPlayer.prepareAsync();
 
-        updateNotificationAndForegroundService();
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
@@ -214,11 +232,9 @@ public class MediaPlayerService extends Service {
         checkNotNull(path, "path is null");
 
         SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
-        mediaPlayer.setOnPlayingStopped(new SoundboardMediaPlayer.OnPlayingStopped() {
-            @Override
-            public void stop() {
+        mediaPlayer.setOnPlayingStopped(() -> {
+            if (onPlayingStopped != null) {
                 onPlayingStopped.stop();
-                removeMediaPlayer(mediaPlayer);
             }
         });
         initMediaPlayer(mediaPlayer, name, path, 100, false);
@@ -227,56 +243,105 @@ public class MediaPlayerService extends Service {
 
         return mediaPlayer;
     }
+/*
+    For apps that target Android 5.0 (API level 21) and later, audio apps should use AudioAttributes to describe the type of audio your app is playing. For example, apps that play speech should specify CONTENT_TYPE_SPEECH.
+    Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method, which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about the audio context and capabilities of your app. The system uses this information to manage the gain and loss of audio focus automatically.
+    */
 
-    private void updateNotificationAndForegroundService() {
+    private void updateMediaSessionNotificationAndForegroundService() {
         if (mediaPlayers.isEmpty()) {
+            mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
+            mediaSession.setMetadata(null);
             stopForeground(true);
             return;
         }
 
-        Intent notificationIntent =
-                new Intent(this, SoundboardPlayActivity.class);
+        String shortSummary = buildSummary(SummaryStyle.SHORT);
+        String longSummary = buildSummary(SummaryStyle.LONG);
 
-        // TODO Click on the notification returns to the main activity -
-        // even if the user is currently in a different activity.
-        // How can we just return TO THE APP?
+        PendingIntent stopPendingIntent = createStopPendingIntent();
 
-        // notificationIntent.setFlags( ?!
-        // PendingIntent.FLAG?!
-        //Intent.FLAG?!
+        mediaSession.setPlaybackState(createPlaybackStatePlaying());
+        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, longSummary)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, longSummary)
+                .build());
 
+        MediaSessionCompat.Token sessionToken = mediaSession.getSessionToken();
 
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
+                new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setCancelButtonIntent(stopPendingIntent)
+                        .setMediaSession(sessionToken)
+                        .setShowActionsInCompactView(0)
+                        .setShowCancelButton(true);
 
-        CharSequence summary = buildSummaryForNotification();
+        NotificationCompat.Action stopAction =
+                new NotificationCompat.Action(R.drawable.ic_stop_notification,
+                        getString(R.string.media_player_notification_stop_action_title),
+                        stopPendingIntent);
 
         Notification notification =
                 new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_media_player_notification_icon)
+                        // .setColor(ContextCompat.getColor(mContext, R.color.notification_bg))
                         .setContentTitle(getString(R.string.media_player_notification_title))
-                        .setContentText(summary)
-                        .setContentIntent(pendingIntent)
-                        .setChannelId(NOTIFICATION_CHANNEL_ID)
+                        .setContentText(shortSummary)
+                        .setTicker(shortSummary)
+                        // .setDeleteIntent() Deletion impossible for FOREGROUND notification!
+                        .setOnlyAlertOnce(true)
+                        // TODO Use application icon
+                        .setSmallIcon(R.drawable.ic_media_player_notification_icon)
+                        .addAction(stopAction)
+                        .setStyle(mediaStyle)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .setContentIntent(launchUIPendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_LOW)
-                        .setTicker(summary)
+                        // Do not show time
+                        .setShowWhen(false)
                         .build();
+
+        // https://medium.com/androiddevelopers/migrating-mediastyle-notifications-to-support-android-o-29c7edeca9b7
 
         // Without this, the service will be killed shortly when the
         // user leaves the app and closes the devices
         startForeground(ONGOING_NOTIFICATION_ID, notification);
     }
 
-    private CharSequence buildSummaryForNotification() {
+    private PlaybackStateCompat createPlaybackStateNotPlaying() {
+        return new PlaybackStateCompat.Builder()
+                .setActions(0)
+                .setState(PlaybackStateCompat.STATE_STOPPED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
+                        1.0f)
+                .build();
+    }
+
+    private PlaybackStateCompat createPlaybackStatePlaying() {
+        return new PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_STOP | PlaybackStateCompat.ACTION_PAUSE)
+                .setState(PlaybackStateCompat.STATE_PLAYING,
+                        PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
+                .build();
+    }
+
+    private PendingIntent createStopPendingIntent() {
+        Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
+        intent.setAction(ACTION_STOP);
+        return PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, 0);
+    }
+
+    private enum SummaryStyle {
+        SHORT, LONG
+    }
+
+    private String buildSummary(SummaryStyle style) {
         StringBuilder res = new StringBuilder();
-        for (SoundboardMediaPlayer player : mediaPlayers.values()) {
+        for (SoundboardMediaPlayer player : mediaPlayers) {
             if (res.length() > 0) {
                 res.append(", ");
             }
 
             res.append(player.getSoundName());
-
-            if (res.length() > MAX_NOTIFICATION_LENGTH) {
+            if (style == SummaryStyle.SHORT && res.length() > MAX_NOTIFICATION_LENGTH) {
                 int numSoundsPlaying = mediaPlayers.size();
                 return getResources().getQuantityString(
                         R.plurals.media_player_notification_default_text,
@@ -284,19 +349,15 @@ public class MediaPlayerService extends Service {
             }
         }
 
-        return res;
+        return res.toString();
     }
 
     /**
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
      */
     private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
-        String soundName = sound.getName();
-        String soundPath = sound.getPath();
-        int volumePercentage = sound.getVolumePercentage();
-        boolean loop = sound.isLoop();
-
-        initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
+        initMediaPlayer(mediaPlayer, sound.getName(), sound.getPath(),
+                sound.getVolumePercentage(), sound.isLoop());
     }
 
     /**
@@ -304,56 +365,25 @@ public class MediaPlayerService extends Service {
      */
     private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
                                  String soundPath, int volumePercentage, boolean loop) {
-        mediaPlayer.setSoundName(soundName);
+        SoundboardMediaPlayers.initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
+
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
-        try {
-            mediaPlayer.setDataSource(soundPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        mediaPlayer.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
-        setVolume(mediaPlayer, percentageToVolume(volumePercentage));
-        mediaPlayer.setLooping(loop);
         mediaPlayer.setOnPreparedListener(this::onPrepared);
         mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
-    }
-
-    private static float percentageToVolume(int volumePercentage) {
-        return (float) volumePercentage / 100f;
-    }
-
-    /**
-     * Sets the volume for this <code>mediaPlayer</code>.
-     */
-    private void setVolume(SoundboardMediaPlayer mediaPlayer, float volume) {
-        checkNotNull(mediaPlayer, "mediaPlayer is null");
-        mediaPlayer.setVolume(volume, volume);
     }
 
     public boolean isPlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
-        return mediaPlayers.entrySet().stream()
-                .filter(e -> e.getKey().getSoundId().equals(sound.getId()))
-                .map(Map.Entry::getValue)
-                .anyMatch(SoundboardMediaPlayer::isPlaying);
+        return mediaPlayers.isPlaying(sound);
     }
 
     public boolean isPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
 
-        return isPlaying(soundboard, sound.getId());
-    }
-
-    private boolean isPlaying(@NonNull Soundboard soundboard, @NonNull UUID soundId) {
-        SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(
-                new MediaPlayerSearchId(soundboard.getId(), soundId));
-        if (mediaPlayer != null) {
-            return mediaPlayer.isPlaying();
-        }
-        return false;
+        return mediaPlayers.isPlaying(soundboard, sound.getId());
     }
 
     /**
@@ -366,26 +396,31 @@ public class MediaPlayerService extends Service {
     private boolean onError(SoundboardMediaPlayer player, int what, int extra) {
         Log.e(TAG, "Error in media player: what: " + what + " extra: " + extra);
 
-        removeMediaPlayer(player);
+        mediaPlayers.remove(player);
+        updateMediaSessionNotificationAndForegroundService();
         return true;
     }
 
     private void onCompletion(SoundboardMediaPlayer player) {
-        removeMediaPlayer(player);
+        mediaPlayers.remove(player);
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     @Override
     public void onDestroy() {
-        for (Iterator<SoundboardMediaPlayer> playerIt =
-             mediaPlayers.values().iterator(); playerIt.hasNext(); ) {
-            SoundboardMediaPlayer player = playerIt.next();
-            player.stop();
-            player.release();
-            playerIt.remove();
-        }
+        stopPlaying();
 
-        updateNotificationAndForegroundService();
+        mediaSession.setActive(false);
+        mediaSession.release();
 
         super.onDestroy();
+    }
+
+    /**
+     * Stops all playing sounds in all soundboards
+     */
+    private void stopPlaying() {
+        mediaPlayers.stopPlaying();
+        updateMediaSessionNotificationAndForegroundService();
     }
 }

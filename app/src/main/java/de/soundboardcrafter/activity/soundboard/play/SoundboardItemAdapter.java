@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 class SoundboardItemAdapter extends BaseAdapter {
     private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
-    private SoundboardWithSounds soundboard;
+    private final SoundboardWithSounds soundboard;
     private static final String TAG = SoundboardItemAdapter.class.getName();
 
     SoundboardItemAdapter(@NonNull SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,

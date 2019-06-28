@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Date;
@@ -8,11 +9,12 @@ import java.util.Objects;
 import de.soundboardcrafter.model.Sound;
 
 /**
- * Metadateien einer Audio-Datei, ggf. mit einem Sound.
+ * Meta data of an audio file, perhaps with a sound.
  */
-class AudioModelAndSound {
-    private AudioModel audioModel;
+class AudioModelAndSound extends AbstractAudioFolderEntry {
+    private final AudioModel audioModel;
     private @Nullable
+    final
     Sound sound;
 
     AudioModelAndSound(AudioModel audioModel, @Nullable Sound sound) {
@@ -24,7 +26,7 @@ class AudioModelAndSound {
         return audioModel;
     }
 
-    @Nullable
+    @NonNull
     public String getName() {
         if (sound == null) {
             return audioModel.getName();
@@ -51,6 +53,9 @@ class AudioModelAndSound {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         AudioModelAndSound that = (AudioModelAndSound) o;
         return Objects.equals(audioModel, that.audioModel) &&
                 Objects.equals(sound, that.sound);
@@ -58,10 +63,11 @@ class AudioModelAndSound {
 
     @Override
     public int hashCode() {
-        return Objects.hash(audioModel, sound);
+        return Objects.hash(super.hashCode(), audioModel, sound);
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "AudioModelAndSound{" +
                 "audioModel=" + audioModel +

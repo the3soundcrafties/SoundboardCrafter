@@ -108,8 +108,8 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         SOUNDBOARDS(R.string.soundboards_tab_title, MainActivity::createSoundboardListFragment),
         SOUNDS(R.string.sounds_tab_title, MainActivity::createAudioFileListFragment);
 
-        public final int title;
-        public final Supplier<Fragment> createNew;
+        final int title;
+        final Supplier<Fragment> createNew;
 
         Page(int title, Supplier<Fragment> createNew) {
             this.title = title;
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         private final List<Page> pages =
                 Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
 
-        private ArrayList<Fragment> registeredFragments =
+        private final ArrayList<Fragment> registeredFragments =
                 Lists.newArrayList(null, null, null);
 
         ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
             super.destroyItem(container, position, object);
         }
 
-        @Nullable
+        @NonNull
         Optional<AudioFileListFragment> getAudioFileListFragment() {
             return registeredFragments.stream()
                     .filter(f -> f instanceof AudioFileListFragment)
@@ -213,11 +213,6 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
                 finishAndRemoveTask();
             }
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
     }
 
     @Override

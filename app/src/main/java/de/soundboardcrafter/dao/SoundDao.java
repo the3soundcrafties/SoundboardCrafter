@@ -128,7 +128,7 @@ public class SoundDao extends AbstractDao {
     /**
      * Inserts the <code>sound</code>.
      *
-     * @throws RuntimeException if inserting does not succeed
+     * @throws IllegalStateException if inserting does not succeed
      */
     public void insert(Sound sound) {
         // TODO throw exception if sound name already exists
@@ -140,7 +140,7 @@ public class SoundDao extends AbstractDao {
      * Updates this sound (which must already exist in the database) and updates the
      * soundboard links.
      */
-    public void updateSoundAndSounboardLinks(SoundWithSelectableSoundboards sound) {
+    public void updateSoundAndSoundboardLinks(SoundWithSelectableSoundboards sound) {
         update(sound.getSound());
         soundboardDao.updateLinks(sound);
     }

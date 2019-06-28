@@ -31,7 +31,7 @@ public class Sound extends AbstractEntity {
      * Path to the audio file
      */
     @NonNull
-    private String path;
+    private final String path;
 
     /**
      * Display name
@@ -51,10 +51,6 @@ public class Sound extends AbstractEntity {
 
     public Sound(@NonNull String path, @NonNull String name) {
         this(UUID.randomUUID(), path, name, 100, false);
-    }
-
-    public Sound(@NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
-        this(UUID.randomUUID(), path, name, volumePercentage, loop);
     }
 
     public Sound(UUID id, @NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {

@@ -47,12 +47,6 @@ public class SoundboardListFragment extends Fragment
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 25;
     private static final int EDIT_SOUNDBOARD_REQUEST_CODE = 26;
-    private Button addNewSoundboard;
-    /**
-     * @param editSoundRequestCode request code used whenever a sound edit
-     * fragment is started from this activity
-     */
-    private int editSoundRequestCode;
 
     private ListView listView;
     private SoundboardListItemAdapter adapter;
@@ -61,8 +55,7 @@ public class SoundboardListFragment extends Fragment
      * Creates a <code>SoundboardListFragment</code>.
      */
     public static SoundboardListFragment createFragment() {
-        SoundboardListFragment fragment = new SoundboardListFragment();
-        return fragment;
+        return new SoundboardListFragment();
     }
 
     @Override
@@ -71,26 +64,24 @@ public class SoundboardListFragment extends Fragment
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard_list,
                 container, false);
-        listView = rootView.findViewById(R.id.listview_soundboard);
-        addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
-        addNewSoundboard.setOnClickListener(e -> {
-            startActivityForResult(SoundboardCreateActivity.newIntent(getContext()), CREATE_SOUNDBOARD_REQUEST_CODE);
-        });
+        listView = rootView.findViewById(R.id.list_view_soundboard);
+        Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
+        addNewSoundboard.setOnClickListener(e ->
+                startActivityForResult(
+                        SoundboardCreateActivity.newIntent(
+                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
         initSoundboardItemAdapter();
         registerForContextMenu(listView);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                SoundboardWithSounds soundboard = adapter.getItem(position);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            SoundboardWithSounds soundboard = adapter.getItem(position);
 
-                Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
-                intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-                getContext().startActivity(intent);
-            }
+            Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
+            intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
+            requireContext().startActivity(intent);
         });
 
-        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
 
         return rootView;
     }
@@ -100,7 +91,7 @@ public class SoundboardListFragment extends Fragment
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.fragment_soundboard_list_context, menu);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
@@ -128,7 +119,7 @@ public class SoundboardListFragment extends Fragment
                 startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_soundboard:
-                new RemoveSoundboardTask(getActivity(), soundboardWithSounds).execute();
+                new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
                 adapter.remove(soundboardWithSounds);
                 return true;
             default:
@@ -147,11 +138,11 @@ public class SoundboardListFragment extends Fragment
         switch (requestCode) {
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new soundboard " + this);
-                new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+                new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
                 break;
             case EDIT_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "update new soundboard " + this);
-                new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+                new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
                 break;
         }
     }
@@ -159,7 +150,7 @@ public class SoundboardListFragment extends Fragment
     @Override
     public void soundChanged(UUID soundId) {
         // The sound NAME may have been changed.
-        new SoundboardListFragment.FindSoundboardsTask(getContext()).execute();
+        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
     }
 
     @UiThread
@@ -187,10 +178,8 @@ public class SoundboardListFragment extends Fragment
      * A background task, used to remove soundboard with the given indexes from the soundboard
      */
     class RemoveSoundboardTask extends AsyncTask<Integer, Void, Void> {
-        private final String TAG = RemoveSoundboardTask.class.getName();
-
         private final WeakReference<Context> appContextRef;
-        private UUID soundboardId;
+        private final UUID soundboardId;
 
         RemoveSoundboardTask(Context context, SoundboardWithSounds soundboard) {
             super();

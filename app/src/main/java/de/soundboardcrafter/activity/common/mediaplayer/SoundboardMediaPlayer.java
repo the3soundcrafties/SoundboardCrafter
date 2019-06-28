@@ -2,9 +2,10 @@ package de.soundboardcrafter.activity.common.mediaplayer;
 
 import android.media.MediaPlayer;
 
-import java.io.Serializable;
-
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.io.Serializable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
     /**
@@ -28,7 +29,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     /**
      * Sets the name of the sound that's currently played - or the last sound played.
      */
-    void setSoundName(String soundName) {
+    void setSoundName(@NonNull String soundName) {
         this.soundName = soundName;
     }
 

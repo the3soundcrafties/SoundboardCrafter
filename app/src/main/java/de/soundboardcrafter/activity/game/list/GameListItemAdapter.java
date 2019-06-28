@@ -15,7 +15,7 @@ import de.soundboardcrafter.model.GameWithSoundboards;
  * Adapter for a GameItem.
  */
 class GameListItemAdapter extends BaseAdapter {
-    private List<GameWithSoundboards> gamesWithSoundboards;
+    private final List<GameWithSoundboards> gamesWithSoundboards;
 
     GameListItemAdapter(List<GameWithSoundboards> gamesWithSoundboards) {
         this.gamesWithSoundboards = gamesWithSoundboards;

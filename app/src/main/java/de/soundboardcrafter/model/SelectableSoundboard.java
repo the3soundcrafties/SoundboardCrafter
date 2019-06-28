@@ -8,7 +8,7 @@ import java.util.Objects;
  * A soundboard that might be selected.
  */
 public class SelectableSoundboard {
-    private Soundboard soundboard;
+    private final Soundboard soundboard;
     private boolean selected;
 
     public SelectableSoundboard(Soundboard soundboard, boolean selected) {

@@ -1,21 +1,24 @@
 <resources>
     <string name="app_name" translatable="false">Soundboard Crafter</string>
     <string name="media_player_service_description">Plays sounds for the Soundboard Crafter</string>
-    <string name="media_player_notification_channel_name">Soundboard Crafter Sounds</string>
-    <string name="media_player_notification_channel_description">Sounds played by the Soundboard Crafter</string>
+    <string name="media_player_notification_channel_name">Playing</string>
+    <string name="media_player_notification_channel_description">Sounds currently playing</string>
     <string name="media_player_notification_title">Playing</string>
     <plurals name="media_player_notification_default_text">
         <item quantity="one">1 sound</item>
-        <item quantity="other">%d sounds</item>
+        <item quantity="other">%,d sounds</item>
     </plurals>
+    <string name="media_player_notification_stop_action_title">Stop</string>
     <string name="toolbar_menu_reset_all">Reset All</string>
     <string name="toolbar_menu_audiofiles_sort">Sort</string>
     <string name="context_menu_edit_sound">Edit</string>
     <string name="context_menu_remove_sound">Remove</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by date</string>
+    <string name="toolbar_menu_audiofiles_folders_all">All</string>
+    <string name="toolbar_menu_audiofiles_folders_single">By Folder</string>
     <string name="reset_all_title">Delete all data?</string>
-    <string name="reset_all_message">All gamesWithSoundboards, soundboards and sound data will be deleted
+    <string name="reset_all_message">All games, soundboards and sound data will be deleted
         from the app. Settings like the volume will be lost. Sound files won\'t be touched.</string>
     <string name="reset_all_title_cancel">Cancel</string>
     <string name="reset_all_title_ok">OK</string>
@@ -25,6 +28,10 @@
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
+    <plurals name="subfolder_num_sounds">
+        <item quantity="one">1 sound</item>
+        <item quantity="other">%,d sounds</item>
+    </plurals>
     <string name="games_tab_title">Games</string>
     <string name="new_game">add new Game</string>
     <string name="cancel">Cancel</string>
@@ -32,6 +39,12 @@
     <string name="new_soundboard">add new Soundboard</string>
     <string name="new_soundboard_name">NEW</string>
     <string name="new_game_name">NEW</string>
+    <string name="sound_name">Sound name</string>
+    <string name="sound_add">Add to soundboard</string>
+    <string name="subfolder_icon">Subfolder</string>
+    <string name="sound_list_item_icon">Soundboard</string>
+    <string name="soundboard_name">Soundboard name</string>
+    <string name="folder_name">Folder name</string>
     <plurals name="sound_count_text">
         <item quantity="one">1 Sound</item>
         <item quantity="other">%d Sounds</item>

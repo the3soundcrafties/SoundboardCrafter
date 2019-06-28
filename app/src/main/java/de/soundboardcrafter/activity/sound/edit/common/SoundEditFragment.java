@@ -30,6 +30,8 @@ import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 
+import static androidx.core.util.Preconditions.checkNotNull;
+
 /**
  * Activity for editing a single sound (name, volume etc.).
  */
@@ -85,9 +87,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final UUID soundId = UUID.fromString(getArguments().getString(ARG_SOUND_ID));
+        Bundle arguments = getArguments();
+        checkNotNull(arguments, "Sound edit fragment started without arguments");
 
-        new FindSoundTask(getActivity(), soundId).execute();
+        final UUID soundId = UUID.fromString(arguments.getString(ARG_SOUND_ID));
+        new FindSoundTask(requireActivity(), soundId).execute();
 
         startService();
         // TODO Necessary?! Also done in onResume()
@@ -97,7 +101,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         // activity can update its GUI for this sound.
         Intent intent = new Intent(getActivity(), SoundboardPlaySoundEditActivity.class);
         intent.putExtra(EXTRA_SOUND_ID, soundId.toString());
-        getActivity().setResult(
+        requireActivity().setResult(
                 // There is no cancel button - the result is always OK
                 Activity.RESULT_OK,
                 intent);
@@ -114,12 +118,12 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     private void startService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-        getActivity().startService(intent);
+        requireActivity().startService(intent);
     }
 
     private void bindService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+        requireActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -182,7 +186,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
         stopPlaying();
 
-        getActivity().unbindService(this);
+        requireActivity().unbindService(this);
 
         if (sound == null) {
             // Sound not yet loaded
@@ -197,7 +201,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         sound.getSound().setVolumePercentage(soundEditView.getVolumePercentage());
         sound.getSound().setLoop(soundEditView.isLoop());
 
-        new SaveSoundTask(getActivity(), sound).execute();
+        new SaveSoundTask(requireActivity(), sound).execute();
     }
 
     private void stopPlaying() {

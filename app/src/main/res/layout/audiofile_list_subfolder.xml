@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:elevation="-10dp"
+    android:padding="6dip">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:elevation="-10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="6dip"
+        android:contentDescription="@string/subfolder_icon"
+        android:src="@drawable/ic_sound_list_subfolder" />
+
+    <TextView
+        android:id="@+id/num_audiofiles"
+        android:elevation="-10dp"
+        android:layout_width="fill_parent"
+        android:layout_height="26dip"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="30dp"
+        android:layout_toEndOf="@id/icon"
+        tools:text="9,999 sounds"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/path"
+        android:elevation="-10dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_above="@id/num_audiofiles"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="6dp"
+        android:layout_toEndOf="@id/icon"
+        android:gravity="center_vertical"
+        tools:text="/some/folder/name"
+        android:textSize="16sp" />
+
+
+</RelativeLayout>

@@ -10,8 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
-        android:layout_marginLeft="13dp"
-        android:paddingLeft="10dp"
+        android:layout_marginStart="13dp"
         android:paddingTop="5dp"
-        android:contentDescription="Soundboard name" />
+        android:contentDescription="@string/soundboard_name" />
 </LinearLayout>

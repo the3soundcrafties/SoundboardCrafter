@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="media_player_service_description">Spielt die Sounds für den Soundboard Crafter ab</string>
-    <string name="media_player_notification_channel_name">Soundboard Crafter: Sounds</string>
-    <string name="media_player_notification_channel_description">Sounds, die der Soundboard Crafter abspielt</string>
+    <string name="media_player_notification_channel_name">Wiedergabe</string>
+    <string name="media_player_notification_channel_description">Sounds, die gerade abgespielt werden</string>
     <string name="media_player_notification_title">Spielt</string>
     <plurals name="media_player_notification_default_text">
         <item quantity="one">1 Sound</item>
-        <item quantity="other">%d Sounds</item>
+        <item quantity="other">%,d Sounds</item>
     </plurals>
+    <string name="media_player_notification_stop_action_title">Stopp</string>
     <string name="toolbar_menu_reset_all">Alles zurücksetzen</string>
     <string name="toolbar_menu_audiofiles_sort">Sortieren</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Nach Name sortieren</string>
     <string name="toolbar_menu_audiofiles_sort_date">Nach Datum sortieren</string>
+    <string name="toolbar_menu_audiofiles_folders_all">Alle</string>
+    <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
@@ -25,6 +28,10 @@
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
+    <plurals name="subfolder_num_sounds">
+        <item quantity="one">1 Sound</item>
+        <item quantity="other">%,d Sounds</item>
+    </plurals>
     <string name="games_tab_title">Spiele</string>
     <string name="new_game">neues Spiel hinzufügen</string>
     <string name="cancel">Abbrechen</string>
@@ -32,6 +39,12 @@
     <string name="new_soundboard">neues Soundboard hinzufügen</string>
     <string name="new_soundboard_name">NEU</string>
     <string name="new_game_name">NEU</string>
+    <string name="sound_name">Name des Sounds</string>
+    <string name="sound_add">Zum Soundboard hinzufügen</string>
+    <string name="folder_name">Ordnername</string>
+    <string name="subfolder_icon">Unterordner</string>
+    <string name="sound_list_item_icon">Soundboard</string>
+    <string name="soundboard_name">Bezeichnung des Soundboards</string>
     <plurals name="sound_count_text">
         <item quantity="one">1 Sound</item>
         <item quantity="other">%d Sounds</item>

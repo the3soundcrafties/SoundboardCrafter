@@ -20,11 +20,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class GameWithSoundboards implements Serializable {
     @NonNull
-    private Game game;
+    private final Game game;
     /**
      * The soundboards the game belonging to
      */
-    private ArrayList<Soundboard> soundboards;
+    private final ArrayList<Soundboard> soundboards;
 
 
     public GameWithSoundboards(@NonNull String name) {
