@@ -15,14 +15,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -35,6 +33,7 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.game.edit.GameCreateActivity;
 import de.soundboardcrafter.activity.game.edit.GameEditActivity;
+import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
@@ -83,11 +82,11 @@ public class GameListFragment extends Fragment {
     }
 
     private void onClickGame(GameWithSoundboards gameWithSoundboards) {
-        Toast toast = Toast.makeText(
-                getContext(),
-                Joiner.on(" ").join(gameWithSoundboards.getSoundboards()),
-                Toast.LENGTH_LONG);
-        toast.show();
+        Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
+        intent.putExtra(
+                SoundboardPlayActivity.EXTRA_GAME_ID,
+                gameWithSoundboards.getGame().getId().toString());
+        requireContext().startActivity(intent);
     }
 
     @Override

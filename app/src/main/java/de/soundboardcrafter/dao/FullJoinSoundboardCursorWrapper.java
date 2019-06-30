@@ -10,6 +10,7 @@ import androidx.annotation.WorkerThread;
 import java.util.UUID;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
+import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.Sound;
@@ -22,8 +23,8 @@ import static androidx.core.util.Preconditions.checkNotNull;
  */
 @WorkerThread
 class FullJoinSoundboardCursorWrapper extends CursorWrapper {
-    static String queryString() {
-        return "SELECT sb." + SoundboardTable.Cols.ID
+    static String queryString(@Nullable UUID gameId) {
+        String res = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
                 + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX
                 + ", s." + SoundTable.Cols.ID
@@ -32,12 +33,22 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
                 + ", s." + SoundTable.Cols.VOLUME_PERCENTAGE
                 + ", s." + SoundTable.Cols.LOOP
                 + " " //
-                + "FROM " + SoundboardTable.NAME + " sb "
+                + "FROM " + SoundboardTable.NAME + " sb ";
+        if (gameId != null) {
+            res = res
+                    + "JOIN " + SoundboardGameTable.NAME + " sg "
+                    + "ON sg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " " //
+                    + "AND sg." + SoundboardGameTable.Cols.GAME_ID + " = ? ";
+        }
+
+        res = res
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
                 + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " "
                 + "LEFT JOIN " + SoundTable.NAME + " s "
                 + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID + " " //
                 + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX;
+
+        return res;
     }
 
     FullJoinSoundboardCursorWrapper(Cursor cursor) {

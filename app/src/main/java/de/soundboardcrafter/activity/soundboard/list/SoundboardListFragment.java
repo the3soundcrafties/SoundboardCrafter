@@ -229,7 +229,7 @@ public class SoundboardListFragment extends Fragment
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
+            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(null);
 
             Log.d(TAG, "Soundboards loaded.");
 

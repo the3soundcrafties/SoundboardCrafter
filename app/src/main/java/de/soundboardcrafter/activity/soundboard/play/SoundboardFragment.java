@@ -74,7 +74,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SORT_ORDER = "sortOrder";
     private SortOrder sortOrder;
 
-
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
      */
@@ -151,6 +150,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard,
                 container, false);
+
         Bundle args = getArguments();
         if (args != null) {
             sortOrder = (SortOrder) args.getSerializable(ARG_SORT_ORDER);
