@@ -20,8 +20,6 @@
         android:textSize="16sp"
         tools:text="My favorite game" />
 
-    <include layout="@layout/app_bar" />
-
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPager"
         android:background="@color/colorPrimarySlightlyDark"

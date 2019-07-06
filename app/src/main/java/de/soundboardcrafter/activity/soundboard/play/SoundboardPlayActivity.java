@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -43,6 +42,7 @@ import java.util.stream.Collectors;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -156,8 +156,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
         }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("");
+        // Toolbar toolbar = findViewById(R.id.toolbar);
+        // toolbar.setTitle("");
         if (gameId != null) {
             gameNameTextView.setVisibility(View.VISIBLE);
             gameNameTextView.setText("");
@@ -418,9 +418,10 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     /**
-     * A background task, used to retrieve soundboards from the database.
+     * A background task, used to retrieve soundboards (and game name, if a game is chose) from
+     * the database.
      */
-    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
+    class FindSoundboardsTask extends AsyncTask<Void, Void, SoundboardPlayData> {
         private final String TAG = FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -436,28 +437,34 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         @Override
         @WorkerThread
-        protected ImmutableList<SoundboardWithSounds> doInBackground(Void... voids) {
+        protected SoundboardPlayData doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
 
+            GameDao gameDao = GameDao.getInstance(appContext);
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
 
-            // TODO Load Game by gameID (and set Game name later on)
+            @Nullable String gameName = null;
+            if (gameId != null) {
+                Log.d(TAG, "Loading game name");
+                gameName = gameDao.findGameName(gameId);
+            }
+
             Log.d(TAG, "Loading soundboards...");
 
             ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(gameId);
 
             Log.d(TAG, "Soundboards loaded.");
 
-            return res;
+            return new SoundboardPlayData(gameName, res);
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<SoundboardWithSounds> soundboards) {
+        protected void onPostExecute(SoundboardPlayData data) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -465,7 +472,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 // will be of no use to anyone
                 return;
             }
-            pagerAdapter.addSoundboards(soundboards);
+            gameNameTextView.setText(data.getGameName());
+            pagerAdapter.addSoundboards(data.getSoundboards());
 
             @Nullable Integer index = null;
             if (selectedSoundboardId != null) {

@@ -66,11 +66,11 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID gameId) {
-        String[] params;
+        Object[] params;
         if (gameId != null) {
-            params = new String[]{gameId.toString()};
+            params = new Object[]{gameId};
         } else {
-            params = new String[0];
+            params = new Object[0];
         }
 
         Cursor rawCursor = rawQueryOrThrow(
@@ -237,7 +237,7 @@ public class SoundboardDao extends AbstractDao {
                         "FROM " + SoundboardSoundTable.NAME + " sbs " +
                         "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
                         "GROUP BY sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID,
-                new String[]{soundboard.getId().toString()})) {
+                soundboard.getId())) {
             if (cursor.moveToNext()) {
                 return cursor.getInt(0);
             }
