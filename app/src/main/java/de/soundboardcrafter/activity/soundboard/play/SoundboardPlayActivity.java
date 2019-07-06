@@ -15,14 +15,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -46,6 +45,8 @@ import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  * The main activity, showing the soundboards.
  */
@@ -64,7 +65,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
     public static final String EXTRA_GAME_ID = "GameId";
 
     private MediaPlayerService mediaPlayerService;
-    private TextView gameNameTextView;
     private ViewPager pager;
 
     /**
@@ -120,7 +120,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
         // TODO Necessary?! Also done in onResume()
         bindService();
 
-        gameNameTextView = findViewById(R.id.game_name);
         pager = findViewById(R.id.viewPager);
         pager.clearOnPageChangeListeners();
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -154,15 +153,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
             } else {
                 gameId = getUUIDPreference(KEY_GAME_ID);
             }
-        }
-
-        // Toolbar toolbar = findViewById(R.id.toolbar);
-        // toolbar.setTitle("");
-        if (gameId != null) {
-            gameNameTextView.setVisibility(View.VISIBLE);
-            gameNameTextView.setText("");
-        } else {
-            gameNameTextView.setVisibility(View.GONE);
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -364,6 +354,19 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
     }
 
+    private void setToolbarTitle(@Nullable String gameName) {
+        @Nullable ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar == null) {
+            return;
+        }
+
+        if (isNullOrEmpty(gameName)) {
+            supportActionBar.setTitle(R.string.app_name);
+        } else {
+            supportActionBar.setTitle(gameName);
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -472,7 +475,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 // will be of no use to anyone
                 return;
             }
-            gameNameTextView.setText(data.getGameName());
+            setToolbarTitle(data.getGameName());
+
             pagerAdapter.addSoundboards(data.getSoundboards());
 
             @Nullable Integer index = null;
