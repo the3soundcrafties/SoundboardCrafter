@@ -214,7 +214,11 @@ public class SoundboardPlayActivity extends AppCompatActivity
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.fragment_main, menu);
-        if (gameId != null) {
+        if (
+            // This button is only visible for the debug build type.
+            // We have a separate bools.xml in the debug folder.
+                !getResources().getBoolean(R.bool.reset_all) //
+                        || gameId != null) {
             MenuItem item = menu.findItem(R.id.toolbar_menu_reset_all);
             item.setVisible(false);
             item.setEnabled(false);
