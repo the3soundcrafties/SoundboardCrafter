@@ -361,7 +361,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         if (isNullOrEmpty(gameName)) {
-            supportActionBar.setTitle(R.string.app_name);
+            supportActionBar.setTitle(R.string.soundboards_default_toolbar);
         } else {
             supportActionBar.setTitle(gameName);
         }
