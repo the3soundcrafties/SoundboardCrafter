@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.DBSchema.GameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
@@ -19,11 +20,6 @@ class DBHelper extends SQLiteOpenHelper {
      * Database version
      */
     private static final int VERSION = 13;
-
-    /**
-     * Database name
-     */
-    private static final String DATABASE_NAME = "soundboard.db";
 
     private static final String CREATE_TABLE_GAME = //
             "CREATE TABLE " + GameTable.NAME + " (" + //
@@ -84,7 +80,15 @@ class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getName();
 
     DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, VERSION);
+        super(
+                context,
+                // The database is chosen by the BUILD TYPE.
+                // There are three build types available:
+                // debug, staging and release.
+                // debug has its special database, staging an release use the same.
+                context.getResources().getString(R.string.database_name),
+                null,
+                VERSION);
     }
 
     @Override
