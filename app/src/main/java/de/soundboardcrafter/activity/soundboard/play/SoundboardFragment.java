@@ -179,12 +179,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (!service.isPlaying(soundboard.getSoundboard(), sound)) {
+        if (!service.isActivelyPlaying(soundboard.getSoundboard(), sound)) {
             soundboardItemRow.setImage(R.drawable.ic_stop);
             service.play(soundboard.getSoundboard(), sound,
                     soundboardItemAdapter::notifyDataSetChanged);
         } else {
-            service.stopPlaying(soundboard.getSoundboard(), sound);
+            service.stopPlaying(soundboard.getSoundboard(), sound, true);
         }
     }
 
@@ -210,12 +210,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public boolean isPlaying(Soundboard soundboard, Sound sound) {
+            public boolean isActivelyPlaying(Soundboard soundboard, Sound sound) {
                 MediaPlayerService service = getService();
                 if (service == null) {
                     return false;
                 }
-                return service.isPlaying(soundboard, sound);
+                return service.isActivelyPlaying(soundboard, sound);
             }
 
             @Override
@@ -228,10 +228,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void stopPlaying(Soundboard soundboard, Sound sound) {
+            public void stopPlaying(Soundboard soundboard, Sound sound, boolean fadeOut) {
                 MediaPlayerService service = getService();
                 if (service != null) {
-                    service.stopPlaying(soundboard, sound);
+                    service.stopPlaying(soundboard, sound, fadeOut);
                 }
             }
         };

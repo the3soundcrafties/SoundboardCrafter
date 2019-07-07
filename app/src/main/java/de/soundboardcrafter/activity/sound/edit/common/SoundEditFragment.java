@@ -162,7 +162,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     }
 
     /**
-     * Sets the volume; also starts the sound is so desired.
+     * Sets the volume; might also start the sound.
      */
     private void setVolumePercentage(int volumePercentage, boolean playIfNotPlaying) {
         MediaPlayerService service = getService();
@@ -170,7 +170,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (playIfNotPlaying && !service.isPlaying(sound.getSound())) {
+        if (playIfNotPlaying && !service.isActivelyPlaying(sound.getSound())) {
             service.play(null, sound.getSound(), null);
         }
 
@@ -190,7 +190,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
-        stopPlaying();
+        stopPlaying(false);
 
         requireActivity().unbindService(this);
 
@@ -210,7 +210,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         new SaveSoundTask(requireActivity(), sound).execute();
     }
 
-    private void stopPlaying() {
+    private void stopPlaying(boolean fadeOut) {
         if (sound == null) {
             // not yet loaded
             return;
@@ -221,12 +221,11 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        service.stopPlaying(null, sound.getSound());
+        service.stopPlaying(null, sound.getSound(), fadeOut);
     }
 
     /**
-     * Callback to set the volume when the volume slider ist change; also starts the sound is
-     * so desired.
+     * Callback to set the volume when the volume slider ist change; might also start the sound.
      */
     private class VolumeUpdater implements SoundEditView.OnVolumePercentageChangeListener {
         @Override

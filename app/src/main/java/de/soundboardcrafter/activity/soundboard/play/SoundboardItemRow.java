@@ -32,12 +32,21 @@ class SoundboardItemRow extends RelativeLayout {
     public interface MediaPlayerServiceCallback {
         boolean isConnected();
 
-        boolean isPlaying(Soundboard soundboard, Sound sound);
+        /**
+         * Returns whether this sound is <i>actively playing</i> in this soundboard, that is,
+         * it is playing <i>and not fading out</i>.
+         */
+        boolean isActivelyPlaying(Soundboard soundboard, Sound sound);
 
         void setOnPlayingStopped(Soundboard soundboard, Sound sound,
                                  SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
 
-        void stopPlaying(Soundboard soundboard, Sound sound);
+        /**
+         * Stops the sound when it is played in this soundboard.
+         *
+         * @param fadeOut Whether the sound shall be faded out.
+         */
+        void stopPlaying(Soundboard soundboard, Sound sound, boolean fadeOut);
     }
 
     /**
@@ -52,7 +61,7 @@ class SoundboardItemRow extends RelativeLayout {
         this.sound = sound;
         soundItem.setText(this.sound.getName());
 
-        setImage(mediaPlayerServiceCallback.isPlaying(soundboard, sound) ?
+        setImage(mediaPlayerServiceCallback.isActivelyPlaying(soundboard, sound) ?
                 R.drawable.ic_stop : R.drawable.ic_play);
     }
 

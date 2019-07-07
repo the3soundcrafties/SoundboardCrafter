@@ -328,21 +328,27 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         void clear(boolean stopPlayingAllSoundboards) {
             if (stopPlayingAllSoundboards) {
-                stopPlayingAllSoundboards();
+                stopPlayingAllSoundboards(false);
             }
 
             soundboardList.clear();
             notifyDataSetChanged();
         }
 
-        private void stopPlayingAllSoundboards() {
+        /**
+         * Stops playback for all soundboards.
+         *
+         * @param fadeOut Whether the playback shall be faded out.
+         */
+        private void stopPlayingAllSoundboards(boolean fadeOut) {
             MediaPlayerService service = getService();
             if (service == null) {
                 return;
             }
             service.stopPlaying(soundboardList.stream()
-                    .map(SoundboardWithSounds::getSoundboard)
-                    .collect(Collectors.toList()));
+                            .map(SoundboardWithSounds::getSoundboard)
+                            .collect(Collectors.toList()),
+                    fadeOut);
         }
     }
 

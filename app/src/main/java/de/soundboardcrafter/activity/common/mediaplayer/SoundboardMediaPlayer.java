@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import java.io.Serializable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
+    private float volume;
+
     /**
      * Name of the sound that's currently played - or the last sound played.
      */
@@ -23,7 +25,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     private OnPlayingStopped onPlayingStopped;
 
     SoundboardMediaPlayer() {
-        super();
+        setVolume(1f);
     }
 
     /**
@@ -39,6 +41,16 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     @Nullable
     String getSoundName() {
         return soundName;
+    }
+
+    float getVolume() {
+        return volume;
+    }
+
+    void setVolume(float volume) {
+        this.volume = volume;
+
+        setVolume(volume, volume);
     }
 
     @Override

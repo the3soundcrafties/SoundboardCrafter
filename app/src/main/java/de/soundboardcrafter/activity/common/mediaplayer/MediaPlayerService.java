@@ -22,6 +22,7 @@ import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 import de.soundboardcrafter.R;
@@ -32,7 +33,8 @@ import de.soundboardcrafter.model.Soundboard;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Android service that keeps track off all the media players that are playing sounds in the app.
+ * Android service that allows playing media and also keeps track off
+ * most of the media players that are playing sounds in the app.
  */
 @MainThread
 public class MediaPlayerService extends Service {
@@ -57,6 +59,10 @@ public class MediaPlayerService extends Service {
      */
     private final IBinder binder = new Binder();
 
+    /**
+     * The media players registered in this service. This does also contain mediaPlayers
+     * that are currently fading out!
+     */
     private final SoundboardMediaPlayers mediaPlayers = new SoundboardMediaPlayers();
 
     public MediaPlayerService() {
@@ -90,14 +96,14 @@ public class MediaPlayerService extends Service {
                 Log.d(TAG, "onPause");
                 // As many speakers do not have a stop button, we stop the playing here.
                 // We do not offer resuming anyway.
-                stopPlaying();
+                stopPlaying(true);
                 super.onPause();
             }
 
             @Override
             public void onStop() {
                 Log.d(TAG, "onStop");
-                stopPlaying();
+                stopPlaying(true);
                 super.onStop();
             }
         });
@@ -150,7 +156,7 @@ public class MediaPlayerService extends Service {
 
         switch (action) {
             case ACTION_STOP:
-                stopPlaying();
+                stopPlaying(true);
                 break;
         }
     }
@@ -171,19 +177,24 @@ public class MediaPlayerService extends Service {
 
     /**
      * Stops all playing sounds in these soundboards
+     *
+     * @param fadeOut Whether the playing shall be faded out.
      */
-    public void stopPlaying(Iterable<Soundboard> soundboards) {
-        mediaPlayers.stopPlaying(soundboards);
+    public void stopPlaying(Iterable<Soundboard> soundboards, boolean fadeOut) {
+        mediaPlayers.stopPlaying(soundboards, fadeOut);
         updateMediaSessionNotificationAndForegroundService();
     }
 
     /**
      * Stops this sound when it's played in this soundboard
+     *
+     * @param fadeOut Whether the playing shall be faded out.
      */
-    public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound) {
+    public void stopPlaying(@Nullable Soundboard soundboard, @NonNull Sound sound,
+                            boolean fadeOut) {
         checkNotNull(sound, "sound is null");
 
-        mediaPlayers.stopPlaying(soundboard, sound);
+        mediaPlayers.stopPlaying(soundboard, sound, fadeOut);
         updateMediaSessionNotificationAndForegroundService();
     }
 
@@ -199,6 +210,8 @@ public class MediaPlayerService extends Service {
 
     /**
      * Adds a media player and starts playing.
+     *
+     * @see #play(String, String, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
@@ -209,12 +222,13 @@ public class MediaPlayerService extends Service {
             mediaPlayer = new SoundboardMediaPlayer();
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             initMediaPlayer(sound, mediaPlayer);
-            mediaPlayers.put(soundboard, sound, mediaPlayer);
+            mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         } else {
             // update the callbacks
             mediaPlayer.setOnPlayingStopped(onPlayingStopped);
             mediaPlayer.reset();
             initMediaPlayer(sound, mediaPlayer);
+            mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
         mediaPlayer.prepareAsync();
@@ -225,6 +239,8 @@ public class MediaPlayerService extends Service {
     /**
      * Starts playing from the path - without adding a media player and without
      * necessarily starting a foreground service etc.
+     *
+     * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public SoundboardMediaPlayer play(@NonNull String name,
                                       @NonNull String path,
@@ -243,13 +259,14 @@ public class MediaPlayerService extends Service {
 
         return mediaPlayer;
     }
-/*
+
+    /*
     For apps that target Android 5.0 (API level 21) and later, audio apps should use AudioAttributes to describe the type of audio your app is playing. For example, apps that play speech should specify CONTENT_TYPE_SPEECH.
     Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method, which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about the audio context and capabilities of your app. The system uses this information to manage the gain and loss of audio focus automatically.
     */
 
     private void updateMediaSessionNotificationAndForegroundService() {
-        if (mediaPlayers.isEmpty()) {
+        if (mediaPlayers.activePlayersEmpty()) {
             mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
             mediaSession.setMetadata(null);
             stopForeground(true);
@@ -335,14 +352,16 @@ public class MediaPlayerService extends Service {
 
     private String buildSummary(SummaryStyle style) {
         StringBuilder res = new StringBuilder();
-        for (SoundboardMediaPlayer player : mediaPlayers) {
+        for (Iterator<SoundboardMediaPlayer> playerIt = mediaPlayers.activePlayersIterator();
+             playerIt.hasNext(); ) {
+            SoundboardMediaPlayer player = playerIt.next();
             if (res.length() > 0) {
                 res.append(", ");
             }
 
             res.append(player.getSoundName());
             if (style == SummaryStyle.SHORT && res.length() > MAX_NOTIFICATION_LENGTH) {
-                int numSoundsPlaying = mediaPlayers.size();
+                int numSoundsPlaying = mediaPlayers.sizeActivePlayers();
                 return getResources().getQuantityString(
                         R.plurals.media_player_notification_default_text,
                         numSoundsPlaying, numSoundsPlaying);
@@ -373,17 +392,25 @@ public class MediaPlayerService extends Service {
         mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
-    public boolean isPlaying(@NonNull Sound sound) {
+    /**
+     * Return whether this sound is <i>actively playing</i>, that is,
+     * it is playing <i>and not fading out</i>.
+     */
+    public boolean isActivelyPlaying(@NonNull Sound sound) {
         checkNotNull(sound, "sound is null");
 
-        return mediaPlayers.isPlaying(sound);
+        return mediaPlayers.isActivelyPlaying(sound);
     }
 
-    public boolean isPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
+    /**
+     * Return whether this sound is <i>actively playing</i> in this soundboard, that is,
+     * it is playing <i>and not fading out</i>.
+     */
+    public boolean isActivelyPlaying(@NonNull Soundboard soundboard, @NonNull Sound sound) {
         checkNotNull(soundboard, "soundboard is null");
         checkNotNull(sound, "sound is null");
 
-        return mediaPlayers.isPlaying(soundboard, sound.getId());
+        return mediaPlayers.isActivelyPlaying(soundboard, sound.getId());
     }
 
     /**
@@ -408,7 +435,7 @@ public class MediaPlayerService extends Service {
 
     @Override
     public void onDestroy() {
-        stopPlaying();
+        stopPlaying(false);
 
         mediaSession.setActive(false);
         mediaSession.release();
@@ -418,9 +445,11 @@ public class MediaPlayerService extends Service {
 
     /**
      * Stops all playing sounds in all soundboards
+     *
+     * @param fadeOut Whether the playing shall be faded out.
      */
-    private void stopPlaying() {
-        mediaPlayers.stopPlaying();
+    private void stopPlaying(boolean fadeOut) {
+        mediaPlayers.stopPlaying(fadeOut);
         updateMediaSessionNotificationAndForegroundService();
     }
 }
