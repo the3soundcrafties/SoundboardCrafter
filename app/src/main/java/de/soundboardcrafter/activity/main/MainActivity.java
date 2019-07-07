@@ -37,7 +37,6 @@ import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
  */
 public class MainActivity extends AppCompatActivity implements SoundEventListener {
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
     private static final String KEY_SELECTED_PAGE = "selectedPage";
     private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -216,11 +215,15 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @Override
     @UiThread
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE || requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
+        if (requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
                 finishAndRemoveTask();
+                return;
             }
+
+            // We don't need other permissions, so start reading data.
+            somethingMightHaveChanged();
         }
     }
 

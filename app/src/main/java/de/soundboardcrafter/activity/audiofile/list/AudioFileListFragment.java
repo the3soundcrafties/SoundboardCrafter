@@ -1,10 +1,12 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
@@ -233,7 +236,10 @@ public class AudioFileListFragment extends Fragment implements
                     }
                 });
 
-        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
+        if (ActivityCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
+        } // otherwise we will receive an event later
 
         return rootView;
     }
