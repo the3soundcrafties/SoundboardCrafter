@@ -417,8 +417,6 @@ public class AudioFileListFragment extends Fragment implements
 
         switch (requestCode) {
             case EDIT_SOUND_REQUEST_CODE:
-                Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
-
                 if (soundEventListenerActivity != null) {
                     final UUID soundId = UUID.fromString(
                             data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
@@ -427,6 +425,16 @@ public class AudioFileListFragment extends Fragment implements
                 }
                 break;
         }
+    }
+
+    @Override
+    public void somethingMightHaveChanged() {
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        new FindAudioFileTask(context, folder, sortOrder).execute();
     }
 
     @Override

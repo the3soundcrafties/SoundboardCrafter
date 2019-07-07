@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
@@ -33,6 +34,7 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.game.edit.GameCreateActivity;
 import de.soundboardcrafter.activity.game.edit.GameEditActivity;
+import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
@@ -40,10 +42,21 @@ import de.soundboardcrafter.model.GameWithSoundboards;
 /**
  * Shows Games in a Grid
  */
-public class GameListFragment extends Fragment {
+public class GameListFragment extends Fragment
+        implements SoundEventListener {
     private static final String TAG = GameListFragment.class.getName();
+
+    /**
+     * Request code used whenever the soundboard playing view
+     * is started from this activity
+     */
+    private static final int SOUNDBOARD_PLAY_REQUEST_CODE = 1;
+
     private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 27;
     private static final int EDIT_GAME_REQUEST_CODE = 26;
+
+    private @Nullable
+    SoundEventListener soundEventListenerActivity;
 
     private ListView listView;
     private Button addNewGame;
@@ -86,7 +99,23 @@ public class GameListFragment extends Fragment {
         intent.putExtra(
                 SoundboardPlayActivity.EXTRA_GAME_ID,
                 gameWithSoundboards.getGame().getId().toString());
-        requireContext().startActivity(intent);
+
+        startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof SoundEventListener) {
+            soundEventListenerActivity = (SoundEventListener) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        soundEventListenerActivity = null;
     }
 
     @Override
@@ -138,6 +167,11 @@ public class GameListFragment extends Fragment {
         }
 
         switch (requestCode) {
+            case SOUNDBOARD_PLAY_REQUEST_CODE:
+                if (soundEventListenerActivity != null) {
+                    soundEventListenerActivity.somethingMightHaveChanged();
+                }
+                break;
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new game " + this);
                 new FindGamesTask(requireContext()).execute();
@@ -149,6 +183,20 @@ public class GameListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void somethingMightHaveChanged() {
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        new GameListFragment.FindGamesTask(context).execute();
+    }
+
+    @Override
+    public void soundChanged(UUID soundId) {
+        // This does not make a difference for the list of games
+    }
 
     @UiThread
     private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {

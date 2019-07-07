@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
@@ -156,6 +158,14 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // This is just a dummy result, so that the
+        // calling activity can update its GUI. (The user might have removed a
+        // sound from a soudboard or the like.)
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        setResult(// The result is always OK
+                Activity.RESULT_OK,
+                resultIntent);
     }
 
     @Nullable

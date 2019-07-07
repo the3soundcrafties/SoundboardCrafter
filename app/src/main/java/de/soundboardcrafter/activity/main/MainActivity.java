@@ -134,6 +134,15 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         }
     }
 
+    @Override
+    public void somethingMightHaveChanged() {
+        for (Fragment fragment : pagerAdapter) {
+            if (fragment instanceof SoundEventListener) {
+                ((SoundEventListener) fragment).somethingMightHaveChanged();
+            }
+        }
+    }
+
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter
             implements Iterable<Fragment> {
         private final List<Page> pages =
