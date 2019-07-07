@@ -236,6 +236,33 @@ class SoundboardMediaPlayers {
     }
 
     /**
+     * Sets whether this sound shall be played in a loop.
+     */
+    @UiThread
+    void setLoop(UUID soundId, boolean loop) {
+        checkNotNull(soundId, "soundId is null");
+
+        activePlayers.entrySet().stream()
+                .filter(e -> e.getKey().getSoundId().equals(soundId))
+                .map(Map.Entry::getValue)
+                .forEach(m -> setLoop(m, loop));
+
+        playersFadingOut.entrySet().stream()
+                .filter(e -> e.getKey().getSoundId().equals(soundId))
+                .map(Map.Entry::getValue)
+                .forEach(m -> setLoop(m, loop));
+    }
+
+    /**
+     * Sets whether this <code>mediaPlayer</code> shall play in a loop.
+     */
+    @UiThread
+    private static void setLoop(@NonNull SoundboardMediaPlayer mediaPlayer, boolean loop) {
+        checkNotNull(mediaPlayer, "mediaPlayer is null");
+        mediaPlayer.setLooping(loop);
+    }
+
+    /**
      * Stops all playing sounds in these soundboards
      *
      * @param fadeOut Whether the playing shall be faded out.

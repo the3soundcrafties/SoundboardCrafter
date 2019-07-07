@@ -176,6 +176,15 @@ public class MediaPlayerService extends Service {
     }
 
     /**
+     * Sets whether this sound shall be played in a loop.
+     */
+    public void setLoop(@NonNull UUID soundId, boolean loop) {
+        checkNotNull(soundId, "soundId is null");
+
+        mediaPlayers.setLoop(soundId, loop);
+    }
+
+    /**
      * Stops all playing sounds in these soundboards
      *
      * @param fadeOut Whether the playing shall be faded out.
