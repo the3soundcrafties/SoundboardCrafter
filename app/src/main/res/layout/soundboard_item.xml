@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sound_item"
     android:layout_width="wrap_content"
     android:layout_height="80dp"
     android:layout_gravity="top"
     android:drawableStart="@drawable/ic_play"
+    android:ellipsize="end"
     android:gravity="center|fill"
-    android:text=""
+    tools:text="Sound Name"
     app:autoSizeMaxTextSize="100dp" />

@@ -2,11 +2,14 @@ package de.soundboardcrafter.activity.soundboard.play;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
+
+import com.google.common.base.Strings;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -27,6 +30,27 @@ class SoundboardItemRow extends RelativeLayout {
         // Inflate the view into this object
         inflater.inflate(R.layout.soundboard_item, this, true);
         soundItem = findViewById(R.id.sound_item);
+
+        // This is work-around: Without setting max lines set
+        // (and to which value?), texts that are too long
+        // will only be truncated, not ellipsized.
+        // See https://stackoverflow.com/questions/14173776/ellipsize-not-working-properly-for-a-multiline-textview-with-an-arbitrary-maximu .
+        ViewTreeObserver observer = soundItem.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int maxLines = (int) soundItem.getHeight() / soundItem.getLineHeight();
+                final String text = soundItem.getText().toString();
+                if (!Strings.isNullOrEmpty(text)) {
+                    // Seems to be necessary in case of orientation changes.
+                    soundItem.setText(text);
+                }
+
+                soundItem.setMaxLines(maxLines);
+
+                soundItem.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
     }
 
     public interface MediaPlayerServiceCallback {
