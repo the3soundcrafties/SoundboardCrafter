@@ -59,7 +59,7 @@ class AudioFileRow extends RelativeLayout {
     }
 
     private String formatName() {
-        return abbreviateName(audioModelAndSound.getName());
+        return audioModelAndSound.getName();
     }
 
     private String formatArtistAndLength() {
@@ -77,14 +77,6 @@ class AudioFileRow extends RelativeLayout {
         long secs = durationSecs - mins * MINS_PER_SEC;
 
         return String.format(Locale.getDefault(), "%02d:%02d", mins, secs);
-    }
-
-    private static String abbreviateName(String name) {
-        if (name.length() > 35) {
-            return name.substring(0, 35) + "...";
-        }
-
-        return name;
     }
 
     @UiThread
