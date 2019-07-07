@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:elevation="-10dp"
-    android:padding="6dip">
+    android:padding="6dp">
 
     <ImageView
         android:id="@+id/icon"
@@ -13,7 +13,7 @@
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
-        android:layout_marginEnd="6dip"
+        android:layout_marginEnd="6dp"
         android:contentDescription="@string/subfolder_icon"
         android:src="@drawable/ic_sound_list_subfolder" />
 
@@ -21,7 +21,7 @@
         android:id="@+id/num_audiofiles"
         android:elevation="-10dp"
         android:layout_width="0dp"
-        android:layout_height="26dip"
+        android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="6dp"
@@ -44,6 +44,4 @@
         android:singleLine="true"
         android:textSize="16sp"
         tools:text="folder_name" />
-
-
 </RelativeLayout>
