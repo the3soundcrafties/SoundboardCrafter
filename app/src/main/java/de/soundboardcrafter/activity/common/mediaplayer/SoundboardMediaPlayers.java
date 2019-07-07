@@ -265,6 +265,7 @@ class SoundboardMediaPlayers {
                     player.stop();
                     player.release();
                 } else {
+                    player.playingLogicallyStopped();
                     startFaderIfNotRunning();
                     playersFadingOut.put(searchId, player);
                 }
@@ -303,6 +304,7 @@ class SoundboardMediaPlayers {
                 player.stop();
                 player.release();
             } else {
+                player.playingLogicallyStopped();
                 startFaderIfNotRunning();
                 playersFadingOut.put(searchId, player);
             }
@@ -323,6 +325,7 @@ class SoundboardMediaPlayers {
     }
 
     private void fadeOut(MediaPlayerSearchId searchId, SoundboardMediaPlayer player) {
+        player.playingLogicallyStopped();
         startFaderIfNotRunning();
         putFadingOut(searchId, player);
     }
@@ -403,7 +406,7 @@ class SoundboardMediaPlayers {
             fadeOut();
 
             if (!playersFadingOut.isEmpty()) {
-                uiThreadHandler.postDelayed(fader, 50);
+                uiThreadHandler.postDelayed(fader, 40);
             }
         }
 
@@ -414,9 +417,9 @@ class SoundboardMediaPlayers {
                 SoundboardMediaPlayer player = playerIt.next();
                 float oldVolume = player.getVolume();
 
-                float newVolume = oldVolume / 1.005f;
+                float newVolume = oldVolume / 1.116f;
 
-                if (newVolume < 0.05) {
+                if (newVolume < 0.001) {
                     player.stop();
                     player.release();
                     playerIt.remove();
