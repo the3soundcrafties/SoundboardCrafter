@@ -155,9 +155,17 @@ public class SoundboardListFragment extends Fragment
             case R.id.context_menu_remove_soundboard:
                 new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
                 adapter.remove(soundboardWithSounds);
+                fireSomethingMightHaveChanged();
+
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private void fireSomethingMightHaveChanged() {
+        if (soundEventListenerActivity != null) {
+            soundEventListenerActivity.somethingMightHaveChanged();
         }
     }
 
@@ -171,9 +179,7 @@ public class SoundboardListFragment extends Fragment
 
         switch (requestCode) {
             case SOUNDBOARD_PLAY_REQUEST_CODE:
-                if (soundEventListenerActivity != null) {
-                    soundEventListenerActivity.somethingMightHaveChanged();
-                }
+                fireSomethingMightHaveChanged();
                 break;
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new soundboard " + this);

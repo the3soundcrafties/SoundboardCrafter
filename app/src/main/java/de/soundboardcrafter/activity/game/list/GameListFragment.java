@@ -174,9 +174,7 @@ public class GameListFragment extends Fragment
 
         switch (requestCode) {
             case SOUNDBOARD_PLAY_REQUEST_CODE:
-                if (soundEventListenerActivity != null) {
-                    soundEventListenerActivity.somethingMightHaveChanged();
-                }
+                fireSomethingMightHaveChanged();
                 break;
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new game " + this);
@@ -186,6 +184,12 @@ public class GameListFragment extends Fragment
                 Log.d(TAG, "Editing game " + this + ": Returned from game edit fragment with OK");
                 new FindGamesTask(requireContext()).execute();
                 break;
+        }
+    }
+
+    private void fireSomethingMightHaveChanged() {
+        if (soundEventListenerActivity != null) {
+            soundEventListenerActivity.somethingMightHaveChanged();
         }
     }
 
