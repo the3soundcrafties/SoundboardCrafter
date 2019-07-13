@@ -2,6 +2,7 @@ package de.soundboardcrafter.dao;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 
 import com.google.common.collect.ImmutableList;
 
@@ -17,6 +18,11 @@ import de.soundboardcrafter.model.Soundboard;
 public class GameDao extends AbstractDao {
     private static GameDao instance;
     private static SoundboardDao soundboardDao;
+
+    private static final String SELECT_GAME_NAME = "SELECT g." + DBSchema.GameTable.Cols.NAME
+            + " " //
+            + "FROM " + DBSchema.GameTable.NAME + " g "
+            + "WHERE g." + DBSchema.GameTable.Cols.ID + "= ?";
 
     public static GameDao getInstance(final Context context) {
         if (instance == null) {
@@ -99,17 +105,30 @@ public class GameDao extends AbstractDao {
         getDatabase().delete(DBSchema.GameTable.NAME, null, new String[]{});
     }
 
+    public String findGameName(UUID gameId) {
+        try (Cursor cursor = rawQueryOrThrow(
+                SELECT_GAME_NAME,
+                gameId)) {
+            while (cursor.moveToNext()) {
+                return cursor.getString(0);
+            }
+
+            throw new IllegalStateException("No game with id " + gameId + " found");
+        }
+    }
+
     public GameWithSoundboards findGameWithSoundboards(UUID gameId) {
         try (GameCursorWrapper cursor =
                      new GameCursorWrapper(
-                             rawQueryOrThrow(GameCursorWrapper.queryString(gameId), new String[]{gameId.toString()}))) {
+                             rawQueryOrThrow(
+                                     GameCursorWrapper.queryString(gameId),
+                                     gameId))) {
             ImmutableList<GameWithSoundboards> result = findGamesWithSoundboards(cursor);
             if (result.size() > 1) {
                 throw new IllegalStateException("More than one game was found");
             }
             return result.get(0);
         }
-
     }
 
     public ImmutableList<GameWithSoundboards> findAllGamesWithSoundboards() {
@@ -119,7 +138,6 @@ public class GameDao extends AbstractDao {
         }
 
     }
-
 
     private ImmutableList<GameWithSoundboards> findGamesWithSoundboards(GameCursorWrapper cursor) {
         ImmutableList.Builder<GameWithSoundboards> res = ImmutableList.builder();
@@ -141,7 +159,6 @@ public class GameDao extends AbstractDao {
     void unlinkAllGames() {
         getDatabase().delete(SoundboardGameTable.NAME, null, new String[]{});
     }
-
 
     public void remove(UUID gameId) {
         unlinkAllSoundboards(gameId);

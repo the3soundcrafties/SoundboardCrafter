@@ -4,4 +4,6 @@ import java.util.UUID;
 
 public interface SoundEventListener {
     void soundChanged(UUID soundId);
+
+    void somethingMightHaveChanged();
 }

@@ -33,10 +33,10 @@
         <item quantity="other">%,d Sounds</item>
     </plurals>
     <string name="games_tab_title">Spiele</string>
-    <string name="new_game">neues Spiel hinzufügen</string>
+    <string name="new_game">Neues Spiel hinzufügen</string>
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
-    <string name="new_soundboard">neues Soundboard hinzufügen</string>
+    <string name="new_soundboard">Neues Soundboard hinzufügen</string>
     <string name="new_soundboard_name">NEU</string>
     <string name="new_game_name">NEU</string>
     <string name="sound_name">Name des Sounds</string>
@@ -53,4 +53,5 @@
         <item quantity="one">1 Soundboard</item>
         <item quantity="other">%d Soundboards</item>
     </plurals>
+    <string name="soundboards_default_toolbar">Alle Soundboards</string>
 </resources>

@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import java.io.Serializable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
+    private float volume;
+
     /**
      * Name of the sound that's currently played - or the last sound played.
      */
@@ -23,7 +25,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     private OnPlayingStopped onPlayingStopped;
 
     SoundboardMediaPlayer() {
-        super();
+        setVolume(1f);
     }
 
     /**
@@ -41,13 +43,21 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         return soundName;
     }
 
+    float getVolume() {
+        return volume;
+    }
+
+    void setVolume(float volume) {
+        this.volume = volume;
+
+        setVolume(volume, volume);
+    }
+
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {
         super.setOnCompletionListener(event -> {
             try {
-                if (onPlayingStopped != null) {
-                    onPlayingStopped.stop();
-                }
+                playingLogicallyStopped();
             } finally {
                 listener.onCompletion(this);
             }
@@ -58,9 +68,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     public void setOnErrorListener(OnErrorListener listener) {
         super.setOnErrorListener((mp, what, extra) -> {
             try {
-                if (onPlayingStopped != null) {
-                    onPlayingStopped.stop();
-                }
+                playingLogicallyStopped();
             } finally {
                 return listener.onError(mp, what, extra);
             }
@@ -74,8 +82,17 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     @Override
     public void stop() throws IllegalStateException {
         super.stop();
+        playingLogicallyStopped();
+    }
+
+    /**
+     * This is called / has to be called when playing has logically
+     * stopped.
+     */
+    void playingLogicallyStopped() {
         if (onPlayingStopped != null) {
             onPlayingStopped.stop();
+            onPlayingStopped = null;
         }
     }
 }

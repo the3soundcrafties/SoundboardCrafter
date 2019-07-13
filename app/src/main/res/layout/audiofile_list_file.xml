@@ -35,29 +35,28 @@
     <TextView
         android:id="@+id/audio_artist_and_length"
         android:elevation="-10dp"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="26dp"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="30dp"
+        android:layout_toStartOf="@+id/icon_link_sound_to_soundboards"
         android:layout_toEndOf="@id/icon"
-        tools:text="Sound Artist · 00:14"
-        android:textSize="12sp" />
+        android:singleLine="true"
+        android:textSize="12sp"
+        tools:text="Sound Artist · 00:14" />
 
     <TextView
         android:id="@+id/audio_name"
         android:elevation="-10dp"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
         android:layout_above="@id/audio_artist_and_length"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="30dp"
+        android:layout_toStartOf="@+id/icon_link_sound_to_soundboards"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        tools:text="Name"
-        android:textSize="16sp" />
+        android:singleLine="true"
+        android:textSize="16sp"
+        tools:text="Name" />
 
 
 </RelativeLayout>

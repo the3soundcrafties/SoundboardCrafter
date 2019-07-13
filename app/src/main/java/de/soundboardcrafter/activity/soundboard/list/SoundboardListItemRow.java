@@ -17,7 +17,6 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
 public class SoundboardListItemRow extends RelativeLayout {
-    public static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     @NonNull
     private final TextView soundboardName;
     @Nonnull

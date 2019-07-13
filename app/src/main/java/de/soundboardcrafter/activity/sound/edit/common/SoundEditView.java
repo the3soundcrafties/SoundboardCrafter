@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.sound.edit.common;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -29,10 +30,11 @@ public class SoundEditView extends ConstraintLayout {
 
     private int maxVolumePercentage;
     private SeekBarChangeListener seekBarChangeListener;
+    private OnCheckedChangeListener onCheckedChangeListener;
 
     /**
      * A callback that notifies clients when the volume percentage has been
-     * changed. This includes changes that were initiated by the user through
+     * changed. This includes changes that were initiated by the user
      * as well as changes that were initiated programmatically.
      */
     public interface OnVolumePercentageChangeListener {
@@ -48,6 +50,21 @@ public class SoundEditView extends ConstraintLayout {
          * @param fromUser         True if the change was initiated by the user.
          */
         void onVolumePercentageChanged(int volumePercentage, boolean fromUser);
+    }
+
+    /**
+     * A callback that notifies clients when it has changed whether the sound shall be
+     * played in a loop. This includes changes that were initiated by the user
+     * as well as changes that were initiated programmatically.
+     */
+    public interface OnLoopChangeListener {
+        /**
+         * Notification that it has changed whether the sound shall be
+         * played in a loop.
+         *
+         * @param loop The current value whether the sound shall be played in a loop.
+         */
+        void onLoopChanged(boolean loop);
     }
 
     public SoundEditView(Context context) {
@@ -76,6 +93,8 @@ public class SoundEditView extends ConstraintLayout {
         volumePercentageSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
         loopSwitch = findViewById(R.id.loopSwitch);
+        onCheckedChangeListener = new OnCheckedChangeListener();
+        loopSwitch.setOnCheckedChangeListener(onCheckedChangeListener);
 
         soundboardsListView = findViewById(R.id.soundboardsList);
 
@@ -199,6 +218,14 @@ public class SoundEditView extends ConstraintLayout {
         seekBarChangeListener.setOnVolumePercentageChangeListener(l);
     }
 
+    /**
+     * Sets a listener to receive notifications of changes to whether the sound shall
+     * be looped.
+     */
+    void setOnLoopChangeListener(OnLoopChangeListener l) {
+        onCheckedChangeListener.setOnLoopChangeListener(l);
+    }
+
     private class SeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
         private OnVolumePercentageChangeListener onVolumePercentageChangeListener;
 
@@ -222,6 +249,23 @@ public class SoundEditView extends ConstraintLayout {
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    }
+
+    private class OnCheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
+        private OnLoopChangeListener onLoopChangeListener;
+
+        void setOnLoopChangeListener(OnLoopChangeListener l) {
+            onLoopChangeListener = l;
+        }
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (onLoopChangeListener == null) {
+                return;
+            }
+
+            onLoopChangeListener.onLoopChanged(isChecked);
         }
     }
 }

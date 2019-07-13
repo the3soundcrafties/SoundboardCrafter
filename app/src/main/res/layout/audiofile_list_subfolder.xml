@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:elevation="-10dp"
-    android:padding="6dip">
+    android:padding="6dp">
 
     <ImageView
         android:id="@+id/icon"
@@ -13,36 +13,35 @@
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
-        android:layout_marginEnd="6dip"
+        android:layout_marginEnd="6dp"
         android:contentDescription="@string/subfolder_icon"
         android:src="@drawable/ic_sound_list_subfolder" />
 
     <TextView
         android:id="@+id/num_audiofiles"
         android:elevation="-10dp"
-        android:layout_width="fill_parent"
-        android:layout_height="26dip"
+        android:layout_width="0dp"
+        android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="30dp"
+        android:layout_marginEnd="6dp"
         android:layout_toEndOf="@id/icon"
-        tools:text="9,999 sounds"
-        android:textSize="12sp" />
+        android:singleLine="true"
+        android:textSize="12sp"
+        tools:text="9,999 sounds" />
 
     <TextView
         android:id="@+id/path"
         android:elevation="-10dp"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
         android:layout_above="@id/num_audiofiles"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="6dp"
         android:layout_toEndOf="@id/icon"
         android:gravity="center_vertical"
-        tools:text="/some/folder/name"
-        android:textSize="16sp" />
-
-
+        android:singleLine="true"
+        android:textSize="16sp"
+        tools:text="folder_name" />
 </RelativeLayout>

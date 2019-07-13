@@ -1,8 +1,10 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,8 +18,11 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
@@ -45,8 +50,18 @@ public class SoundboardListFragment extends Fragment
     private static final String TAG = SoundboardListFragment.class.getName();
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
+
+    /**
+     * Request code used whenever the soundboard playing view
+     * is started from this activity
+     */
+    private static final int SOUNDBOARD_PLAY_REQUEST_CODE = 1;
+
     private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 25;
     private static final int EDIT_SOUNDBOARD_REQUEST_CODE = 26;
+
+    private @Nullable
+    SoundEventListener soundEventListenerActivity;
 
     private ListView listView;
     private SoundboardListItemAdapter adapter;
@@ -78,12 +93,31 @@ public class SoundboardListFragment extends Fragment
 
             Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
             intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-            requireContext().startActivity(intent);
+
+            startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
 
-        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
+        if (ActivityCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
+        } // otherwise we will receive an event later
 
         return rootView;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof SoundEventListener) {
+            soundEventListenerActivity = (SoundEventListener) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        soundEventListenerActivity = null;
     }
 
     @Override
@@ -121,9 +155,17 @@ public class SoundboardListFragment extends Fragment
             case R.id.context_menu_remove_soundboard:
                 new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
                 adapter.remove(soundboardWithSounds);
+                fireSomethingMightHaveChanged();
+
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private void fireSomethingMightHaveChanged() {
+        if (soundEventListenerActivity != null) {
+            soundEventListenerActivity.somethingMightHaveChanged();
         }
     }
 
@@ -136,6 +178,9 @@ public class SoundboardListFragment extends Fragment
         }
 
         switch (requestCode) {
+            case SOUNDBOARD_PLAY_REQUEST_CODE:
+                fireSomethingMightHaveChanged();
+                break;
             case CREATE_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new soundboard " + this);
                 new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
@@ -148,8 +193,22 @@ public class SoundboardListFragment extends Fragment
     }
 
     @Override
+    public void somethingMightHaveChanged() {
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
+    }
+
+    @Override
     public void soundChanged(UUID soundId) {
-        // The sound NAME may have been changed.
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
         new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
     }
 
@@ -229,7 +288,7 @@ public class SoundboardListFragment extends Fragment
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds();
+            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(null);
 
             Log.d(TAG, "Soundboards loaded.");
 

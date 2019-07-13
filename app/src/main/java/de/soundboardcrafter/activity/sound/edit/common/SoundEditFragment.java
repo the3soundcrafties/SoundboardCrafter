@@ -46,6 +46,8 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     private SoundWithSelectableSoundboards sound;
 
+    private SoundEditChangeListener soundEditChangeListener = new SoundEditChangeListener();
+
     private MediaPlayerService mediaPlayerService;
 
     static SoundEditFragment newInstance(UUID soundId) {
@@ -137,7 +139,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         soundEditView = rootView.findViewById(R.id.edit_view);
 
         soundEditView.setMaxVolumePercentage(Sound.MAX_VOLUME_PERCENTAGE);
-        soundEditView.setOnVolumePercentageChangeListener(new VolumeUpdater());
+
+        soundEditView.setOnVolumePercentageChangeListener(soundEditChangeListener);
+        soundEditView.setOnLoopChangeListener(soundEditChangeListener);
+
         soundEditView.setEnabled(false);
 
         return rootView;
@@ -147,17 +152,32 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private void updateUI(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
         sound = soundWithSelectableSoundboards;
 
-        soundEditView.setName(soundWithSelectableSoundboards.getSound().getName());
-        soundEditView.setVolumePercentage(soundWithSelectableSoundboards.getSound().getVolumePercentage());
-        soundEditView.setLoop(soundWithSelectableSoundboards.getSound().isLoop());
+        soundEditView.setName(sound.getSound().getName());
+        soundEditView.setVolumePercentage(sound.getSound().getVolumePercentage());
+        soundEditView.setLoop(sound.getSound().isLoop());
+        soundEditChangeListener.setLoop(sound.getSound().isLoop());
 
-        soundEditView.setSoundboards(soundWithSelectableSoundboards.getSoundboards());
+        soundEditView.setSoundboards(sound.getSoundboards(), soundboardsEditable);
 
         soundEditView.setEnabled(true);
     }
 
     /**
-     * Sets the volume; also starts the sound is so desired.
+     * Starts playing the sound, if it is not already playing.
+     */
+    private void ensurePlaying() {
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        if (!service.isActivelyPlaying(sound.getSound())) {
+            service.play(null, sound.getSound(), null);
+        }
+    }
+
+    /**
+     * Sets the volume.
      */
     private void setVolumePercentage(int volumePercentage, boolean playIfNotPlaying) {
         MediaPlayerService service = getService();
@@ -165,11 +185,19 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        if (playIfNotPlaying && !service.isPlaying(sound.getSound())) {
-            service.play(null, sound.getSound(), null);
+        service.setVolumePercentage(sound.getSound().getId(), volumePercentage);
+    }
+
+    /**
+     * Sets whether the sound shall be played in a loop.
+     */
+    private void setLoop(boolean loop) {
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
         }
 
-        service.setVolumePercentage(sound.getSound().getId(), volumePercentage);
+        service.setLoop(sound.getSound().getId(), loop);
     }
 
     private MediaPlayerService getService() {
@@ -185,7 +213,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     public void onPause() {
         super.onPause();
 
-        stopPlaying();
+        stopPlaying(false);
 
         requireActivity().unbindService(this);
 
@@ -205,7 +233,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         new SaveSoundTask(requireActivity(), sound).execute();
     }
 
-    private void stopPlaying() {
+    private void stopPlaying(boolean fadeOut) {
         if (sound == null) {
             // not yet loaded
             return;
@@ -216,17 +244,33 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
-        service.stopPlaying(null, sound.getSound());
+        service.stopPlaying(null, sound.getSound(), fadeOut);
     }
 
     /**
-     * Callback to set the volume when the volume slider ist change; also starts the sound is
-     * so desired.
+     * Listens to changes while editing - might also start playing the sound.
      */
-    private class VolumeUpdater implements SoundEditView.OnVolumePercentageChangeListener {
+    private class SoundEditChangeListener implements
+            SoundEditView.OnVolumePercentageChangeListener, SoundEditView.OnLoopChangeListener {
+        private boolean loop;
+
+        public void setLoop(boolean loop) {
+            this.loop = loop;
+        }
+
         @Override
         public void onVolumePercentageChanged(int volumePercentage, boolean fromUser) {
+            if (fromUser) {
+                ensurePlaying();
+            }
             setVolumePercentage(volumePercentage, fromUser);
+            SoundEditFragment.this.setLoop(loop);
+        }
+
+        @Override
+        public void onLoopChanged(boolean loop) {
+            this.loop = loop;
+            SoundEditFragment.this.setLoop(loop);
         }
     }
 

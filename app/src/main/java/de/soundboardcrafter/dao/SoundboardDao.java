@@ -65,8 +65,16 @@ public class SoundboardDao extends AbstractDao {
         deleteAllSoundboards();
     }
 
-    public ImmutableList<SoundboardWithSounds> findAllWithSounds() {
-        Cursor rawCursor = rawQueryOrThrow(FullJoinSoundboardCursorWrapper.queryString());
+    public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID gameId) {
+        Object[] params;
+        if (gameId != null) {
+            params = new Object[]{gameId};
+        } else {
+            params = new Object[0];
+        }
+
+        Cursor rawCursor = rawQueryOrThrow(
+                FullJoinSoundboardCursorWrapper.queryString(gameId), params);
         return find(rawCursor);
     }
 
@@ -229,7 +237,7 @@ public class SoundboardDao extends AbstractDao {
                         "FROM " + SoundboardSoundTable.NAME + " sbs " +
                         "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
                         "GROUP BY sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID,
-                new String[]{soundboard.getId().toString()})) {
+                soundboard.getId())) {
             if (cursor.moveToNext()) {
                 return cursor.getInt(0);
             }

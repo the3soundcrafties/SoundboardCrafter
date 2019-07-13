@@ -2,7 +2,9 @@ package de.soundboardcrafter.activity.soundboard.edit;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.fragment.app.Fragment;
 
@@ -26,6 +28,12 @@ public class SoundboardEditActivity extends SingleFragmentActivity {
         Intent intent = new Intent(packageContext, SoundboardEditActivity.class);
         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
         return intent;
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
     }
 
     @Override

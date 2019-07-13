@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.stream.Stream;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -22,11 +24,14 @@ abstract class AbstractDao {
         return database;
     }
 
-    Cursor rawQueryOrThrow(String queryString) {
-        return rawQueryOrThrow(queryString, new String[]{});
+    Cursor rawQueryOrThrow(String queryString, Object... selectionArgObjects) {
+        return rawQueryOrThrow(queryString,
+                Stream.of(selectionArgObjects)
+                        .map(Object::toString)
+                        .toArray(String[]::new));
     }
 
-    Cursor rawQueryOrThrow(String queryString, String[] selectionArgs) {
+    Cursor rawQueryOrThrow(String queryString, String... selectionArgs) {
         final Cursor cursor = database.rawQuery(queryString, selectionArgs);
         if (cursor == null) {
             throw new RuntimeException("Could not query database: " + queryString);
