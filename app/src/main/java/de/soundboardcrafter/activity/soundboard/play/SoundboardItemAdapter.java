@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -10,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import java.util.Collection;
+import java.util.Map;
 
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundboardWithSounds;
@@ -40,11 +40,21 @@ class SoundboardItemAdapter extends BaseAdapter {
     /**
      * If there are already sounds in the soundboard with one of these IDs, replace
      * them with the respective updates.
+     * stop sound if not in soundboard anymore
      */
-    void updateSounds(Collection<Sound> updates) {
-        for (Sound update : updates) {
-            Log.d(TAG, "Edit sound: updateSounds " + update + " this " + this);
-            updateSound(update);
+    void updateSounds(Map<Sound, Boolean> sounds) {
+        for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
+            updateSound(soundEntry.getKey());
+            if (!soundEntry.getValue()) {
+                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey());
+            }
+        }
+    }
+
+
+    void updateSounds(Collection<Sound> sounds) {
+        for (Sound sound : sounds) {
+            updateSound(sound);
         }
     }
 
@@ -54,11 +64,9 @@ class SoundboardItemAdapter extends BaseAdapter {
      */
     private void updateSound(Sound update) {
         for (int i = 0; i < soundboard.getSounds().size(); i++) {
-            final Sound oldSound = soundboard.getSounds().get(i);
+            Sound oldSound = soundboard.getSounds().get(i);
             if (update.getId().equals(oldSound.getId())) {
-                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), oldSound);
                 soundboard.setSound(i, update);
-
                 break;
             }
         }
@@ -113,4 +121,6 @@ class SoundboardItemAdapter extends BaseAdapter {
 
         return convertView;
     }
+
+
 }

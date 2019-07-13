@@ -41,6 +41,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUND_ID = "soundId";
     public static final String EXTRA_SOUND_ID = "soundId";
 
+
     private SoundEditView soundEditView;
 
     private SoundWithSelectableSoundboards sound;
@@ -309,7 +310,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
             Log.d(TAG, "Saving sound " + sound);
 
-            SoundDao.getInstance(appContext).updateSoundAndSounboardLinks(sound);
+            SoundDao.getInstance(appContext).updateSoundAndSoundboardLinks(sound);
             return null;
         }
     }

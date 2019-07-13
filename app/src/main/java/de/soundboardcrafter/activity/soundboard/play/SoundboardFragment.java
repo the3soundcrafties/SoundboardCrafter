@@ -25,11 +25,12 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
-import com.google.common.collect.ImmutableCollection;
-
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,9 @@ import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -413,7 +416,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.
      */
-    class UpdateSoundsTask extends AsyncTask<UUID, Void, ImmutableCollection<Sound>> {
+    class UpdateSoundsTask extends AsyncTask<UUID, Void, Map<Sound, Boolean>> {
         private final String TAG = UpdateSoundsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -425,7 +428,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         @Override
         @WorkerThread
-        protected ImmutableCollection<Sound> doInBackground(UUID... soundIds) {
+        protected Map<Sound, Boolean> doInBackground(UUID... soundIds) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
@@ -433,13 +436,28 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             Log.d(TAG, "Loading sounds: " + Arrays.toString(soundIds));
+            Map<Sound, Boolean> sounds = new HashMap<>();
+            for (UUID soundId : soundIds) {
+                SoundWithSelectableSoundboards soundWithSelectableSoundboards =
+                        SoundDao.getInstance(appContext).findSoundWithSelectableSoundboards(soundId);
+                List<SelectableSoundboard> soundboards = soundWithSelectableSoundboards.getSoundboards();
+                SelectableSoundboard foundSoundboard = soundboards.stream().filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
+                        .findFirst().get();
+                if (!foundSoundboard.isSelected()) {
+                    sounds.put(soundWithSelectableSoundboards.getSound(), false);
+                } else {
+                    sounds.put(soundWithSelectableSoundboards.getSound(), true);
+                }
 
-            return SoundDao.getInstance(appContext).findSounds(soundIds);
+            }
+
+            return sounds;
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableCollection<Sound> sounds) {
+        protected void onPostExecute(Map<Sound, Boolean> sounds) {
+            stopSoundsNotInSoundboard(sounds);
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -452,7 +470,16 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
+
             soundboardItemAdapter.updateSounds(sounds);
+        }
+
+        void stopSoundsNotInSoundboard(Map<Sound, Boolean> sounds) {
+            for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
+                if (!soundEntry.getValue()) {
+                    mediaPlayerService.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey());
+                }
+            }
         }
     }
 
