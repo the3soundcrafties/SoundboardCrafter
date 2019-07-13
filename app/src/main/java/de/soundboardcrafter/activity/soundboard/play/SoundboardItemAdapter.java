@@ -46,7 +46,7 @@ class SoundboardItemAdapter extends BaseAdapter {
         for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
             updateSound(soundEntry.getKey());
             if (!soundEntry.getValue()) {
-                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey());
+                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
             }
         }
     }

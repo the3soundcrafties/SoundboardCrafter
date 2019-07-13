@@ -477,7 +477,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         void stopSoundsNotInSoundboard(Map<Sound, Boolean> sounds) {
             for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
                 if (!soundEntry.getValue()) {
-                    mediaPlayerService.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey());
+                    mediaPlayerService.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
                 }
             }
         }
