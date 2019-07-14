@@ -40,17 +40,18 @@
         <activity
             android:name=".activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity"
             android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
-            android:windowSoftInputMode="stateVisible" />
+            android:windowSoftInputMode="stateHidden" />
 
         <activity
             android:name=".activity.game.edit.GameCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
 
+        <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.game.edit.GameEditActivity"
             android:parentActivityName=".activity.main.MainActivity"
-            android:windowSoftInputMode="stateVisible" />
+            android:windowSoftInputMode="stateHidden" />
 
         <activity
             android:name=".activity.soundboard.edit.SoundboardCreateActivity"
