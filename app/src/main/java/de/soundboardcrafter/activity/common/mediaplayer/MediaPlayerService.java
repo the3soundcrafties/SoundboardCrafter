@@ -22,6 +22,7 @@ import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -220,23 +221,35 @@ public class MediaPlayerService extends Service {
     /**
      * Adds a media player and starts playing.
      *
+     * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      * @see #play(String, String, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
-                     @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+                     @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped)
+            throws IOException {
         checkNotNull(sound, "sound is null");
 
         SoundboardMediaPlayer mediaPlayer = mediaPlayers.get(soundboard, sound);
         if (mediaPlayer == null) {
             mediaPlayer = new SoundboardMediaPlayer();
-            mediaPlayer.setOnPlayingStopped(onPlayingStopped);
-            initMediaPlayer(sound, mediaPlayer);
+            try {
+                mediaPlayer.setOnPlayingStopped(onPlayingStopped);
+                initMediaPlayer(sound, mediaPlayer);
+            } catch (IOException | RuntimeException e) {
+                mediaPlayer.release();
+                throw e;
+            }
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         } else {
-            // update the callbacks
-            mediaPlayer.setOnPlayingStopped(onPlayingStopped);
-            mediaPlayer.reset();
-            initMediaPlayer(sound, mediaPlayer);
+            try {
+                // update the callbacks
+                mediaPlayer.setOnPlayingStopped(onPlayingStopped);
+                mediaPlayer.reset();
+                initMediaPlayer(sound, mediaPlayer);
+            } catch (IOException | RuntimeException e) {
+                mediaPlayers.remove(mediaPlayer);
+                throw e;
+            }
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
@@ -249,24 +262,32 @@ public class MediaPlayerService extends Service {
      * Starts playing from the path - without adding a media player and without
      * necessarily starting a foreground service etc.
      *
+     * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public SoundboardMediaPlayer play(@NonNull String name,
                                       @NonNull String path,
-                                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+                                      @Nullable SoundboardMediaPlayer.OnPlayingStopped
+                                              onPlayingStopped)
+            throws IOException {
         checkNotNull(path, "path is null");
 
         SoundboardMediaPlayer mediaPlayer = new SoundboardMediaPlayer();
-        mediaPlayer.setOnPlayingStopped(() -> {
-            if (onPlayingStopped != null) {
-                onPlayingStopped.stop();
-            }
-        });
-        initMediaPlayer(mediaPlayer, name, path, 100, false);
+        try {
+            mediaPlayer.setOnPlayingStopped(() -> {
+                if (onPlayingStopped != null) {
+                    onPlayingStopped.stop();
+                }
+            });
+            initMediaPlayer(mediaPlayer, name, path, 100, false);
 
-        mediaPlayer.prepareAsync();
+            mediaPlayer.prepareAsync();
 
-        return mediaPlayer;
+            return mediaPlayer;
+        } catch (IOException | RuntimeException e) {
+            mediaPlayer.release();
+            throw e;
+        }
     }
 
     /*
@@ -382,17 +403,23 @@ public class MediaPlayerService extends Service {
 
     /**
      * Initializes this mediaPlayer for this sound. Does not start playing yet.
+     *
+     * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
-    private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer) {
+    private void initMediaPlayer(@NonNull Sound sound, SoundboardMediaPlayer mediaPlayer)
+            throws IOException {
         initMediaPlayer(mediaPlayer, sound.getName(), sound.getPath(),
                 sound.getVolumePercentage(), sound.isLoop());
     }
 
     /**
      * Initializes this mediaPlayer. Does not start playing yet.
+     *
+     * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
     private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
-                                 String soundPath, int volumePercentage, boolean loop) {
+                                 String soundPath, int volumePercentage, boolean loop)
+            throws IOException {
         SoundboardMediaPlayers.initMediaPlayer(mediaPlayer, soundName, soundPath, volumePercentage, loop);
 
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);

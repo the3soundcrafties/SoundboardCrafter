@@ -59,15 +59,14 @@ class SoundboardMediaPlayers {
 
     /**
      * Initializes this mediaPlayer. Does not start playing yet.
+     *
+     * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
     static void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
-                                String soundPath, int volumePercentage, boolean loop) {
+                                String soundPath, int volumePercentage, boolean loop)
+            throws IOException {
         mediaPlayer.setSoundName(soundName);
-        try {
-            mediaPlayer.setDataSource(soundPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        mediaPlayer.setDataSource(soundPath);
         mediaPlayer.setAudioAttributes(
                 new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
         SoundboardMediaPlayers.setVolume(

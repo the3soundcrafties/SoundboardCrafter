@@ -28,6 +28,8 @@
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
+    <string name="audiofile_list_file_not_found">Sound-Datei nicht gefunden</string>
+    <string name="update_all_soundboards_and_sounds">Bereinigen</string>
     <plurals name="subfolder_num_sounds">
         <item quantity="one">1 Sound</item>
         <item quantity="other">%,d Sounds</item>
@@ -54,4 +56,6 @@
         <item quantity="other">%d Soundboards</item>
     </plurals>
     <string name="soundboards_default_toolbar">Alle Soundboards</string>
+    <string name="soundboard_file_not_found">Sound-Datei nicht gefunden - aus Soundboard(s) entfernt</string>
+    <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
 </resources>

@@ -170,6 +170,19 @@ public class SoundDao extends AbstractDao {
         return values;
     }
 
+
+    /**
+     * Deletes this sound and all its soundboard links.
+     */
+    public void delete(UUID soundId) {
+        soundboardDao.unlinkSound(soundId);
+
+        getDatabase().delete(DBSchema.SoundTable.NAME,
+                DBSchema.SoundTable.Cols.ID + " = ?",
+                new String[]{soundId.toString()});
+    }
+
+
     void deleteAllSounds() {
         getDatabase().delete(DBSchema.SoundTable.NAME, null, new String[]{});
     }

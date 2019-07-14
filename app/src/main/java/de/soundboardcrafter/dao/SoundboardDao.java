@@ -205,7 +205,7 @@ public class SoundboardDao extends AbstractDao {
             return;
         }
 
-        unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+        unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound().getId());
     }
 
     public void linkSoundsInOrder(SoundboardWithSounds soundboardWithSounds) {
@@ -251,7 +251,7 @@ public class SoundboardDao extends AbstractDao {
      * otherwise <code>false</code>.
      */
     private boolean isLinked(Soundboard soundboard, Sound sound) {
-        try (final Cursor cursor = queryIndex(soundboard, sound)) {
+        try (final Cursor cursor = queryIndex(soundboard.getId(), sound.getId())) {
             return cursor.moveToNext();
         }
     }
@@ -282,14 +282,34 @@ public class SoundboardDao extends AbstractDao {
         getDatabase().delete(SoundboardSoundTable.NAME, SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ?", new String[]{soundboardId.toString()});
     }
 
-    private void unlinkSound(Soundboard soundboard, Sound sound) {
+    void unlinkSound(UUID soundId) {
+        try (Cursor cursor = getDatabase().query(
+                SoundboardSoundTable.NAME,
+                new String[]{SoundboardSoundTable.Cols.SOUNDBOARD_ID},
+                null,
+                null,
+                null,
+                null,
+                null)) {
+            while (cursor.moveToNext()) {
+                unlinkSound(UUID.fromString(cursor.getString(0)), soundId);
+            }
+        }
+
+    }
+
+    private void unlinkSound(Soundboard soundboard, UUID soundId) {
+        unlinkSound(soundboard.getId(), soundId);
+    }
+
+    private void unlinkSound(UUID soundboardId, UUID soundId) {
         boolean lookAgain = true;
         while (lookAgain) {
             try (final Cursor cursor =
-                         queryIndex(soundboard, sound)) {
+                         queryIndex(soundboardId, soundId)) {
                 if (cursor.moveToNext()) {
                     int index = cursor.getInt(0);
-                    unlinkSound(soundboard, index);
+                    unlinkSound(soundboardId, index);
                 } else {
                     lookAgain = false;
                 }
@@ -300,24 +320,24 @@ public class SoundboardDao extends AbstractDao {
     /**
      * Returns a query cursor for the column index that this sound has in this soundboard
      */
-    private Cursor queryIndex(Soundboard soundboard, Sound sound) {
+    private Cursor queryIndex(UUID soundboardId, UUID soundId) {
         return getDatabase().query(
                 SoundboardSoundTable.NAME,
                 new String[]{SoundboardSoundTable.Cols.POS_INDEX},
                 SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? AND " +
                         SoundboardSoundTable.Cols.SOUND_ID + " = ?",
-                new String[]{soundboard.getId().toString(), sound.getId().toString()},
+                new String[]{soundboardId.toString(), soundId.toString()},
                 null,
                 null,
                 null);
     }
 
 
-    public void unlinkSound(Soundboard soundboard, int index) {
+    public void unlinkSound(UUID soundboardId, int index) {
         int numDeleted = getDatabase().delete(SoundboardSoundTable.NAME,
                 SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
                         SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
-                new String[]{soundboard.getId().toString(),
+                new String[]{soundboardId.toString(),
                         Integer.toString(index)});
 
         if (numDeleted == 0) {
@@ -328,13 +348,13 @@ public class SoundboardDao extends AbstractDao {
             throw new RuntimeException("There was more than one sound at index " + index + ".");
         }
 
-        fillSoundGap(soundboard, index);
+        fillSoundGap(soundboardId, index);
     }
 
     /**
      * Fills the gap at index - 1 and lets the following sounds - if any - move up.
      */
-    private void fillSoundGap(Soundboard soundboard, int gapIndex) {
+    private void fillSoundGap(UUID soundboardId, int gapIndex) {
         int i = gapIndex + 1;
 
         int rowsUpdated;
@@ -346,12 +366,12 @@ public class SoundboardDao extends AbstractDao {
                     values,
                     SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
                             SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
-                    new String[]{soundboard.getId().toString(),
+                    new String[]{soundboardId.toString(),
                             Integer.toString(i)});
 
             if (rowsUpdated > 1) {
                 throw new RuntimeException("More than one row at index " + (i - 1) +
-                        " in soundboard " + soundboard.getName());
+                        " in soundboard " + soundboardId);
             }
 
             i++;
@@ -379,13 +399,17 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public List<Soundboard> findAll() {
-        try (SoundboardCursorWrapper cursorWrapper = querySoundboards(null, null)) {
+        try (SoundboardCursorWrapper cursorWrapper = queryAll()) {
             ImmutableList.Builder<Soundboard> res = new ImmutableList.Builder<>();
             while (cursorWrapper.moveToNext()) {
                 res.add(cursorWrapper.getSoundboard());
             }
             return res.build();
         }
+    }
+
+    private SoundboardCursorWrapper queryAll() {
+        return querySoundboards(null, null);
     }
 
     public Soundboard find(UUID soundboardId) {
@@ -403,7 +427,6 @@ public class SoundboardDao extends AbstractDao {
             return res;
         }
     }
-
 
     private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {
         final Cursor cursor =

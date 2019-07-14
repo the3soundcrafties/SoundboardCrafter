@@ -31,8 +31,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableList;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -93,11 +95,11 @@ public class AudioFileListFragment extends Fragment implements
     private TextView folderPath;
     private AudioFileListItemAdapter adapter;
     private MediaPlayerService mediaPlayerService;
-    private @Nullable
-    SoundboardMediaPlayer mediaPlayer;
+    @Nullable
+    private SoundboardMediaPlayer mediaPlayer;
 
-    private @Nullable
-    SoundEventListener soundEventListenerActivity;
+    @Nullable
+    private SoundEventListener soundEventListenerActivity;
 
     private SortOrder sortOrder;
 
@@ -236,7 +238,7 @@ public class AudioFileListFragment extends Fragment implements
                     }
                 });
 
-        if (ActivityCompat.checkSelfPermission(getActivity(),
+        if (ActivityCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
         } // otherwise we will receive an event later
@@ -367,12 +369,31 @@ public class AudioFileListFragment extends Fragment implements
 
             AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
             audioFileItemRow.setImage(R.drawable.ic_stop);
-            mediaPlayer = service.play(audioModelAndSound.getName(),
-                    audioModelAndSound.getAudioModel().getPath(),
-                    () -> {
-                        adapter.setPositionPlaying(null);
-                        mediaPlayer = null;
-                    });
+            try {
+                mediaPlayer = service.play(audioModelAndSound.getName(),
+                        audioModelAndSound.getAudioModel().getPath(),
+                        () -> {
+                            adapter.setPositionPlaying(null);
+                            mediaPlayer = null;
+                        });
+            } catch (IOException e) {
+                @Nullable UUID soundId = audioModelAndSound.getSoundId();
+
+                adapter.setPositionPlaying(null);
+                mediaPlayer = null;
+                Snackbar snackbar = Snackbar
+                        .make(listView, getString(R.string.audiofile_not_found),
+                                Snackbar.LENGTH_LONG)
+                        .setAction(getString(R.string.update_all_soundboards_and_sounds),
+                                view -> {
+                                    if (soundId != null) {
+                                        new DeleteSoundTask(requireActivity(), soundId).execute();
+                                    } else if (soundEventListenerActivity != null) {
+                                        soundEventListenerActivity.somethingMightHaveChanged();
+                                    }
+                                });
+                snackbar.show();
+            }
         }
     }
 
@@ -424,10 +445,15 @@ public class AudioFileListFragment extends Fragment implements
         switch (requestCode) {
             case EDIT_SOUND_REQUEST_CODE:
                 if (soundEventListenerActivity != null) {
-                    final UUID soundId = UUID.fromString(
-                            data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
-
-                    soundEventListenerActivity.soundChanged(soundId);
+                    @Nullable String soundIdString =
+                            data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID);
+                    if (soundIdString != null) {
+                        final UUID soundId = UUID.fromString(soundIdString);
+                        soundEventListenerActivity.soundChanged(soundId);
+                    } else {
+                        // Update everything
+                        soundEventListenerActivity.somethingMightHaveChanged();
+                    }
                 }
                 break;
         }
@@ -623,6 +649,53 @@ public class AudioFileListFragment extends Fragment implements
             SoundDao.getInstance(appContext).insert(sound);
 
             return null;
+        }
+    }
+
+    /**
+     * A background task, used to delete the sound
+     */
+    class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = DeleteSoundTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final UUID soundId;
+
+        DeleteSoundTask(Context context, UUID soundId) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.soundId = soundId;
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            Log.d(TAG, "Deleting sound " + soundId);
+
+            SoundDao.getInstance(appContext).delete(soundId);
+            return null;
+        }
+
+        @Override
+        @UiThread
+        protected void onPostExecute(Void nothing) {
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            if (soundEventListenerActivity != null) {
+                soundEventListenerActivity.somethingMightHaveChanged();
+            }
         }
     }
 }

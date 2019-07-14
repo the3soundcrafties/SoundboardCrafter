@@ -28,6 +28,8 @@
     <string name="sound_edit_loopSwitch">Loop</string>
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
+    <string name="audiofile_list_file_not_found">Sound file not found</string>
+    <string name="update_all_soundboards_and_sounds">Purge</string>
     <string name="sounds_tab_title">Sounds</string>
     <plurals name="subfolder_num_sounds">
         <item quantity="one">1 sound</item>
@@ -55,5 +57,6 @@
         <item quantity="other">%d soundboards</item>
     </plurals>
     <string name="soundboards_default_toolbar">All Soundboards</string>
-
+    <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
+    <string name="audiofile_not_found">Sound file not found any longer</string>
 </resources>

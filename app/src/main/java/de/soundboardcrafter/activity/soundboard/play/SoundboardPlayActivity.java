@@ -54,7 +54,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * The main activity, showing the soundboards.
  */
 public class SoundboardPlayActivity extends AppCompatActivity
-        implements ServiceConnection, ResetAllDialogFragment.OnOkCallback {
+        implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
+        SoundboardFragment.SoundsDeletedListener {
     private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
     private static final String KEY_GAME_ID = "gameId";
@@ -207,6 +208,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
             return;
         }
+        pagerAdapter.clear(false);
+        new FindSoundboardsTask(this).execute();
+    }
+
+    @Override
+    public void soundsDeleted() {
         pagerAdapter.clear(false);
         new FindSoundboardsTask(this).execute();
     }

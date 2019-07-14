@@ -18,6 +18,9 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.snackbar.Snackbar;
+
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
@@ -108,7 +111,6 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                 // There is no cancel button - the result is always OK
                 Activity.RESULT_OK,
                 intent);
-
     }
 
     @Override
@@ -172,8 +174,39 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         if (!service.isActivelyPlaying(sound.getSound())) {
-            service.play(null, sound.getSound(), null);
+            try {
+                service.play(null, sound.getSound(), null);
+            } catch (IOException e) {
+                handleSoundFileNotFound();
+            }
         }
+    }
+
+    private void handleSoundFileNotFound() {
+        Snackbar snackbar = Snackbar
+                .make(soundEditView, getString(R.string.audiofile_not_found),
+                        Snackbar.LENGTH_LONG)
+                .setAction(getString(R.string.update_all_soundboards_and_sounds),
+                        view -> {
+                            new DeleteSoundTask(requireActivity(), sound.getSound().getId()).execute();
+                            sound = null;
+
+                            Intent intent = new Intent(getActivity(), SoundboardPlaySoundEditActivity.class);
+                            // EXTRA_SOUND_ID stays null!
+                            requireActivity().setResult(
+                                    // There is no cancel button - the result is always OK
+                                    Activity.RESULT_OK,
+                                    intent);
+                        })
+                .addCallback(new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        getActivity().finish();
+
+                        super.onDismissed(transientBottomBar, event);
+                    }
+                });
+        snackbar.show();
     }
 
     /**
@@ -218,7 +251,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         requireActivity().unbindService(this);
 
         if (sound == null) {
-            // Sound not yet loaded
+            // Sound not yet loaded - or has been deleted from the database
             return;
         }
 
@@ -235,7 +268,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
 
     private void stopPlaying(boolean fadeOut) {
         if (sound == null) {
-            // not yet loaded
+            // sound not yet loaded - or has been deleted from the database
             return;
         }
 
@@ -355,6 +388,37 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             Log.d(TAG, "Saving sound " + sound);
 
             SoundDao.getInstance(appContext).updateSoundAndSoundboardLinks(sound);
+            return null;
+        }
+    }
+
+    /**
+     * A background task, used to delete the sound
+     */
+    class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = DeleteSoundTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final UUID soundId;
+
+        DeleteSoundTask(Context context, UUID soundId) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.soundId = soundId;
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            Log.d(TAG, "Deleting sound " + soundId);
+
+            SoundDao.getInstance(appContext).delete(soundId);
             return null;
         }
     }

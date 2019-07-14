@@ -7,9 +7,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -66,6 +68,11 @@ class AudioFileRow extends RelativeLayout {
         return audioModelAndSound.getAudioModel().getArtist()
                 + " · " +
                 formatLength();
+    }
+
+    @Nullable
+    public UUID getSoundId() {
+        return audioModelAndSound.getSoundId();
     }
 
     private String formatLength() {

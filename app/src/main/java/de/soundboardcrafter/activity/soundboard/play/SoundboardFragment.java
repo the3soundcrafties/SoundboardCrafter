@@ -25,6 +25,9 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.snackbar.Snackbar;
+
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -52,6 +55,10 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  * Shows Soundboard in a Grid
  */
 public class SoundboardFragment extends Fragment implements ServiceConnection {
+    public interface SoundsDeletedListener {
+        void soundsDeleted();
+    }
+
     private static final String TAG = SoundboardFragment.class.getName();
 
     private static final String ARG_SOUNDBOARD = "Soundboard";
@@ -76,6 +83,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private SoundboardWithSounds soundboard;
     private static final String ARG_SORT_ORDER = "sortOrder";
     private SortOrder sortOrder;
+
+    @Nullable
+    private SoundsDeletedListener soundsDeletedListenerActivity;
 
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
@@ -184,11 +194,26 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         if (!service.isActivelyPlaying(soundboard.getSoundboard(), sound)) {
             soundboardItemRow.setImage(R.drawable.ic_stop);
-            service.play(soundboard.getSoundboard(), sound,
-                    soundboardItemAdapter::notifyDataSetChanged);
+            try {
+                service.play(soundboard.getSoundboard(), sound,
+                        soundboardItemAdapter::notifyDataSetChanged);
+            } catch (IOException e) {
+                soundboardItemRow.setImage(R.drawable.ic_play);
+                handleSoundFileNotFound(sound);
+            }
         } else {
             service.stopPlaying(soundboard.getSoundboard(), sound, true);
         }
+    }
+
+    private void handleSoundFileNotFound(Sound sound) {
+        Snackbar snackbar = Snackbar
+                .make(gridView, getString(R.string.audiofile_not_found),
+                        Snackbar.LENGTH_LONG)
+                .setAction(getString(R.string.update_all_soundboards_and_sounds),
+                        view -> new DeleteSoundsTask(requireActivity()).execute(sound.getId())
+                );
+        snackbar.show();
     }
 
 
@@ -276,6 +301,21 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         inflater.inflate(R.menu.fragment_sound, menu);
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof SoundsDeletedListener) {
+            soundsDeletedListenerActivity = (SoundsDeletedListener) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        soundsDeletedListenerActivity = null;
+    }
+
 
     @Override
     @UiThread
@@ -339,7 +379,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 final UUID soundId = UUID.fromString(
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
-                // The sound details may have been changed, but not its soundboards!
                 new UpdateSoundsTask(requireActivity()).execute(soundId);
                 break;
         }
@@ -510,10 +549,60 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             for (int index : indexes) {
                 Log.d(TAG, "Removing sound + " + index + " from soundboard");
 
-                soundboardDao.unlinkSound(soundboardItemAdapter.getSoundboard().getSoundboard(), index);
+                soundboardDao.unlinkSound(
+                        soundboardItemAdapter.getSoundboard().getSoundboard().getId(), index);
             }
 
             return null;
+        }
+    }
+
+
+    /**
+     * A background task, used to delete sounds (from the database, from all soundboards etc.)
+     */
+    class DeleteSoundsTask extends AsyncTask<UUID, Void, Void> {
+        private final String TAG = DeleteSoundsTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+
+        DeleteSoundsTask(Context context) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(UUID... soundIds) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            SoundDao soundDao = SoundDao.getInstance(appContext);
+
+            for (UUID soundId : soundIds) {
+                Log.d(TAG, "Deleting sound + " + soundId);
+
+                soundDao.delete(soundId);
+            }
+
+            return null;
+        }
+
+        @Override
+        @UiThread
+        protected void onPostExecute(Void nothing) {
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            soundsDeletedListenerActivity.soundsDeleted();
         }
     }
 }

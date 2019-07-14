@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import java.text.CollationKey;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 import de.soundboardcrafter.model.Sound;
 
@@ -57,6 +58,15 @@ class AudioModelAndSound extends AbstractAudioFolderEntry {
         return sound.getName();
     }
 
+
+    @Nullable
+    UUID getSoundId() {
+        if (sound == null) {
+            return null;
+        }
+
+        return sound.getId();
+    }
 
     @Nullable
     public Sound getSound() {
