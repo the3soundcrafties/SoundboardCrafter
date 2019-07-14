@@ -173,6 +173,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
+        if (sound == null) {
+            return;
+        }
+
         if (!service.isActivelyPlaying(sound.getSound())) {
             try {
                 service.play(null, sound.getSound(), null);
@@ -197,15 +201,8 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                                     // There is no cancel button - the result is always OK
                                     Activity.RESULT_OK,
                                     intent);
-                        })
-                .addCallback(new Snackbar.Callback() {
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        getActivity().finish();
-
-                        super.onDismissed(transientBottomBar, event);
-                    }
-                });
+                            getActivity().finish();
+                        });
         snackbar.show();
     }
 
@@ -218,6 +215,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return;
         }
 
+        if (sound == null) {
+            return;
+        }
+
         service.setVolumePercentage(sound.getSound().getId(), volumePercentage);
     }
 
@@ -227,6 +228,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private void setLoop(boolean loop) {
         MediaPlayerService service = getService();
         if (service == null) {
+            return;
+        }
+
+        if (sound == null) {
             return;
         }
 
