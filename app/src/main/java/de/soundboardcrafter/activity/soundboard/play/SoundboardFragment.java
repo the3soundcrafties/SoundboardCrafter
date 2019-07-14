@@ -377,9 +377,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             case EDIT_SOUND_REQUEST_CODE:
                 Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
 
-                final UUID soundId = UUID.fromString(
-                        data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID));
-                new UpdateSoundsTask(requireActivity()).execute(soundId);
+                @Nullable String soundIdString =
+                        data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID);
+                if (soundIdString != null) {
+                    final UUID soundId = UUID.fromString(soundIdString);
+                    new UpdateSoundsTask(requireActivity()).execute(soundId);
+                } else {
+                    // Sound file has been deleted
+                    soundsDeletedListenerActivity.soundsDeleted();
+                }
                 break;
         }
     }
