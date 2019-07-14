@@ -3,6 +3,7 @@ package de.soundboardcrafter.model;
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
+import java.text.CollationKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,8 +47,13 @@ public class SoundboardWithSounds implements Serializable {
         return soundboard.getId();
     }
 
-    public @NonNull
-    String getName() {
+    @NonNull
+    public CollationKey getCollationKey() {
+        return soundboard.getCollationKey();
+    }
+
+    @NonNull
+    public String getName() {
         return soundboard.getName();
     }
 

@@ -211,7 +211,8 @@ public class GameListFragment extends Fragment
     @UiThread
     private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {
         List<GameWithSoundboards> list = Lists.newArrayList(games);
-        list.sort((g1, g2) -> g1.getGame().getName().compareTo(g2.getGame().getName()));
+        list.sort((g1, g2) ->
+                g1.getGame().getCollationKey().compareTo(g2.getGame().getCollationKey()));
         adapter = new GameListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();

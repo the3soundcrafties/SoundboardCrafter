@@ -58,7 +58,7 @@ public class AudioFileListFragment extends Fragment implements
         AudioFileRow.Callback,
         SoundEventListener {
     private enum SortOrder {
-        BY_NAME(Comparator.comparing(AudioModelAndSound::getName)),
+        BY_NAME(Comparator.comparing(AudioModelAndSound::getCollationKey)),
         BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded).reversed());
         private final Comparator<AudioModelAndSound> comparator;
 

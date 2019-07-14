@@ -2,17 +2,28 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.text.CollationKey;
 import java.util.Date;
 import java.util.Objects;
+
+import de.soundboardcrafter.model.ThreadSafeCollator;
 
 /**
  * An audio file data / metadata.
  */
 class AudioModel {
+    private static final ThreadSafeCollator nameCollator =
+            ThreadSafeCollator.getInstance();
+
     private final String path;
 
     @NonNull
     private final String name;
+
+    // May not be seriablizable.
+    @NonNull
+    private transient CollationKey collationKey;
 
     private final String artist;
     private final Date dateAdded;
@@ -25,15 +36,31 @@ class AudioModel {
         this.artist = artist;
         this.dateAdded = dateAdded;
         this.durationSecs = durationSecs;
+
+        setCollationKey();
+    }
+
+    private void setCollationKey() {
+        collationKey = nameCollator.getCollationKey(getName());
     }
 
     public String getPath() {
         return path;
     }
 
+    /**
+     * Returns the name.
+     * <p></p>
+     * For  sorting purposes better use {@link #getCollationKey()}.
+     */
     @NonNull
     public String getName() {
         return name;
+    }
+
+    @NonNull
+    public CollationKey getCollationKey() {
+        return collationKey;
     }
 
     String getArtist() {
@@ -46,6 +73,15 @@ class AudioModel {
 
     long getDurationSecs() {
         return durationSecs;
+    }
+
+    private void writeObject(final java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        setCollationKey();
     }
 
     @Override

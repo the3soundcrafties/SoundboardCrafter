@@ -59,7 +59,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
     private enum SortOrder {
-        BY_NAME(Comparator.comparing(Sound::getName));
+        BY_NAME(Comparator.comparing(Sound::getCollationKey));
         // TODO Have other sort orders?
 
         private final Comparator<Sound> comparator;

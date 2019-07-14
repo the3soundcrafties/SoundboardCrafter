@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -222,7 +223,7 @@ public class SoundboardListFragment extends Fragment
     @UiThread
     private void setSoundboards(ImmutableList<SoundboardWithSounds> soundboards) {
         List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
-        list.sort((s1, s2) -> s1.getName().compareTo(s2.getName()));
+        list.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
         adapter.setSoundboards(list);
     }
 

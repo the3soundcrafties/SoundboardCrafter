@@ -2,6 +2,8 @@ package de.soundboardcrafter.model;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.text.CollationKey;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -15,10 +17,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * appropriate synchronization.
  */
 public class Game extends AbstractEntity {
+    private static final ThreadSafeCollator nameCollator =
+            ThreadSafeCollator.getInstance();
 
     @NonNull
     private String name;
 
+    // May not be serializable.
+    @NonNull
+    private transient CollationKey collationKey;
 
     Game(@NonNull String name) {
         this(UUID.randomUUID(), name);
@@ -27,12 +34,21 @@ public class Game extends AbstractEntity {
 
     public Game(@Nonnull UUID id, String name) {
         super(id);
-        this.name = checkNotNull(name, "name is null");
+        setName(checkNotNull(name, "name is null"));
     }
 
+    @NonNull
+    public CollationKey getCollationKey() {
+        return collationKey;
+    }
 
-    public @NonNull
-    String getName() {
+    /**
+     * Returns the name.
+     * <p></p>
+     * For  sorting purposes better use {@link #getCollationKey()}.
+     */
+    @NonNull
+    public String getName() {
         return name;
     }
 
@@ -40,6 +56,20 @@ public class Game extends AbstractEntity {
         checkNotNull(name, "name is null");
 
         this.name = name;
+        setCollationKey();
+    }
+
+    private void setCollationKey() {
+        collationKey = nameCollator.getCollationKey(getName());
+    }
+
+    private void writeObject(final java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        setCollationKey();
     }
 
 
