@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
+        // See https://medium.com/@chauyan/how-to-use-properties-file-to-do-android-sign-action-in-gradle-45d51e31a98c
         config_release {
             def Properties localProps = new Properties()
             localProps.load(new FileInputStream(file('../local.properties')))
