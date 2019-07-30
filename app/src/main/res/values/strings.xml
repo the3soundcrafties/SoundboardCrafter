@@ -60,4 +60,5 @@
     <string name="soundboards_default_toolbar">All Soundboards</string>
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
     <string name="audiofile_not_found">Sound file not found any longer</string>
+    <string name="artist_unknown"><![CDATA[<unknown>]]></string>
 </resources>

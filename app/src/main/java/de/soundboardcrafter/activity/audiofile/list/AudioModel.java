@@ -10,6 +10,8 @@ import java.util.Objects;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.ThreadSafeCollator;
 
+import static androidx.core.util.Preconditions.checkNotNull;
+
 /**
  * An audio file data / metadata.
  */
@@ -33,8 +35,8 @@ class AudioModel {
     long durationSecs;
 
     AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist, Date dateAdded, long durationSecs) {
-        this.audioLocation = audioLocation;
-        this.name = name;
+        this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
+        this.name = checkNotNull(name, "name is null");
         this.artist = artist;
         this.dateAdded = dateAdded;
         this.durationSecs = durationSecs;
@@ -47,7 +49,7 @@ class AudioModel {
     }
 
     @NonNull
-    public IAudioLocation getAudioLocation() {
+    IAudioLocation getAudioLocation() {
         return audioLocation;
     }
 
