@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,6 +16,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
+import de.soundboardcrafter.model.AssetAudioLocation;
+import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -62,17 +67,36 @@ class SoundboardMediaPlayers {
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
-    static void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
-                                String soundPath, int volumePercentage, boolean loop)
+    static void initMediaPlayer(Context context,
+                                SoundboardMediaPlayer mediaPlayer, String soundName,
+                                @NonNull IAudioLocation audioLocation, int volumePercentage, boolean loop)
             throws IOException {
         mediaPlayer.setSoundName(soundName);
-        mediaPlayer.setDataSource(soundPath);
+        initDataSource(context, mediaPlayer, audioLocation);
         mediaPlayer.setAudioAttributes(
                 new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build());
         SoundboardMediaPlayers.setVolume(
                 mediaPlayer,
                 SoundboardMediaPlayers.percentageToVolume(volumePercentage));
         mediaPlayer.setLooping(loop);
+    }
+
+    private static void initDataSource(Context context, SoundboardMediaPlayer mediaPlayer,
+                                       @NonNull IAudioLocation audioLocation) throws IOException {
+        if (audioLocation instanceof FileSystemAudioLocation) {
+            mediaPlayer.setDataSource(((FileSystemAudioLocation) audioLocation).getPath());
+        } else if (audioLocation instanceof AssetAudioLocation) {
+            @NonNull String assetPath = ((AssetAudioLocation) audioLocation).getAssetPath();
+            AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath);
+            mediaPlayer.setDataSource(
+                    fileDescriptor.getFileDescriptor(),
+                    fileDescriptor.getStartOffset(),
+                    fileDescriptor.getLength());
+        } else {
+            throw new IllegalStateException("Unexpected audio location type: " +
+                    audioLocation.getClass());
+        }
+
     }
 
     void setOnPlayingStopped(@Nullable Soundboard soundboard, Sound sound,

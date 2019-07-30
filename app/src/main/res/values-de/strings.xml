@@ -14,6 +14,7 @@
     <string name="toolbar_menu_audiofiles_sort_alpha">Nach Name sortieren</string>
     <string name="toolbar_menu_audiofiles_sort_date">Nach Datum sortieren</string>
     <string name="toolbar_menu_audiofiles_folders_all">Alle</string>
+    <string name="toolbar_menu_audiofiles_assets">Mitgelieferte</string>
     <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>

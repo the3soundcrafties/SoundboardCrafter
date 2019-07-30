@@ -33,10 +33,10 @@ public class Sound extends AbstractEntity {
     public static final int MAX_VOLUME_PERCENTAGE = 100;
 
     /**
-     * Path to the audio file
+     * Location of the audio file
      */
     @NonNull
-    private final String path;
+    private final IAudioLocation audioLocation;
 
     /**
      * Display name
@@ -58,22 +58,21 @@ public class Sound extends AbstractEntity {
      */
     private boolean loop;
 
-    public Sound(@NonNull String path, @NonNull String name) {
-        this(UUID.randomUUID(), path, name, 100, false);
+    public Sound(@NonNull IAudioLocation audioLocation, @NonNull String name) {
+        this(UUID.randomUUID(), audioLocation, name, 100, false);
     }
 
-    public Sound(UUID id, @NonNull String path, @NonNull String name, int volumePercentage, boolean loop) {
+    public Sound(UUID id, @NonNull IAudioLocation audioLocation, @NonNull String name, int volumePercentage, boolean loop) {
         super(id);
-        this.path = checkNotNull(path, "path is null");
+        this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
         setName(checkNotNull(name, "name is null"));
         setVolumePercentage(volumePercentage);
         this.loop = loop;
     }
 
-
     @NonNull
-    public String getPath() {
-        return path;
+    public IAudioLocation getAudioLocation() {
+        return audioLocation;
     }
 
     @NonNull
@@ -92,8 +91,7 @@ public class Sound extends AbstractEntity {
     }
 
     public void setName(@NonNull String name) {
-        checkNotNull(path,
-                "path is null");
+        checkNotNull(name, "name is null");
 
         this.name = name;
         setCollationKey();
@@ -137,7 +135,7 @@ public class Sound extends AbstractEntity {
     String toString() {
         return "Sound{" +
                 "id=" + getId() +
-                ", path=" + path +
+                ", audioLocation=" + audioLocation +
                 ", name='" + name + '\'' +
                 ", volumePercentage=" + volumePercentage +
                 ", loop=" + loop +

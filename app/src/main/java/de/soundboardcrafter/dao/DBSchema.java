@@ -1,5 +1,11 @@
 package de.soundboardcrafter.dao;
 
+import androidx.annotation.NonNull;
+
+import de.soundboardcrafter.model.AssetAudioLocation;
+import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.IAudioLocation;
+
 /**
  * The names of the tables and columns in the database schema, where the soundboards, sounds etc.
  * are stored.
@@ -50,10 +56,27 @@ class DBSchema {
     static final class SoundTable {
         static final String NAME = "sound";
 
+        enum LocationType {
+            /**
+             * Located in the file system
+             */
+            FILE,
+            /**
+             * Located in the app as an asset
+             */
+            ASSET
+        }
+
         static final class Cols {
             static final String ID = "_id";
+
             /**
-             * Path to the audio file
+             * Path to the audio file (in the device's file system or the assets folder)
+             */
+            static final String LOCATION_TYPE = "location_type";
+
+            /**
+             * Path to the audio file (in the device's file system or the assets folder)
              */
             static final String PATH = "path";
             static final String NAME = "name";
@@ -65,6 +88,21 @@ class DBSchema {
              * Whether the sound shall be played in a loop
              */
             static final String LOOP = "loop";
+        }
+
+        /**
+         * Converts a {@link LocationType} and a <code>path</code> to an {@link IAudioLocation}.
+         */
+        public static IAudioLocation toAudioLocation(
+                @NonNull SoundTable.LocationType locationType, @NonNull String path) {
+            switch (locationType) {
+                case FILE:
+                    return new FileSystemAudioLocation(path);
+                case ASSET:
+                    return new AssetAudioLocation(path);
+                default:
+                    throw new IllegalStateException("Unexpected audio location type: " + locationType);
+            }
         }
     }
 

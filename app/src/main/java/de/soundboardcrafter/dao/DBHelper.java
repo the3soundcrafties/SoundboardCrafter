@@ -19,7 +19,7 @@ class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version
      */
-    private static final int VERSION = 13;
+    private static final int VERSION = 14;
 
     private static final String CREATE_TABLE_GAME = //
             "CREATE TABLE " + GameTable.NAME + " (" + //
@@ -52,12 +52,19 @@ class DBHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_SOUND = //
             "CREATE TABLE " + SoundTable.NAME + " (" + //
                     SoundTable.Cols.ID + " TEXT NOT NULL, " + //
+                    SoundTable.Cols.LOCATION_TYPE + " TEXT NOT NULL, " + //
                     SoundTable.Cols.PATH + " TEXT NOT NULL, " + //
                     SoundTable.Cols.NAME + " TEXT NOT NULL, " + //
                     SoundTable.Cols.VOLUME_PERCENTAGE + " INTEGER NOT NULL, " +
                     // Boolean. 0 == false, 1 == true
                     SoundTable.Cols.LOOP + " INTEGER NOT NULL, " + //
                     "PRIMARY KEY (" + SoundTable.Cols.ID + "));";
+
+    private static final String ALTER_TABLE_SOUND_ADD_COLUMN_LOCATION_TYPE = //
+            "ALTER TABLE " + SoundTable.NAME + //
+                    " ADD COLUMN " + SoundTable.Cols.LOCATION_TYPE + " TEXT NOT NULL " +
+                    "DEFAULT " + SoundTable.LocationType.FILE + ";";
+
 
     private static final String UPDATE_VOLUMES_RESET = //
             "UPDATE " + SoundTable.NAME + " " + //
@@ -102,16 +109,25 @@ class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.e(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+        Log.e(TAG,
+                "Upgrading database from version " + oldVersion + " to version " + newVersion);
 
         if (oldVersion < 12) {
             dropTables(db);
             createTables(db);
         }
 
-        if (oldVersion < 13) {
+        if (oldVersion >= 12 && oldVersion < 13) {
             resetVolumes(db);
         }
+
+        if (oldVersion >= 12 && oldVersion < 14) {
+            alterTableSoundAddColumnLocationType(db);
+        }
+    }
+
+    private void alterTableSoundAddColumnLocationType(SQLiteDatabase db) {
+        db.execSQL(ALTER_TABLE_SOUND_ADD_COLUMN_LOCATION_TYPE);
     }
 
     private void createTables(SQLiteDatabase db) {

@@ -4,15 +4,22 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import de.soundboardcrafter.model.AssetAudioLocation;
+import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.IAudioLocation;
+
+import static androidx.core.util.Preconditions.checkNotNull;
+
 /**
  * A folder containing audio files - or folders with (folders with...) audio files.
+ * Might be on the device or in the assets directory.
  */
 class AudioFolder extends AbstractAudioFolderEntry {
-    private final String path;
+    private final IAudioLocation audioLocation;
     private final int numAudioFiles;
 
-    AudioFolder(String path, int numAudioFiles) {
-        this.path = path;
+    AudioFolder(@NonNull IAudioLocation audioLocation, int numAudioFiles) {
+        this.audioLocation = checkNotNull(audioLocation, "audioLocation was null");
         this.numAudioFiles = numAudioFiles;
     }
 
@@ -20,16 +27,21 @@ class AudioFolder extends AbstractAudioFolderEntry {
      * Returns only the folder name (not the whole path).
      */
     public String getName() {
-        int lastIndexOfSlash = path.lastIndexOf("/");
-        if (lastIndexOfSlash < 0) {
-            return path;
-        }
-
-        return path.substring(lastIndexOfSlash + 1);
+        return audioLocation.getName();
     }
 
     public String getPath() {
-        return path;
+        if (audioLocation instanceof FileSystemAudioLocation) {
+            return ((FileSystemAudioLocation) audioLocation).getPath();
+        } else if (audioLocation instanceof AssetAudioLocation) {
+            return ((AssetAudioLocation) audioLocation).getAssetPath();
+        } else {
+            throw new IllegalStateException("Unexpected audio location: " + audioLocation);
+        }
+    }
+
+    public IAudioLocation getAudioLocation() {
+        return audioLocation;
     }
 
     int getNumAudioFiles() {
@@ -49,19 +61,19 @@ class AudioFolder extends AbstractAudioFolderEntry {
         }
         AudioFolder that = (AudioFolder) o;
         return numAudioFiles == that.numAudioFiles &&
-                Objects.equals(path, that.path);
+                Objects.equals(audioLocation, that.audioLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), path, numAudioFiles);
+        return Objects.hash(super.hashCode(), audioLocation, numAudioFiles);
     }
 
     @Override
     @NonNull
     public String toString() {
         return "AudioFolder{" +
-                "path='" + path + '\'' +
+                "audioLocation='" + audioLocation + '\'' +
                 ", numAudioFiles=" + numAudioFiles +
                 '}';
     }

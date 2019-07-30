@@ -14,6 +14,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import de.soundboardcrafter.dao.DBSchema.SoundTable;
+import de.soundboardcrafter.model.AssetAudioLocation;
+import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
@@ -47,15 +51,15 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
-     * Finds all sounds, mapped on their respective path.
+     * Finds all sounds, mapped on their respective {@link IAudioLocation}.
      */
-    public ImmutableMap<String, Sound> findAllByPath() {
-        ImmutableMap.Builder<String, Sound> res = ImmutableMap.builder();
+    public ImmutableMap<IAudioLocation, Sound> findAllByAudioLocation() {
+        ImmutableMap.Builder<IAudioLocation, Sound> res = ImmutableMap.builder();
 
         try (SoundCursorWrapper cursor = querySounds(null, new String[]{})) {
             while (cursor.moveToNext()) {
                 Sound sound = cursor.getSound();
-                res.put(sound.getPath(), sound);
+                res.put(sound.getAudioLocation(), sound);
             }
         }
 
@@ -96,7 +100,7 @@ public class SoundDao extends AbstractDao {
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
     private Sound find(UUID soundId) {
-        try (SoundCursorWrapper cursor = querySounds(DBSchema.SoundTable.Cols.ID + " = ?",
+        try (SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
                 new String[]{soundId.toString()})) {
             if (!cursor.moveToNext()) {
                 throw new IllegalStateException("No sound with ID " + soundId);
@@ -114,7 +118,7 @@ public class SoundDao extends AbstractDao {
     private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
-                        DBSchema.SoundTable.NAME,
+                        SoundTable.NAME,
                         null, // all columns
                         whereClause, whereArgs,
                         null,
@@ -133,7 +137,7 @@ public class SoundDao extends AbstractDao {
     public void insert(Sound sound) {
         // TODO throw exception if sound name already exists
 
-        insertOrThrow(DBSchema.SoundTable.NAME, buildContentValues(sound));
+        insertOrThrow(SoundTable.NAME, buildContentValues(sound));
     }
 
     /**
@@ -149,9 +153,9 @@ public class SoundDao extends AbstractDao {
      * Updates this sound which has to exist in the database.
      */
     public void update(Sound sound) {
-        int rowsUpdated = getDatabase().update(DBSchema.SoundTable.NAME,
+        int rowsUpdated = getDatabase().update(SoundTable.NAME,
                 buildContentValues(sound),
-                DBSchema.SoundTable.Cols.ID + " = ?",
+                SoundTable.Cols.ID + " = ?",
                 new String[]{sound.getId().toString()});
 
         if (rowsUpdated != 1) {
@@ -161,13 +165,41 @@ public class SoundDao extends AbstractDao {
 
     private ContentValues buildContentValues(Sound sound) {
         ContentValues values = new ContentValues();
-        values.put(DBSchema.SoundTable.Cols.ID, sound.getId().toString());
-        values.put(DBSchema.SoundTable.Cols.NAME, sound.getName());
+        values.put(SoundTable.Cols.ID, sound.getId().toString());
+        values.put(SoundTable.Cols.NAME, sound.getName());
         // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method-that-supports-boolean
-        values.put(DBSchema.SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
-        values.put(DBSchema.SoundTable.Cols.PATH, sound.getPath());
-        values.put(DBSchema.SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
+        values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
+        values.put(SoundTable.Cols.LOCATION_TYPE,
+                toLocationType(sound.getAudioLocation()).name());
+        values.put(SoundTable.Cols.PATH, toPath(sound.getAudioLocation()));
+        values.put(SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
         return values;
+    }
+
+    private String toPath(IAudioLocation audioLocation) {
+        if (audioLocation instanceof FileSystemAudioLocation) {
+            return ((FileSystemAudioLocation) audioLocation).getPath();
+        }
+
+        if (audioLocation instanceof AssetAudioLocation) {
+            return ((AssetAudioLocation) audioLocation).getAssetPath();
+        }
+
+        throw new IllegalStateException("Unexpected audio location type " +
+                audioLocation.getClass());
+    }
+
+    private SoundTable.LocationType toLocationType(IAudioLocation audioLocation) {
+        if (audioLocation instanceof FileSystemAudioLocation) {
+            return SoundTable.LocationType.FILE;
+        }
+
+        if (audioLocation instanceof AssetAudioLocation) {
+            return SoundTable.LocationType.ASSET;
+        }
+
+        throw new IllegalStateException("Unexpected audio location type " +
+                audioLocation.getClass());
     }
 
 
@@ -177,13 +209,13 @@ public class SoundDao extends AbstractDao {
     public void delete(UUID soundId) {
         soundboardDao.unlinkSound(soundId);
 
-        getDatabase().delete(DBSchema.SoundTable.NAME,
-                DBSchema.SoundTable.Cols.ID + " = ?",
+        getDatabase().delete(SoundTable.NAME,
+                SoundTable.Cols.ID + " = ?",
                 new String[]{soundId.toString()});
     }
 
 
     void deleteAllSounds() {
-        getDatabase().delete(DBSchema.SoundTable.NAME, null, new String[]{});
+        getDatabase().delete(SoundTable.NAME, null, new String[]{});
     }
 }

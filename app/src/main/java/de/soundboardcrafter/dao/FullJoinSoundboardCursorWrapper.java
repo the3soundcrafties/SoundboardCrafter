@@ -13,6 +13,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -29,6 +30,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
                 + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX
                 + ", s." + SoundTable.Cols.ID
                 + ", s." + SoundTable.Cols.NAME
+                + ", s." + SoundTable.Cols.LOCATION_TYPE
                 + ", s." + SoundTable.Cols.PATH
                 + ", s." + SoundTable.Cols.VOLUME_PERCENTAGE
                 + ", s." + SoundTable.Cols.LOOP
@@ -86,10 +88,17 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
 
         UUID soundId = UUID.fromString(getString(3));
         String soundName = getString(4);
-        String soundPath = getString(5);
-        int soundVolumePercentage = getInt(6);
-        boolean soundLoop = getInt(7) != 0;
-        Sound sound = new Sound(soundId, soundPath, soundName,
+
+        SoundTable.LocationType soundLocationType =
+                SoundTable.LocationType.valueOf(getString(5));
+        String soundPath = getString(6);
+
+        final IAudioLocation soundLocation =
+                SoundTable.toAudioLocation(soundLocationType, soundPath);
+
+        int soundVolumePercentage = getInt(7);
+        boolean soundLoop = getInt(8) != 0;
+        Sound sound = new Sound(soundId, soundLocation, soundName,
                 soundVolumePercentage, soundLoop);
 
         return new IndexedSound(index, sound);

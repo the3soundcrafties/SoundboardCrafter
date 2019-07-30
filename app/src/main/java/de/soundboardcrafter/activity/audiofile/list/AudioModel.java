@@ -7,6 +7,7 @@ import java.text.CollationKey;
 import java.util.Date;
 import java.util.Objects;
 
+import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.ThreadSafeCollator;
 
 /**
@@ -16,7 +17,8 @@ class AudioModel {
     private static final ThreadSafeCollator nameCollator =
             ThreadSafeCollator.getInstance();
 
-    private final String path;
+    @NonNull
+    private final IAudioLocation audioLocation;
 
     @NonNull
     private final String name;
@@ -30,8 +32,8 @@ class AudioModel {
     private final
     long durationSecs;
 
-    AudioModel(String path, @NonNull String name, String artist, Date dateAdded, long durationSecs) {
-        this.path = path;
+    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist, Date dateAdded, long durationSecs) {
+        this.audioLocation = audioLocation;
         this.name = name;
         this.artist = artist;
         this.dateAdded = dateAdded;
@@ -44,8 +46,9 @@ class AudioModel {
         collationKey = nameCollator.getCollationKey(getName());
     }
 
-    public String getPath() {
-        return path;
+    @NonNull
+    public IAudioLocation getAudioLocation() {
+        return audioLocation;
     }
 
     /**
@@ -93,7 +96,7 @@ class AudioModel {
             return false;
         }
         AudioModel that = (AudioModel) o;
-        return Objects.equals(path, that.path) &&
+        return Objects.equals(audioLocation, that.audioLocation) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(artist, that.artist) &&
                 Objects.equals(dateAdded, that.dateAdded) &&
@@ -102,14 +105,14 @@ class AudioModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, name, artist, dateAdded, durationSecs);
+        return Objects.hash(audioLocation, name, artist, dateAdded, durationSecs);
     }
 
     @Override
     @NonNull
     public String toString() {
         return "AudioModel{" +
-                "path='" + path + '\'' +
+                "audioLocation='" + audioLocation + '\'' +
                 ", name='" + name + '\'' +
                 ", artist='" + artist + '\'' +
                 ", dateAdded='" + dateAdded + '\'' +

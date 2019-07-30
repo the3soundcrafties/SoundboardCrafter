@@ -17,6 +17,7 @@
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by date</string>
     <string name="toolbar_menu_audiofiles_folders_all">All</string>
+    <string name="toolbar_menu_audiofiles_assets">Provided</string>
     <string name="toolbar_menu_audiofiles_folders_single">By Folder</string>
     <string name="reset_all_title">Delete all data?</string>
     <string name="reset_all_message">All games, soundboards and sound data will be deleted
