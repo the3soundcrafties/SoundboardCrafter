@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,14 +17,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -45,6 +46,7 @@ import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.de.soundboardcrafter.widget.GridAutofitLayoutManager;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
@@ -76,9 +78,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
-    private GridView gridView;
-    // TODO Allow for zero soundboards
-    private SoundboardItemAdapter soundboardItemAdapter;
+    private RecyclerView recyclerView;
+    private SoundboardItemAdapter soundboardItemAdapter; // TODO RecyclerView.Adapter
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
     private static final String ARG_SORT_ORDER = "sortOrder";
@@ -171,19 +172,30 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         if (sortOrder == null) {
             sortOrder = SortOrder.BY_NAME;
         }
-        gridView = rootView.findViewById(R.id.grid_view_soundboard);
+
+        recyclerView = rootView.findViewById(R.id.recycler_view_soundboard);
+
+        // Changes in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        GridAutofitLayoutManager layoutManager =
+                new GridAutofitLayoutManager(requireContext().getApplicationContext(), dp(100));
+        // TODO android:gravity="center"
+        // TODO android:verticalSpacing="24dp"
+        // TODO android:horizontalSpacing="10dp"
+        // TODO android:stretchMode="spacingWidthUniform"
+
+        recyclerView.setLayoutManager(layoutManager);
+
         initSoundboardItemAdapter();
-        registerForContextMenu(gridView);
+        registerForContextMenu(recyclerView);
 
-        gridView.setOnItemClickListener((parent, view, position, id) -> {
-            if (!(view instanceof SoundboardItemRow)) {
-                return;
-            }
-            SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
-
-            onClickSoundboard(soundboardItemRow, soundboardItemAdapter.getItem(position));
-        });
         return rootView;
+    }
+
+    private int dp(final int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                requireContext().getResources().getDisplayMetrics());
     }
 
     private void onClickSoundboard(SoundboardItemRow soundboardItemRow, Sound sound) {
@@ -208,7 +220,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private void handleSoundFileNotFound(Sound sound) {
         Snackbar snackbar = Snackbar
-                .make(gridView, getString(R.string.audiofile_not_found),
+                .make(recyclerView, getString(R.string.audiofile_not_found),
                         Snackbar.LENGTH_LONG)
                 .setAction(getString(R.string.update_all_soundboards_and_sounds),
                         view -> new DeleteSoundsTask(requireActivity()).execute(sound.getId())
@@ -290,7 +302,25 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private void initSoundboardItemAdapter() {
         soundboardItemAdapter =
                 new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
-        gridView.setAdapter(soundboardItemAdapter);
+
+        soundboardItemAdapter.setOnItemClickListener(new SoundboardItemAdapter.ClickListener() {
+            @Override
+            public void onItemClick(int position, View view) {
+                if (!(view instanceof SoundboardItemRow)) {
+                    return;
+                }
+                SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
+
+                onClickSoundboard(soundboardItemRow, soundboardItemAdapter.getItem(position));
+            }
+
+            @Override
+            public void onCreateContextMenu(int position, ContextMenu menu) {
+                onCreateSoundboardContextMenu(soundboardItemAdapter.getItem(position), menu);
+            }
+        });
+
+        recyclerView.setAdapter(soundboardItemAdapter);
         updateUI();
     }
 
@@ -316,20 +346,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         soundsDeletedListenerActivity = null;
     }
 
-
-    @Override
-    @UiThread
-    public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
+    private void onCreateSoundboardContextMenu(Sound sound, ContextMenu menu) {
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
 
-        AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
-                (AdapterView.AdapterContextMenuInfo) menuInfo;
-        SoundboardItemRow itemRow = (SoundboardItemRow) adapterContextMenuInfo.targetView;
-
-        menu.setHeaderTitle(itemRow.getSoundName());
+        menu.setHeaderTitle(sound.getName());
     }
 
     @Override
@@ -343,10 +364,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         switch (item.getItemId()) {
             case R.id.context_menu_edit_sound:
-                AdapterView.AdapterContextMenuInfo menuInfo =
-                        (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-                SoundboardItemRow itemRow = (SoundboardItemRow) menuInfo.targetView;
-                Sound sound = itemRow.getSound();
+                @Nullable Sound sound = soundboardItemAdapter.getContextMenuItem();
+                if (sound == null) {
+                    return false;
+                }
 
                 Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
 
@@ -354,12 +375,14 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_sound:
-                menuInfo =
-                        (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+                int position = soundboardItemAdapter.getContextMenuPosition();
+                if (position < 0) {
+                    return false;
+                }
 
-                Log.d(TAG, "Removing sound " + menuInfo.position);
-                soundboardItemAdapter.remove(menuInfo.position);
-                new RemoveSoundsTask(requireActivity()).execute(menuInfo.position);
+                Log.d(TAG, "Removing sound " + position);
+                soundboardItemAdapter.remove(position);
+                new RemoveSoundsTask(requireActivity()).execute(position);
                 return true;
             default:
                 return false;
@@ -384,7 +407,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
                 } else {
                     // Sound file has been deleted
-                    soundsDeletedListenerActivity.soundsDeleted();
+                    if (soundsDeletedListenerActivity != null) {
+                        soundsDeletedListenerActivity.soundsDeleted();
+                    }
                 }
                 break;
         }
@@ -486,14 +511,17 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 SoundWithSelectableSoundboards soundWithSelectableSoundboards =
                         SoundDao.getInstance(appContext).findSoundWithSelectableSoundboards(soundId);
                 List<SelectableSoundboard> soundboards = soundWithSelectableSoundboards.getSoundboards();
-                SelectableSoundboard foundSoundboard = soundboards.stream().filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
-                        .findFirst().get();
-                if (!foundSoundboard.isSelected()) {
-                    sounds.put(soundWithSelectableSoundboards.getSound(), false);
-                } else {
-                    sounds.put(soundWithSelectableSoundboards.getSound(), true);
+                Optional<SelectableSoundboard> foundSoundboard =
+                        soundboards.stream()
+                                .filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
+                                .findFirst();
+                if (foundSoundboard.isPresent()) {
+                    if (!foundSoundboard.get().isSelected()) {
+                        sounds.put(soundWithSelectableSoundboards.getSound(), false);
+                    } else {
+                        sounds.put(soundWithSelectableSoundboards.getSound(), true);
+                    }
                 }
-
             }
 
             return sounds;
@@ -608,7 +636,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            soundsDeletedListenerActivity.soundsDeleted();
+            if (soundsDeletedListenerActivity != null) {
+                soundsDeletedListenerActivity.soundsDeleted();
+            }
         }
     }
 }

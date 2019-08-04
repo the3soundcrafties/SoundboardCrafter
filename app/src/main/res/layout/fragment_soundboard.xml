@@ -11,17 +11,11 @@
     android:elevation="-10dp"
     tools:context="de.soundboardcrafter.activity.soundboard.play.SoundboardFragment">
 
-    <GridView
-        android:id="@+id/grid_view_soundboard"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_soundboard"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:columnWidth="100dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="24dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="spacingWidthUniform" />
-
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
 
