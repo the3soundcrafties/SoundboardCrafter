@@ -15,13 +15,21 @@ import androidx.recyclerview.widget.RecyclerView;
 // See https://stackoverflow.com/questions/26666143/recyclerview-gridlayoutmanager-how-to-auto-detect-span-count
 public class GridAutofitLayoutManager extends GridLayoutManager {
     private int columnWidth;
+    private final int spacing;
     private boolean isColumnWidthChanged = true;
     private int lastWidth;
     private int lastHeight;
 
     public GridAutofitLayoutManager(@NonNull final Context context, final int columnWidth) {
+        this(context, columnWidth, 0);
+    }
+
+
+    public GridAutofitLayoutManager(@NonNull final Context context, final int columnWidth,
+                                    final int spacing) {
         /* Initially set spanCount to 1, will be changed automatically later. */
         super(context, 1);
+        this.spacing = spacing;
         setColumnWidth(checkedColumnWidth(context, columnWidth));
     }
 
@@ -30,9 +38,19 @@ public class GridAutofitLayoutManager extends GridLayoutManager {
             final int columnWidth,
             final int orientation,
             final boolean reverseLayout) {
+        this(context, columnWidth, orientation, reverseLayout, 0);
+    }
+
+    private GridAutofitLayoutManager(
+            @NonNull final Context context,
+            final int columnWidth,
+            final int orientation,
+            final boolean reverseLayout,
+            final int spacing) {
 
         /* Initially set spanCount to 1, will be changed automatically later. */
         super(context, 1, orientation, reverseLayout);
+        this.spacing = spacing;
         setColumnWidth(checkedColumnWidth(context, columnWidth));
     }
 
@@ -59,13 +77,17 @@ public class GridAutofitLayoutManager extends GridLayoutManager {
         final int width = getWidth();
         final int height = getHeight();
         if (columnWidth > 0 && width > 0 && height > 0 && (isColumnWidthChanged || lastWidth != width || lastHeight != height)) {
+            // spanCount * (columnWidth + spacing) + paddingRight + paddingLeft + spacing = width
+            // => spanCount * (columnWidth + spacing) = width - paddingRight - paddingLeft - spacing
+            // => spanCount = (width - paddingRight - paddingLeft - spacing) / (columnWidth + spacing)
+
             final int totalSpace;
             if (getOrientation() == RecyclerView.VERTICAL) {
-                totalSpace = width - getPaddingRight() - getPaddingLeft();
+                totalSpace = width - getPaddingRight() - getPaddingLeft() - spacing;
             } else {
-                totalSpace = height - getPaddingTop() - getPaddingBottom();
+                totalSpace = height - getPaddingTop() - getPaddingBottom() - spacing;
             }
-            final int spanCount = Math.max(1, totalSpace / columnWidth);
+            final int spanCount = Math.max(1, totalSpace / (columnWidth + spacing));
             setSpanCount(spanCount);
             isColumnWidthChanged = false;
         }

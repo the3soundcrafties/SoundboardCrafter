@@ -178,12 +178,14 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         // Changes in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
 
+        int horizontalSpacing = dp(10);
+        recyclerView.addItemDecoration(new SoundboardItemDecoration(dp(24), horizontalSpacing));
+
         GridAutofitLayoutManager layoutManager =
-                new GridAutofitLayoutManager(requireContext().getApplicationContext(), dp(100));
+                new GridAutofitLayoutManager(requireContext().getApplicationContext(),
+                        dp(100), horizontalSpacing);
+
         // TODO android:gravity="center"
-        // TODO android:verticalSpacing="24dp"
-        // TODO android:horizontalSpacing="10dp"
-        // TODO android:stretchMode="spacingWidthUniform"
 
         recyclerView.setLayoutManager(layoutManager);
 
