@@ -36,7 +36,7 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Activity for editing a single gameWithSoundboards (name, volume etc.).
  */
-class GameEditFragment extends Fragment {
+public class GameEditFragment extends Fragment {
     private static final String ARG_GAME_ID = "gameId";
 
     private static final String EXTRA_GAME_ID = "gameId";
