@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -304,7 +305,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         soundboardItemAdapter =
                 new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
 
-        soundboardItemAdapter.setOnItemClickListener(new SoundboardItemAdapter.ClickListener() {
+        soundboardItemAdapter.setActionListener(new SoundboardItemAdapter.ActionListener() {
             @Override
             public void onItemClick(int position, View view) {
                 if (!(view instanceof SoundboardItemRow)) {
@@ -316,12 +317,26 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
+            public void onItemMoved(int oldPosition, int newPosition) {
+                new SoundboardFragment.MoveSoundTask(requireActivity(), oldPosition, newPosition)
+                        .execute();
+            }
+
+            @Override
             public void onCreateContextMenu(int position, ContextMenu menu) {
                 onCreateSoundboardContextMenu(soundboardItemAdapter.getItem(position), menu);
             }
         });
 
+        SoundboardSwipeAndDragCallback swipeAndDragCallback =
+                new SoundboardSwipeAndDragCallback(soundboardItemAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(swipeAndDragCallback);
+        soundboardItemAdapter.setTouchHelper(touchHelper);
+        // TODO Unfortunately, this does not work
+
         recyclerView.setAdapter(soundboardItemAdapter);
+        touchHelper.attachToRecyclerView(recyclerView);
+
         updateUI();
     }
 
@@ -558,6 +573,64 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     /**
+     * A background task, used to move a sound inside the soundboard
+     */
+    class MoveSoundTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = MoveSoundTask.class.getName();
+
+        private final WeakReference<Context> appContextRef;
+        private final int oldPosition;
+        private final int newPosition;
+
+        MoveSoundTask(Context context, int oldPosition, int newPosition) {
+            super();
+            appContextRef = new WeakReference<>(context.getApplicationContext());
+            this.oldPosition = oldPosition;
+            this.newPosition = newPosition;
+        }
+
+        @Override
+        @WorkerThread
+        protected Void doInBackground(Void... voids) {
+            Context appContext = appContextRef.get();
+            if (appContext == null) {
+                cancel(true);
+                return null;
+            }
+
+            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
+            Log.d(TAG,
+                    "Moving sound from position " + oldPosition +
+                            " to position " + newPosition);
+
+            soundboardDao.moveSound(
+                    soundboardItemAdapter.getSoundboard().getSoundboard().getId(),
+                    oldPosition, newPosition);
+
+            return null;
+        }
+
+        @Override
+        @UiThread
+        protected void onPostExecute(Void v) {
+            if (!isAdded()) {
+                // fragment is no longer linked to an activity
+                return;
+            }
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            soundboardItemAdapter.move(oldPosition, newPosition);
+        }
+    }
+
+
+    /**
      * A background task, used to remove sounds with the given indexes from the soundboard
      */
     class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
@@ -591,7 +664,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return null;
         }
     }
-
 
     /**
      * A background task, used to delete sounds (from the database, from all soundboards etc.)

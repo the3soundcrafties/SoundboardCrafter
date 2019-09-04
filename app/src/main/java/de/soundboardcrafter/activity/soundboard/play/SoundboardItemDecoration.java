@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 // See https://stackoverflow.com/questions/30524599/items-are-not-the-same-width-when-using-recyclerview-gridlayoutmanager-to-make-c .
-public class SoundboardItemDecoration extends RecyclerView.ItemDecoration {
+class SoundboardItemDecoration extends RecyclerView.ItemDecoration {
     private final int verticalSpacing;
     private final int horizontalSpacing;
     private boolean includeEdge;

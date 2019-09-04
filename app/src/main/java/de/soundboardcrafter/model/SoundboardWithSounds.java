@@ -77,6 +77,16 @@ public class SoundboardWithSounds implements Serializable {
     }
 
     /**
+     * Moves this sound in the soundboard from the <code>oldIndex</code> to
+     * the <code>newIndex</code>
+     */
+    public void moveSound(int oldIndex, int newIndex) {
+        Sound sound = sounds.get(oldIndex);
+        removeSound(oldIndex);
+        sounds.add(newIndex, sound);
+    }
+
+    /**
      * Removes this sound from the soundboard.
      */
     public void removeSound(int index) {
@@ -90,6 +100,4 @@ public class SoundboardWithSounds implements Serializable {
                 "soundboard=" + soundboard +
                 '}';
     }
-
-
 }

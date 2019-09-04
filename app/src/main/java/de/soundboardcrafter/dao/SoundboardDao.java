@@ -173,7 +173,6 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
     private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
-
         try (SelectableSoundboardCursorWrapper cursor = new SelectableSoundboardCursorWrapper(rawCursor)) {
             final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
 
@@ -184,7 +183,6 @@ public class SoundboardDao extends AbstractDao {
             return res.build();
         }
     }
-
 
     /**
      * Updates the soundboard links for this sound. The soundboards must already exist.
@@ -255,6 +253,39 @@ public class SoundboardDao extends AbstractDao {
             return cursor.moveToNext();
         }
     }
+
+    public void moveSound(UUID soundboardId, int oldIndex, int newIndex) {
+        @Nullable UUID soundId = findSoundId(soundboardId, oldIndex);
+        if (soundId == null) {
+            throw new IllegalStateException("There was no sound at index " + oldIndex + ".");
+        }
+
+        unlinkSound(soundboardId, oldIndex);
+
+        fillSoundGap(soundboardId, oldIndex, newIndex);
+
+        linkSoundToSoundboard(soundboardId, newIndex, soundId);
+    }
+
+    /**
+     * Returns the ID of the sound with this <code>index</code> in this soundboard - if any.
+     */
+    @Nullable
+    private UUID findSoundId(UUID soundboardId, int index) {
+        try (final Cursor cursor = rawQueryOrThrow(
+                "SELECT " + SoundboardSoundTable.Cols.SOUND_ID +
+                        "FROM " + SoundboardSoundTable.NAME + " sbs " +
+                        "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
+                        "AND sbs." + SoundboardSoundTable.Cols.POS_INDEX + " = ?",
+                soundboardId, index)) {
+            if (cursor.moveToNext()) {
+                return UUID.fromString(cursor.getString(0));
+            }
+
+            return null;
+        }
+    }
+
 
     /**
      * Adds this sound at this <code>index</code> in this
@@ -332,7 +363,6 @@ public class SoundboardDao extends AbstractDao {
                 null);
     }
 
-
     public void unlinkSound(UUID soundboardId, int index) {
         int numDeleted = getDatabase().delete(SoundboardSoundTable.NAME,
                 SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
@@ -351,10 +381,23 @@ public class SoundboardDao extends AbstractDao {
         fillSoundGap(soundboardId, index);
     }
 
+
     /**
      * Fills the gap at index - 1 and lets the following sounds - if any - move up.
      */
     private void fillSoundGap(UUID soundboardId, int gapIndex) {
+        fillSoundGap(soundboardId, gapIndex, null);
+    }
+
+    /**
+     * Fills the gap at index - 1 and lets the following sounds - if any - move up.
+     * Stops before <code>stopBefore</code> (if given).
+     */
+    private void fillSoundGap(UUID soundboardId, int gapIndex, @Nullable Integer stopBefore) {
+        if (stopBefore != null && stopBefore <= gapIndex + 1) {
+            return;
+        }
+
         int i = gapIndex + 1;
 
         int rowsUpdated;
@@ -375,7 +418,7 @@ public class SoundboardDao extends AbstractDao {
             }
 
             i++;
-        } while (rowsUpdated > 0);
+        } while (rowsUpdated > 0 && (stopBefore == null || i == stopBefore));
     }
 
     public void update(Soundboard soundboard) {
@@ -454,6 +497,4 @@ public class SoundboardDao extends AbstractDao {
 
         return values;
     }
-
-
 }
