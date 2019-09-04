@@ -29,6 +29,10 @@ public class SoundboardItemAdapter
     private final SoundboardWithSounds soundboard;
 
     private ActionListener actionListener;
+
+    @Nullable
+    private ViewHolder contextMenuViewHolder;
+
     private int contextMenuPosition = -1;
 
     private ItemTouchHelper touchHelper;
@@ -93,6 +97,11 @@ public class SoundboardItemAdapter
     public void onViewRecycled(@NonNull ViewHolder holder) {
         holder.getSoundboardItemRow().setOnClickListener(null);
         holder.getSoundboardItemRow().setOnCreateContextMenuListener(null);
+
+        if (holder == contextMenuViewHolder) {
+            contextMenuViewHolder = null;
+        }
+
         super.onViewRecycled(holder);
     }
 
@@ -110,6 +119,7 @@ public class SoundboardItemAdapter
         );
         holder.getSoundboardItemRow().setOnCreateContextMenuListener(
                 (menu, v, menuInfo) -> {
+                    contextMenuViewHolder = holder;
                     contextMenuPosition = holder.getAdapterPosition();
                     actionListener.onCreateContextMenu(contextMenuPosition, menu);
                 }
@@ -129,7 +139,7 @@ public class SoundboardItemAdapter
         // notifyItemRemoved(position);
     }
 
-    public void setTouchHelper(ItemTouchHelper touchHelper) {
+    void setTouchHelper(ItemTouchHelper touchHelper) {
         this.touchHelper = touchHelper;
         // https://github.com/sjthn/RecyclerViewDemo/blob/67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith/recyclerviewdemo/UserListAdapter.java
         // https://therubberduckdev.wordpress.com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/
@@ -197,6 +207,11 @@ public class SoundboardItemAdapter
         soundboard.removeSound(position);
 
         notifyDataSetChanged();
+    }
+
+    @Nullable
+    ViewHolder getContextMenuViewHolder() {
+        return contextMenuViewHolder;
     }
 
     @Nullable

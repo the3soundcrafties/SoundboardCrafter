@@ -80,7 +80,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     }
 
     private RecyclerView recyclerView;
-    private SoundboardItemAdapter soundboardItemAdapter; // TODO RecyclerView.Adapter
+    private SoundboardItemAdapter soundboardItemAdapter;
+    private ItemTouchHelper itemTouchHelper;
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
     private static final String ARG_SORT_ORDER = "sortOrder";
@@ -330,12 +331,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         SoundboardSwipeAndDragCallback swipeAndDragCallback =
                 new SoundboardSwipeAndDragCallback(soundboardItemAdapter);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(swipeAndDragCallback);
-        soundboardItemAdapter.setTouchHelper(touchHelper);
-        // TODO Unfortunately, this does not work
+        itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
+        soundboardItemAdapter.setTouchHelper(itemTouchHelper);
 
         recyclerView.setAdapter(soundboardItemAdapter);
-        touchHelper.attachToRecyclerView(recyclerView);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         updateUI();
     }
@@ -389,6 +389,17 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
                 startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
+                return true;
+            case R.id.context_menu_move_sound:
+                SoundboardItemAdapter.ViewHolder holder = soundboardItemAdapter.getContextMenuViewHolder();
+                if (holder == null) {
+                    return false;
+                }
+
+                itemTouchHelper.startDrag(holder);
+
+                Log.d(TAG, "Moving sound ");
+
                 return true;
             case R.id.context_menu_remove_sound:
                 int position = soundboardItemAdapter.getContextMenuPosition();

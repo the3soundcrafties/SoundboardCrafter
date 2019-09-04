@@ -15,7 +15,7 @@ class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        if (viewHolder instanceof SoundboardItemAdapter.ViewHolder) {
+        if (!(viewHolder instanceof SoundboardItemAdapter.ViewHolder)) {
             return 0;
         }
         int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
@@ -36,6 +36,12 @@ class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isLongPressDragEnabled() {
+        // Do not start dragging on long-press
+        return false;
+    }
+
+    @Override
+    public boolean isItemViewSwipeEnabled() {
         return false;
     }
 

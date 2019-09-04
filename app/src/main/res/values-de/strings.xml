@@ -17,6 +17,7 @@
     <string name="toolbar_menu_audiofiles_assets">Mitgelieferte</string>
     <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
+    <string name="context_menu_move_sound">Verschieben</string>
     <string name="context_menu_remove_sound">Entfernen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
     <string name="reset_all_message">Alle Spiele, Soundboards und Sound-Einstellungen werden

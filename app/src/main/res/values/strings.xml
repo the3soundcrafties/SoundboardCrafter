@@ -13,6 +13,7 @@
     <string name="toolbar_menu_reset_all">Reset All</string>
     <string name="toolbar_menu_audiofiles_sort">Sort</string>
     <string name="context_menu_edit_sound">Edit</string>
+    <string name="context_menu_move_sound">Move</string>
     <string name="context_menu_remove_sound">Remove</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by date</string>
