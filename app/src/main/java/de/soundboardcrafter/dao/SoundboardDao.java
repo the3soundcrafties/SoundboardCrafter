@@ -230,12 +230,20 @@ public class SoundboardDao extends AbstractDao {
      * does not contain any sounds.
      */
     private int findMaxIndex(Soundboard soundboard) {
+        return findMaxIndex(soundboard.getId());
+    }
+
+    /**
+     * Returns the maximum index in the soundboard - or <code>-1</code>, if the sound
+     * does not contain any sounds.
+     */
+    private int findMaxIndex(UUID soundboardId) {
         try (final Cursor cursor = rawQueryOrThrow(
                 "SELECT MAX(sbs." + SoundboardSoundTable.Cols.POS_INDEX + ") " +
                         "FROM " + SoundboardSoundTable.NAME + " sbs " +
                         "WHERE sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? " +
                         "GROUP BY sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID,
-                soundboard.getId())) {
+                soundboardId)) {
             if (cursor.moveToNext()) {
                 return cursor.getInt(0);
             }
@@ -412,14 +420,13 @@ public class SoundboardDao extends AbstractDao {
      * Makes a gap at the index.
      */
     private void makeSoundGap(UUID soundboardId, int gapIndex) {
-        int i = gapIndex;
+        int i = findMaxIndex(soundboardId);
 
-        int rowsUpdated;
-        do {
+        while (i >= gapIndex) {
             ContentValues values = new ContentValues();
             values.put(SoundboardSoundTable.Cols.POS_INDEX, i + 1);
 
-            rowsUpdated = getDatabase().update(SoundboardSoundTable.NAME,
+            int rowsUpdated = getDatabase().update(SoundboardSoundTable.NAME,
                     values,
                     SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ? and " +
                             SoundboardSoundTable.Cols.POS_INDEX + " = ? ",
@@ -431,8 +438,8 @@ public class SoundboardDao extends AbstractDao {
                         " in soundboard " + soundboardId);
             }
 
-            i++;
-        } while (rowsUpdated > 0);
+            i--;
+        }
     }
 
     public void update(Soundboard soundboard) {

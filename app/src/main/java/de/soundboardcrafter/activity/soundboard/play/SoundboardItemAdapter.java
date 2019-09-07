@@ -192,7 +192,9 @@ public class SoundboardItemAdapter
         }
 
         soundboard.moveSound(oldPosition, newPosition);
-        notifyItemMoved(oldPosition, newPosition);
+
+        notifyDataSetChanged();
+        // TODO better? notifyItemMoved(oldPosition, newPosition);
     }
 
     /**
