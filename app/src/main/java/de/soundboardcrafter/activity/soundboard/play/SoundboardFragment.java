@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -68,6 +71,42 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
+    // See https://developer.android.com/guide/topics/ui/menus.html and
+    // https://medium.com/over-engineering/using-androids-actionmode-e903181f2ee3 .
+    private final ActionMode.Callback manualSortingActionModeCallback = new ActionMode.Callback() {
+
+        // Called when the action mode is created; startActionMode() was called
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.fragment_soundboard_play_manual_sorting, menu);
+            return true;
+        }
+
+        // Called each time the action mode is shown. Always called after onCreateActionMode, but
+        // may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false; // Return false if nothing is done
+        }
+
+        // Called when the user selects a contextual menu item
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                default:
+                    return false;
+            }
+        }
+
+        // Called when the user exits the action mode
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+        }
+    };
+
     private enum SortOrder {
         BY_NAME(Comparator.comparing(Sound::getCollationKey));
         // TODO Have other sort orders?
@@ -81,11 +120,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
     private RecyclerView recyclerView;
     private SoundboardItemAdapter soundboardItemAdapter;
-    private ItemTouchHelper itemTouchHelper;
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
     private static final String ARG_SORT_ORDER = "sortOrder";
     private SortOrder sortOrder;
+
+    private ActionMode actionMode;
 
     @Nullable
     private SoundsDeletedListener soundsDeletedListenerActivity;
@@ -207,6 +247,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return;
         }
 
+        if (actionMode != null) {
+            return;
+        }
+
         if (!service.isActivelyPlaying(soundboard.getSoundboard(), sound)) {
             soundboardItemRow.setImage(R.drawable.ic_stop);
             try {
@@ -231,12 +275,28 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         snackbar.show();
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (actionMode != null) {
+            return false;
+        }
+
         switch (item.getItemId()) {
             case R.id.toolbar_menu_sound_sort_alpha:
                 new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME).execute();
+                return true;
+            case R.id.toolbar_menu_sound_sort_manually:
+                if (actionMode != null) {
+                    return false;
+                }
+
+                actionMode = requireAppCompatActivity()
+                        .startSupportActionMode(manualSortingActionModeCallback);
+                if (actionMode == null) {
+                    return false;
+                }
+
+                actionMode.setTitle(R.string.soundboards_play_sort_manually_title);
                 return true;
 
             default:
@@ -244,6 +304,9 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
+    private AppCompatActivity requireAppCompatActivity() {
+        return (AppCompatActivity) requireActivity();
+    }
 
     private SoundboardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
         return new SoundboardItemRow.MediaPlayerServiceCallback() {
@@ -312,26 +375,29 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 if (!(view instanceof SoundboardItemRow)) {
                     return;
                 }
+
+                if (actionMode != null) {
+                    return;
+                }
+
                 SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
 
                 onClickSoundboard(soundboardItemRow, soundboardItemAdapter.getItem(position));
             }
 
             @Override
-            public void onItemMoved(int oldPosition, int newPosition) {
-                new SoundboardFragment.MoveSoundTask(requireActivity(), oldPosition, newPosition)
-                        .execute();
-            }
-
-            @Override
             public void onCreateContextMenu(int position, ContextMenu menu) {
+                if (actionMode != null) {
+                    return;
+                }
+
                 onCreateSoundboardContextMenu(soundboardItemAdapter.getItem(position), menu);
             }
         });
 
         SoundboardSwipeAndDragCallback swipeAndDragCallback =
-                new SoundboardSwipeAndDragCallback(soundboardItemAdapter);
-        itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
+                new SoundboardSwipeAndDragCallback();
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
         soundboardItemAdapter.setTouchHelper(itemTouchHelper);
 
         recyclerView.setAdapter(soundboardItemAdapter);
@@ -344,7 +410,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        inflater.inflate(R.menu.fragment_sound, menu);
+        inflater.inflate(R.menu.fragment_soundboard_play, menu);
     }
 
     @Override
@@ -372,6 +438,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     @Override
     @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
+        if (actionMode != null) {
+            return false;
+        }
+
         if (!getUserVisibleHint()) {
             // The wrong fragment got the event.
             // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
@@ -389,17 +459,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
                 Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
                 startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
-                return true;
-            case R.id.context_menu_move_sound:
-                SoundboardItemAdapter.ViewHolder holder = soundboardItemAdapter.getContextMenuViewHolder();
-                if (holder == null) {
-                    return false;
-                }
-
-                itemTouchHelper.startDrag(holder);
-
-                Log.d(TAG, "Moving sound ");
-
                 return true;
             case R.id.context_menu_remove_sound:
                 int position = soundboardItemAdapter.getContextMenuPosition();
@@ -458,6 +517,61 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerService;
     }
 
+    // See https://therubberduckdev.wordpress.com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
+    class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
+        @Override
+        public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder) {
+            if (!(viewHolder instanceof SoundboardItemAdapter.ViewHolder)) {
+                return 0;
+            }
+            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
+            int swipeFlags = 0;
+            return makeMovementFlags(dragFlags, swipeFlags);
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            int from = viewHolder.getAdapterPosition();
+            int to = target.getAdapterPosition();
+
+            soundboardItemAdapter.move(from, to);
+
+            new SoundboardFragment.MoveSoundTask(requireActivity(), from, to)
+                    .execute();
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            // swiping not supported - might be a problem in a grid view
+        }
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            return actionMode != null;
+        }
+
+        @Override
+        public boolean isItemViewSwipeEnabled() {
+            return false;
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c,
+                                @NonNull RecyclerView recyclerView,
+                                @NonNull RecyclerView.ViewHolder viewHolder,
+                                float dX,
+                                float dY,
+                                int actionState,
+                                boolean isCurrentlyActive) {
+            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                float alpha = 1 - (Math.abs(dX) / recyclerView.getWidth());
+                viewHolder.itemView.setAlpha(alpha);
+            }
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    }
 
     class SoundSortInSoundboardTask extends AsyncTask<Void, Void, SoundboardWithSounds> {
         private final String TAG = UpdateSoundsTask.class.getName();
@@ -620,26 +734,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
             return null;
         }
-
-        @Override
-        @UiThread
-        protected void onPostExecute(Void v) {
-            if (!isAdded()) {
-                // fragment is no longer linked to an activity
-                return;
-            }
-            Context appContext = appContextRef.get();
-
-            if (appContext == null) {
-                // application context no longer available, I guess that result
-                // will be of no use to anyone
-                return;
-            }
-
-            soundboardItemAdapter.move(oldPosition, newPosition);
-        }
     }
-
 
     /**
      * A background task, used to remove sounds with the given indexes from the soundboard

@@ -15,7 +15,7 @@ import de.soundboardcrafter.R;
 /**
  * Fragment showing a yes/no-question dialog whether all data shall be deleted.
  */
-class ResetAllDialogFragment extends DialogFragment {
+public class ResetAllDialogFragment extends DialogFragment {
     /**
      * Callback interface, an activity that wants to use this fragment has to
      * implement this interface

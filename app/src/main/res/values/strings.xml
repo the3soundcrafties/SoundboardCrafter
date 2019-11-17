@@ -13,13 +13,14 @@
     <string name="toolbar_menu_reset_all">Reset All</string>
     <string name="toolbar_menu_audiofiles_sort">Sort</string>
     <string name="context_menu_edit_sound">Edit</string>
-    <string name="context_menu_move_sound">Move</string>
     <string name="context_menu_remove_sound">Remove</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
-    <string name="toolbar_menu_audiofiles_sort_date">Sort by date</string>
+    <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
+    <string name="toolbar_menu_audiofiles_sort_date">Sort by Date</string>
     <string name="toolbar_menu_audiofiles_folders_all">All</string>
     <string name="toolbar_menu_audiofiles_assets">Provided</string>
     <string name="toolbar_menu_audiofiles_folders_single">By Folder</string>
+    <string name="soundboards_play_sort_manually_title">Drag to sort</string>
     <string name="reset_all_title">Delete all data?</string>
     <string name="reset_all_message">All games, soundboards and sound data will be deleted
         from the app. Settings like the volume will be lost. Sound files won\'t be touched.</string>

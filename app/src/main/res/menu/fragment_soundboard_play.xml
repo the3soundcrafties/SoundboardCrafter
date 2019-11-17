@@ -11,7 +11,10 @@
                 android:id="@+id/toolbar_menu_sound_sort_alpha"
                 android:title="@string/toolbar_menu_audiofiles_sort_alpha"
                 app:showAsAction="always" />
-
+            <item
+                android:id="@+id/toolbar_menu_sound_sort_manually"
+                android:title="@string/toolbar_menu_audiofiles_sort_manually"
+                app:showAsAction="always" />
         </menu>
 
     </item>
