@@ -16,7 +16,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,7 +58,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  */
 public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
-        SoundboardFragment.SoundsDeletedListener {
+        SoundboardFragment.HostingActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
     private static final String KEY_GAME_ID = "gameId";
@@ -69,7 +72,15 @@ public class SoundboardPlayActivity extends AppCompatActivity
     public static final String EXTRA_GAME_ID = "GameId";
 
     private MediaPlayerService mediaPlayerService;
-    private ViewPager pager;
+    private DeactivatableViewPager pager;
+    private TabLayout tabLayout;
+
+    private View.OnTouchListener emptyOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return true;
+        }
+    };
 
     /**
      * ID of the chose game - or <code>null</code>, if all soundboards shall be displayed.
@@ -79,6 +90,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     private @Nullable
     UUID selectedSoundboardId;
+    private boolean changingSoundboardEnabled = true;
 
     @Override
     @UiThread
@@ -136,7 +148,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
         });
 
-        TabLayout tabLayout = findViewById(R.id.tabLayout);
+        tabLayout = findViewById(R.id.tabLayout);
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(pager);
@@ -168,6 +180,20 @@ public class SoundboardPlayActivity extends AppCompatActivity
         setResult(// The result is always OK
                 Activity.RESULT_OK,
                 resultIntent);
+    }
+
+    @Override
+    public void setChangingSoundboardEnabled(final boolean enabled) {
+        changingSoundboardEnabled = enabled;
+
+        pager.setPagingEnabled(enabled);
+
+        LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
+
+        for (int i = 0; i < tabStrip.getChildCount(); i++) {
+            View child = tabStrip.getChildAt(i);
+            child.setOnTouchListener(enabled ? null : emptyOnTouchListener);
+        }
     }
 
     @Nullable
@@ -283,6 +309,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
             soundboardList.addAll(soundboards);
             soundboardList.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
             notifyDataSetChanged();
+
+            setChangingSoundboardEnabled(changingSoundboardEnabled);
         }
 
         @Nullable
@@ -325,7 +353,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          * was invalid.
          */
         @Nullable
-        SoundboardWithSounds getSoundboard(int index) {
+        private SoundboardWithSounds getSoundboard(int index) {
             if (index >= getCount()) {
                 return null;
             }
@@ -351,6 +379,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             soundboardList.clear();
             notifyDataSetChanged();
+
+            setChangingSoundboardEnabled(changingSoundboardEnabled);
         }
 
         /**

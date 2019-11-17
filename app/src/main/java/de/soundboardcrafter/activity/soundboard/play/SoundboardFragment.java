@@ -61,8 +61,10 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  * Shows Soundboard in a Grid
  */
 public class SoundboardFragment extends Fragment implements ServiceConnection {
-    public interface SoundsDeletedListener {
+    public interface HostingActivity {
         void soundsDeleted();
+
+        void setChangingSoundboardEnabled(boolean changingSoundboardEnabled);
     }
 
     private static final String TAG = SoundboardFragment.class.getName();
@@ -104,6 +106,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             actionMode = null;
+            hostingActivity.setChangingSoundboardEnabled(true);
         }
     };
 
@@ -128,7 +131,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private ActionMode actionMode;
 
     @Nullable
-    private SoundsDeletedListener soundsDeletedListenerActivity;
+    private HostingActivity hostingActivity;
 
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
@@ -290,9 +293,12 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                     return false;
                 }
 
+                hostingActivity.setChangingSoundboardEnabled(false);
+
                 actionMode = requireAppCompatActivity()
                         .startSupportActionMode(manualSortingActionModeCallback);
                 if (actionMode == null) {
+                    hostingActivity.setChangingSoundboardEnabled(true);
                     return false;
                 }
 
@@ -417,15 +423,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        if (context instanceof SoundsDeletedListener) {
-            soundsDeletedListenerActivity = (SoundsDeletedListener) context;
+        if (context instanceof HostingActivity) {
+            hostingActivity = (HostingActivity) context;
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        soundsDeletedListenerActivity = null;
+        hostingActivity = null;
     }
 
     private void onCreateSoundboardContextMenu(Sound sound, ContextMenu menu) {
@@ -493,8 +499,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
                 } else {
                     // Sound file has been deleted
-                    if (soundsDeletedListenerActivity != null) {
-                        soundsDeletedListenerActivity.soundsDeleted();
+                    if (hostingActivity != null) {
+                        hostingActivity.soundsDeleted();
                     }
                 }
                 break;
@@ -815,8 +821,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            if (soundsDeletedListenerActivity != null) {
-                soundsDeletedListenerActivity.soundsDeleted();
+            if (hostingActivity != null) {
+                hostingActivity.soundsDeleted();
             }
         }
     }

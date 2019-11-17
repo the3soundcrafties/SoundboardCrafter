@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <androidx.viewpager.widget.ViewPager
+    <de.soundboardcrafter.activity.soundboard.play.DeactivatableViewPager
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -20,5 +20,5 @@
             app:tabGravity="fill"
             app:tabMode="scrollable" />
 
-    </androidx.viewpager.widget.ViewPager>
+    </de.soundboardcrafter.activity.soundboard.play.DeactivatableViewPager>
 </LinearLayout>

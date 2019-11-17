@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         }
         int index = pagerAdapter.getIndexOf(selectedPage);
         pager.setCurrentItem(index != -1 ? index : 0, false);
-
     }
 
 
