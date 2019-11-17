@@ -135,6 +135,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         Bundle arguments = getArguments();
         if (arguments == null) {
             throw new IllegalStateException("SoundboardFragment without arguments");
