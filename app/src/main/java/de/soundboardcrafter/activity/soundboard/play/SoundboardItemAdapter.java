@@ -21,8 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Adapter for a soundboard item.
  */
 public class SoundboardItemAdapter
-        extends RecyclerView.Adapter<SoundboardItemAdapter.ViewHolder>
-        implements SoundboardSwipeAndDragCallback.ActionCompletionContract {
+        extends RecyclerView.Adapter<SoundboardItemAdapter.ViewHolder> {
     private static final String TAG = SoundboardItemAdapter.class.getName();
 
     private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
@@ -39,8 +38,6 @@ public class SoundboardItemAdapter
 
     public interface ActionListener {
         void onItemClick(int position, View v);
-
-        void onItemMoved(int oldPosition, int newPosition);
 
         void onCreateContextMenu(int position, ContextMenu menu);
     }
@@ -126,19 +123,6 @@ public class SoundboardItemAdapter
         );
     }
 
-    @Override
-    public void onViewMoved(int oldPosition, int newPosition) {
-        actionListener.onItemMoved(oldPosition, newPosition);
-        notifyItemMoved(oldPosition, newPosition);
-    }
-
-    @Override
-    public void onViewSwiped(int position) {
-        // Swiping ist not supported
-        // usersList.remove(position);
-        // notifyItemRemoved(position);
-    }
-
     void setTouchHelper(ItemTouchHelper touchHelper) {
         this.touchHelper = touchHelper;
         // https://github.com/sjthn/RecyclerViewDemo/blob/67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith/recyclerviewdemo/UserListAdapter.java
@@ -193,8 +177,8 @@ public class SoundboardItemAdapter
 
         soundboard.moveSound(oldPosition, newPosition);
 
-        notifyDataSetChanged();
-        // TODO better? notifyItemMoved(oldPosition, newPosition);
+        notifyItemMoved(oldPosition, newPosition);
+        // TODO if it should not work, try notifyDataSetChanged();
     }
 
     /**

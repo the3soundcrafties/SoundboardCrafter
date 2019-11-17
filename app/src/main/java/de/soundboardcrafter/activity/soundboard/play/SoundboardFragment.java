@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -134,7 +135,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     @UiThread
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         Bundle arguments = getArguments();
         if (arguments == null) {
             throw new IllegalStateException("SoundboardFragment without arguments");
@@ -318,19 +318,13 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             }
 
             @Override
-            public void onItemMoved(int oldPosition, int newPosition) {
-                new SoundboardFragment.MoveSoundTask(requireActivity(), oldPosition, newPosition)
-                        .execute();
-            }
-
-            @Override
             public void onCreateContextMenu(int position, ContextMenu menu) {
                 onCreateSoundboardContextMenu(soundboardItemAdapter.getItem(position), menu);
             }
         });
 
         SoundboardSwipeAndDragCallback swipeAndDragCallback =
-                new SoundboardSwipeAndDragCallback(soundboardItemAdapter);
+                new SoundboardSwipeAndDragCallback();
         itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
         soundboardItemAdapter.setTouchHelper(itemTouchHelper);
 
@@ -458,6 +452,55 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerService;
     }
 
+    // See https://therubberduckdev.wordpress.com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
+    class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
+        @Override
+        public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            if (!(viewHolder instanceof SoundboardItemAdapter.ViewHolder)) {
+                return 0;
+            }
+            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
+            int swipeFlags = 0;
+            return makeMovementFlags(dragFlags, swipeFlags);
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            int from = viewHolder.getAdapterPosition();
+            int to = target.getAdapterPosition();
+
+            soundboardItemAdapter.move(from, to);
+
+            new SoundboardFragment.MoveSoundTask(requireActivity(), from, to)
+                    .execute();
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            // swiping not supported - might be a problem in a grid view
+        }
+
+        @Override
+        public boolean isItemViewSwipeEnabled() {
+            return false;
+        }
+
+        @Override
+        public void onChildDraw(Canvas c,
+                                RecyclerView recyclerView,
+                                RecyclerView.ViewHolder viewHolder,
+                                float dX,
+                                float dY,
+                                int actionState,
+                                boolean isCurrentlyActive) {
+            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                float alpha = 1 - (Math.abs(dX) / recyclerView.getWidth());
+                viewHolder.itemView.setAlpha(alpha);
+            }
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    }
 
     class SoundSortInSoundboardTask extends AsyncTask<Void, Void, SoundboardWithSounds> {
         private final String TAG = UpdateSoundsTask.class.getName();
@@ -636,7 +679,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            soundboardItemAdapter.move(oldPosition, newPosition);
+            // TODO Update GUI again?
         }
     }
 
