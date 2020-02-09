@@ -54,7 +54,8 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
- * The main activity, showing the soundboards.
+ * The most important activity of the app - it shows all the soundboards so that the user
+ * can play sounds.
  */
 public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
@@ -257,7 +258,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.fragment_main, menu);
+        inflater.inflate(R.menu.activity_soundboard_play, menu);
         if (
             // This button is only visible for the debug build type.
             // We have a separate bools.xml in the debug folder.
