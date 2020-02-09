@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,5 +28,7 @@ public class AboutActivity extends AppCompatActivity {
 
         TextView aboutTextView = (TextView) findViewById(R.id.aboutTextView);
         aboutTextView.setText(Html.fromHtml(getString(R.string.about_text_html), FROM_HTML_MODE_COMPACT));
+        aboutTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        //Linkify.addLinks(aboutTextView, Linkify.WEB_URLS);
     }
 }
