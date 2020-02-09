@@ -3,10 +3,14 @@ package de.soundboardcrafter.activity.about;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import de.soundboardcrafter.R;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 public class AboutActivity extends AppCompatActivity {
     /**
@@ -20,5 +24,8 @@ public class AboutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+        TextView aboutTextView = (TextView) findViewById(R.id.aboutTextView);
+        aboutTextView.setText(Html.fromHtml(getString(R.string.about_text_html), FROM_HTML_MODE_COMPACT));
     }
 }

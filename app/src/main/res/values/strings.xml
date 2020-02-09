@@ -63,5 +63,16 @@
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
     <string name="audiofile_not_found">Sound file not found any longer</string>
     <string name="artist_unknown"><![CDATA[<unknown>]]></string>
-    <string name="toolbar_menu_about">About</string>
+    <string name="toolbar_menu_item_about">About</string>
+    <string name="about_activity_title">About</string>
+    <string name="about_text_html">
+        <![CDATA[
+        Soundboard Crafter 0.0.1
+        <p>&#169;2020 Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
+        <p><i>Programmierung:</i><br>&#160;Nikolaj Budzyn<br>&#160;Julia Felkel</p>
+        <p><i>Source Code:</i><br>&#160;<a href="https://github.com/jfelkel/SoundboardCrafter">GitHub</a></p>
+        <p><i>Sounds:</i><br>&#160;<a href="www.gamemasteraudio.com">Gamemaster Audio</a></p>
+        <p><i>Auswahl:</i><br>&#160;Anna-Maria Kwasny</p>
+        <p><i>Idee:</i><br>&#160;Anna-Maria Kwasny</p>
+        ]]></string>
 </resources>
