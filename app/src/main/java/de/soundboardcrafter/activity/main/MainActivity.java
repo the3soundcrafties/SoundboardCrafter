@@ -3,6 +3,9 @@ package de.soundboardcrafter.activity.main;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -27,13 +30,14 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.about.AboutActivity;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 
 /**
- * The main activity, showing the soundboards.
+ * The activity with which the app is started, showing games, soundboards, and sounds.
  */
 public class MainActivity extends AppCompatActivity implements SoundEventListener {
     private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
@@ -88,6 +92,27 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
             return;
         }
     }
+
+    @Override
+    @UiThread
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.toolbar_menu_item_about:
+                startActivity(AboutActivity.newIntent(this));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
     @Override
     protected void onResumeFragments() {

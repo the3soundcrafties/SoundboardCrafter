@@ -16,57 +16,53 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".activity.main.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- The soft keyboard is hidden when the user chooses the activity -->
+        </activity> <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateHidden" />
-
         <activity
             android:name=".activity.soundboard.play.SoundboardPlayActivity"
             android:launchMode="singleTop"
             android:parentActivityName=".activity.main.MainActivity" />
-
-        <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity"
             android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
             android:windowSoftInputMode="stateHidden" />
-
         <activity
             android:name=".activity.game.edit.GameCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
-
-        <!-- The soft keyboard is hidden when the user chooses the activity -->
         <activity
             android:name=".activity.game.edit.GameEditActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateHidden" />
-
         <activity
             android:name=".activity.soundboard.edit.SoundboardCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
-
         <activity
             android:name=".activity.soundboard.edit.SoundboardEditActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".activity.about.AboutActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activity.main.MainActivity" />
 
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
-            android:exported="false"
-            android:description="@string/media_player_service_description" />
+            android:description="@string/media_player_service_description"
+            android:exported="false" />
     </application>
 
 </manifest>
