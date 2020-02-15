@@ -1,2 +1,2 @@
 # SoundboardCrafter
-Customizable Android soundboard. Use sound effects and atmospheric sounds to enhance your boardgame experience. Especially useful for boardgames like Gloomhaven or pen & paper role-playing games.
+Customizable Android soundboard - play sound effects and atmospheric sounds to enhance your boardgame experience. Best suited for dungeon crawl boardgames and pen & paper role-playing games (RPG).
