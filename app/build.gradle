@@ -41,9 +41,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config_release
         }
+        debug {
+            signingConfig signingConfigs.config_release
+            minifyEnabled false
+        }
         staging {
             initWith debug
             debuggable = true
+            signingConfig signingConfigs.config_release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
