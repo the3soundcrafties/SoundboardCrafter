@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--suppress GrazieInspection -->
     <string name="media_player_service_description">Spielt die Sounds für den Soundboard Crafter ab</string>
     <string name="media_player_notification_channel_name">Wiedergabe</string>
     <string name="media_player_notification_channel_description">Sounds, die gerade abgespielt werden</string>
@@ -69,7 +70,7 @@
         Soundboard Crafter
         <p>Version 0.0.1</p>
         <p>&#160;</p>
-        <p>&#169;2020 Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
+        <p>&#169;2021 Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
         <p>&#160;</p>
         <p><i>Programmierung:</i><br>&#160;Nikolaj Budzyn<br>&#160;Julia Felkel</p>
         <p>&#160;</p>
@@ -77,6 +78,8 @@
         <p>&#160;</p>
         <p><i>Sounds:</i><br>&#160;<a href="https://www.soundsparkllc.com">Sound Spark LLC</a>&nbsp;&ndash; <a href="https://unity3d.com/legal/as_terms">Lizenz</a></p>
         <p>&#160;</p>
-        <p><i>Idee:</i><br>&#160;Anna-Maria Kwasny</p>
+        <p><i>Icon nach einer Zeichnung von</i><br>&#160;Evelyn Falkensteiner</p>
+        <p>&#160;</p>
+        <p><i>Idee und Sound-Auswahl:</i><br>&#160;Anna-Maria Kwasny</p>
         ]]></string>
 </resources>
