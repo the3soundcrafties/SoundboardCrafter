@@ -26,8 +26,9 @@ public class AboutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-        TextView aboutTextView = (TextView) findViewById(R.id.aboutTextView);
-        aboutTextView.setText(Html.fromHtml(getString(R.string.about_text_html), FROM_HTML_MODE_COMPACT));
+        TextView aboutTextView = findViewById(R.id.aboutTextView);
+        aboutTextView.setText(
+                Html.fromHtml(getString(R.string.about_text_html), FROM_HTML_MODE_COMPACT));
         aboutTextView.setMovementMethod(LinkMovementMethod.getInstance());
         //Linkify.addLinks(aboutTextView, Linkify.WEB_URLS);
     }

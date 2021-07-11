@@ -87,8 +87,10 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @Override
     protected void onStart() {
         super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
             return;
         }
     }
@@ -104,12 +106,12 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_menu_item_about:
-                startActivity(AboutActivity.newIntent(this));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        final int id = item.getItemId();
+        if (id == R.id.toolbar_menu_item_about) {
+            startActivity(AboutActivity.newIntent(this));
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -213,7 +215,8 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         }
 
         @Override
-        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+        public void destroyItem(@NonNull ViewGroup container, int position,
+                                @NonNull Object object) {
             registeredFragments.set(position, null);
             super.destroyItem(container, position, object);
         }
@@ -238,7 +241,8 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
 
     @Override
     @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         if (requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.

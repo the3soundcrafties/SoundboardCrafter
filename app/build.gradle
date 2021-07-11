@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    //noinspection SpellCheckingInspection
     signingConfigs {
         // See https://medium.com/@chauyan/how-to-use-properties-file-to-do-android-sign-action-in-gradle-45d51e31a98c
         config_release {
-            def Properties localProps = new Properties()
+            Properties localProps = new Properties()
             localProps.load(new FileInputStream(file('../local.properties')))
-            def Properties keyProps = new Properties()
-            assert localProps['keystore.props.file'];
+            Properties keyProps = new Properties()
+            assert localProps['keystore.props.file']
 
             keyProps.load(new FileInputStream(file(localProps['keystore.props.file'])))
 
@@ -17,11 +18,11 @@ android {
             keyPassword keyProps["RELEASE_KEY_PASSWORD"]
         }
     }
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
         applicationId "de.soundboardcrafter"
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "0.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -61,14 +62,14 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0-alpha02'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
-    implementation 'androidx.media:media:1.2.0-alpha01'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.google.android.material:material:1.2.0-alpha04'
+    implementation 'androidx.appcompat:appcompat:1.4.0-alpha03'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
+    implementation 'androidx.media:media:1.4.0-rc01'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.google.android.material:material:1.5.0-alpha01'
     implementation 'com.google.guava:guava:28.0-jre'
     implementation 'org.jetbrains:annotations:17.0.0'
-    testImplementation 'junit:junit:4.13-beta-3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha03'
-    androidTestImplementation 'androidx.test:runner:1.3.0-alpha03'
+    testImplementation 'junit:junit:4.13.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
 }

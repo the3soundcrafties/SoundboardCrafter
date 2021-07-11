@@ -141,26 +141,27 @@ public class SoundboardListFragment extends Fragment
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
         if (!getUserVisibleHint()) {
             // The wrong fragment got the event.
-            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
+            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
+            // -receives-oncontextitemselected-call
             return false; // Pass the event to the next fragment
         }
         AdapterView.AdapterContextMenuInfo menuInfo =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         SoundboardListItemRow itemRow = (SoundboardListItemRow) menuInfo.targetView;
         SoundboardWithSounds soundboardWithSounds = itemRow.getSoundboardWithSounds();
-        switch (item.getItemId()) {
-            case R.id.context_menu_edit_soundboard:
-                Intent intent = SoundboardEditActivity.newIntent(getActivity(), soundboardWithSounds.getSoundboard());
-                startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
-                return true;
-            case R.id.context_menu_remove_soundboard:
-                new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
-                adapter.remove(soundboardWithSounds);
-                fireSomethingMightHaveChanged();
-
-                return true;
-            default:
-                return false;
+        final int id = item.getItemId();
+        if (id == R.id.context_menu_edit_soundboard) {
+            Intent intent = SoundboardEditActivity
+                    .newIntent(getActivity(), soundboardWithSounds.getSoundboard());
+            startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
+            return true;
+        } else if (id == R.id.context_menu_remove_soundboard) {
+            new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
+            adapter.remove(soundboardWithSounds);
+            fireSomethingMightHaveChanged();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -237,7 +238,7 @@ public class SoundboardListFragment extends Fragment
     /**
      * A background task, used to remove soundboard with the given indexes from the soundboard
      */
-    class RemoveSoundboardTask extends AsyncTask<Integer, Void, Void> {
+    static class RemoveSoundboardTask extends AsyncTask<Integer, Void, Void> {
         private final WeakReference<Context> appContextRef;
         private final UUID soundboardId;
 
@@ -266,7 +267,8 @@ public class SoundboardListFragment extends Fragment
     /**
      * A background task, used to retrieve soundboards from the database.
      */
-    class FindSoundboardsTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
+    class FindSoundboardsTask
+            extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = SoundboardListFragment.FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -309,5 +311,4 @@ public class SoundboardListFragment extends Fragment
             setSoundboards(soundboards);
         }
     }
-
 }
