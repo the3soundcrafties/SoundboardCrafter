@@ -14,6 +14,8 @@ import com.getkeepsafe.taptargetview.TapTargetView;
 import java.util.function.Supplier;
 
 abstract public class AbstractTutorialListAdapter extends BaseAdapter {
+    private static final int RADIUS = 100;
+
     private boolean rightPlaceToShowTutorialHints;
 
     public void markAsRightPlaceToShowTutorialHints() {
@@ -33,11 +35,11 @@ abstract public class AbstractTutorialListAdapter extends BaseAdapter {
                     // Cache bounds
                     final int[] location = new int[2];
                     itemNameView.getLocationOnScreen(location);
-                    location[0] += 30;
+                    location[0] += RADIUS;
                     location[1] += itemRow.getHeight() / 2;
 
-                    Rect bounds = new Rect(location[0] - 30, location[1] - 30,
-                            location[0] + 30, location[1] + 30);
+                    Rect bounds = new Rect(location[0] - RADIUS, location[1] - RADIUS,
+                            location[0] + RADIUS, location[1] + RADIUS);
 
                     TapTargetView.showFor((Activity) innerContext,
                             TapTarget.forBounds(bounds,
