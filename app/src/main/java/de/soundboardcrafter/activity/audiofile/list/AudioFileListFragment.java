@@ -208,7 +208,7 @@ public class AudioFileListFragment extends Fragment implements
             setFolder(getFolder(savedInstanceState));
         } else {
             sortOrder = SortOrder.BY_NAME;
-            setFolder(null);
+            setFolder(new AssetAudioLocation(AudioLoader.ASSET_SOUND_PATH));
         }
 
         byFolderMenuItem = null;
@@ -604,7 +604,8 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     @UiThread
-    private void setAudioFolderEntries(ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
+    private void setAudioFolderEntries(
+            ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
         stopPlaying();
         adapter.setAudioFolderEntries(audioFolderEntries);
     }
@@ -666,7 +667,8 @@ public class AudioFileListFragment extends Fragment implements
         private final Comparator<AbstractAudioFolderEntry> entryComparator =
                 new Comparator<AbstractAudioFolderEntry>() {
                     @Override
-                    public int compare(AbstractAudioFolderEntry one, AbstractAudioFolderEntry other) {
+                    public int compare(AbstractAudioFolderEntry one,
+                                       AbstractAudioFolderEntry other) {
                         if (one instanceof AudioFolder) {
                             // one instanceof AudioFolder
                             if (!(other instanceof AudioFolder)) {
@@ -674,7 +676,8 @@ public class AudioFileListFragment extends Fragment implements
                             }
 
                             // one and other instanceof AudioFolder
-                            return FOLDER_COMPARATOR.compare((AudioFolder) one, (AudioFolder) other);
+                            return FOLDER_COMPARATOR
+                                    .compare((AudioFolder) one, (AudioFolder) other);
                         }
 
                         // one instanceof AudioModelAndSound
@@ -689,7 +692,8 @@ public class AudioFileListFragment extends Fragment implements
                 };
         private final SortOrder sortOrder;
 
-        FindAudioFileTask(Context context, @Nullable IAudioLocation folder, @NonNull SortOrder sortOrder) {
+        FindAudioFileTask(Context context, @Nullable IAudioLocation folder,
+                          @NonNull SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.folder = folder;
@@ -717,7 +721,8 @@ public class AudioFileListFragment extends Fragment implements
          * and corresponding sounds from the database.
          */
         @WorkerThread
-        private ImmutableList<? extends AbstractAudioFolderEntry> loadAudioFolderEntries(Context appContext, AudioLoader audioLoader) {
+        private ImmutableList<? extends AbstractAudioFolderEntry> loadAudioFolderEntries(
+                Context appContext, AudioLoader audioLoader) {
             if (folder == null) {
                 return loadAllAudioEntries(appContext, audioLoader);
             }
@@ -763,7 +768,8 @@ public class AudioFileListFragment extends Fragment implements
          * as well as the corresponding sounds from the database.
          */
         @WorkerThread
-        private ImmutableList<AbstractAudioFolderEntry> loadAudioFolderEntriesForFolder(Context appContext, AudioLoader audioLoader) {
+        private ImmutableList<AbstractAudioFolderEntry> loadAudioFolderEntriesForFolder(
+                Context appContext, AudioLoader audioLoader) {
             Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> audioModelsAndFolders =
                     loadAudioFolderEntriesForFolderWithoutSounds(appContext, audioLoader);
 
