@@ -4,7 +4,7 @@ android {
     //noinspection SpellCheckingInspection
     signingConfigs {
         // See https://medium.com/@chauyan/how-to-use-properties-file-to-do-android-sign-action-in-gradle-45d51e31a98c
-        config_release {
+        config {
             Properties localProps = new Properties()
             localProps.load(new FileInputStream(file('../local.properties')))
             Properties keyProps = new Properties()
@@ -40,16 +40,16 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config_release
+            signingConfig signingConfigs.config
         }
         debug {
-            signingConfig signingConfigs.config_release
+            signingConfig signingConfigs.config
             minifyEnabled false
         }
         staging {
             initWith debug
             debuggable = true
-            signingConfig signingConfigs.config_release
+            signingConfig signingConfigs.config
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -69,6 +69,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0-alpha01'
     implementation 'com.google.guava:guava:28.0-jre'
     implementation 'org.jetbrains:annotations:17.0.0'
+    implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.3'
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'

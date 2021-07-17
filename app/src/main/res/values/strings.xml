@@ -63,6 +63,10 @@
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
     <string name="audiofile_not_found">Sound file not found any longer</string>
     <string name="artist_unknown"><![CDATA[<unknown>]]></string>
+    <string name="tutorial_soundboard_play_start_sound_title">Play</string>
+    <string name="tutorial_soundboard_play_start_sound_description">Click to play</string>
+    <string name="tutorial_soundboard_play_context_menu_title">Edit</string>
+    <string name="tutorial_soundboard_play_context_menu_description">Long-click to edit</string>
     <string name="toolbar_menu_item_about">About</string>
     <string name="about_activity_title">About</string>
     <string name="about_text_html">
@@ -76,10 +80,15 @@
         <p>&#160;</p>
         <p><i>Source Code:</i><br>&#160;<a href="https://github.com/jfelkel/SoundboardCrafter">GitHub</a>&nbsp;&ndash; <a href="https://github.com/jfelkel/SoundboardCrafter/blob/master/LICENSE">License/a></p>
         <p>&#160;</p>
-        <p><i>Sounds:</i><br>&#160;<a href="https://www.soundsparkllc.com">Sound Spark LLC</a>&nbsp;&ndash; <a href="https://unity3d.com/legal/as_terms">License</a></p>
+        <p><i>Libraries:</i><br>&#160;<a href="https://github.com/KeepSafe/TapTargetView">TapTargetView</a>&nbsp;&ndash; <a href="https://github.com/KeepSafe/TapTargetView/blob/master/LICENSE">License</a></p>
+        <p><i>Sounds:</i>
+            <br>&#160;<a href="https://www.soundsparkllc.com">Sound Spark LLC</a>&nbsp;&ndash; <a href="https://unity3d.com/legal/as_terms">License</a>
+            <br>&#160;In-House Production: Anna-Maria Kwasny, Elisabeth Kwasny
+        </p>
         <p>&#160;</p>
         <p><i>Icon based on a drawing by</i><br>&#160;Evelyn Falkensteiner</p>
         <p>&#160;</p>
         <p><i>Idea and Sound Selection:</i><br>&#160;Anna-Maria Kwasny</p>
         ]]></string>
+    <string name="toolbar_menu_item_restart_tutorial">Restart Tutorial</string>
 </resources>

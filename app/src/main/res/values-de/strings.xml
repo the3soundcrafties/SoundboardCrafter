@@ -63,6 +63,10 @@
     <string name="soundboard_file_not_found">Sound-Datei nicht gefunden - aus Soundboard(s) entfernt</string>
     <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
     <string name="artist_unknown"><![CDATA[<unbekannt>]]></string>
+    <string name="tutorial_soundboard_play_start_sound_title">Abspielen</string>
+    <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
+    <string name="tutorial_soundboard_play_context_menu_title">Bearbeiten</string>
+    <string name="tutorial_soundboard_play_context_menu_description">Lang klicken zum Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>
     <string name="about_activity_title">Über den Soundboard Crafter</string>
     <string name="about_text_html">
@@ -76,10 +80,16 @@
         <p>&#160;</p>
         <p><i>Quellcode:</i><br>&#160;<a href="https://github.com/jfelkel/SoundboardCrafter">GitHub</a>&nbsp;&ndash; <a href="https://github.com/jfelkel/SoundboardCrafter/blob/master/LICENSE">Lizenz</a></p>
         <p>&#160;</p>
-        <p><i>Sounds:</i><br>&#160;<a href="https://www.soundsparkllc.com">Sound Spark LLC</a>&nbsp;&ndash; <a href="https://unity3d.com/legal/as_terms">Lizenz</a></p>
+        <p><i>Verwendete Bibliotheken:</i><br>&#160;<a href="https://github.com/KeepSafe/TapTargetView">TapTargetView</a>&nbsp;&ndash; <a href="https://github.com/KeepSafe/TapTargetView/blob/master/LICENSE">Lizenz</a></p>
+        <p>&#160;</p>
+        <p><i>Sounds:</i>
+            <br>&#160;<a href="https://www.soundsparkllc.com">Sound Spark LLC</a>&nbsp;&ndash; <a href="https://unity3d.com/legal/as_terms">Lizenz</a>
+            <br>&#160;In-House-Produktion: Anna-Maria und Elisabeth Kwasny
+        </p>
         <p>&#160;</p>
         <p><i>Icon nach einer Zeichnung von</i><br>&#160;Evelyn Falkensteiner</p>
         <p>&#160;</p>
         <p><i>Idee und Sound-Auswahl:</i><br>&#160;Anna-Maria Kwasny</p>
         ]]></string>
+    <string name="toolbar_menu_item_restart_tutorial">Noch einmal Tipps geben</string>
 </resources>

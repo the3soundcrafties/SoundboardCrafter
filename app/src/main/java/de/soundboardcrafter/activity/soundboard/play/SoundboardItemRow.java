@@ -34,7 +34,8 @@ class SoundboardItemRow extends RelativeLayout {
         // This is work-around: Without setting max lines set
         // (and to which value?), texts that are too long
         // will only be truncated, not ellipsized.
-        // See https://stackoverflow.com/questions/14173776/ellipsize-not-working-properly-for-a-multiline-textview-with-an-arbitrary-maximu .
+        // See https://stackoverflow.com/questions/14173776/ellipsize-not-working-properly-for-a
+        // -multiline-textview-with-an-arbitrary-maximu .
         ViewTreeObserver observer = soundItem.getViewTreeObserver();
         observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -77,7 +78,8 @@ class SoundboardItemRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setSound(Soundboard soundboard, Sound sound, MediaPlayerServiceCallback mediaPlayerServiceCallback) {
+    void setSound(Soundboard soundboard, Sound sound,
+                  MediaPlayerServiceCallback mediaPlayerServiceCallback) {
         if (!mediaPlayerServiceCallback.isConnected()) {
             return;
         }
@@ -94,11 +96,8 @@ class SoundboardItemRow extends RelativeLayout {
         soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
     }
 
-    String getSoundName() {
-        return getSound().getName();
-    }
-
-    Sound getSound() {
-        return sound;
+    @NonNull
+    TextView getSoundItem() {
+        return soundItem;
     }
 }

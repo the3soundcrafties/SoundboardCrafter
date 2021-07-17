@@ -50,6 +50,7 @@ import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.de.soundboardcrafter.widget.GridAutofitLayoutManager;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
@@ -153,6 +154,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         updateUI();
 
         Log.d(TAG, "MediaPlayerService is connected");
+
+        if (soundboardItemAdapter != null && getUserVisibleHint()) {
+            soundboardItemAdapter.setRightPlaceToShowTutorialHints();
+        }
     }
 
     @Override
@@ -244,6 +249,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
                 requireContext().getResources().getDisplayMetrics());
     }
 
+    @UiThread
     private void onClickSoundboard(SoundboardItemRow soundboardItemRow, Sound sound) {
         MediaPlayerService service = getService();
         if (service == null) {
@@ -266,6 +272,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         } else {
             service.stopPlaying(soundboard.getSoundboard(), sound, true);
         }
+
+        @Nullable final Context context = getContext();
+        if (context != null) {
+            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND);
+        }
     }
 
     private void handleSoundFileNotFound(Sound sound) {
@@ -286,7 +297,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         switch (item.getItemId()) {
             case R.id.toolbar_menu_sound_sort_alpha:
-                new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME).execute();
+                new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME)
+                        .execute();
                 return true;
             case R.id.toolbar_menu_sound_sort_manually:
                 if (actionMode != null) {
@@ -377,6 +389,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         soundboardItemAdapter.setActionListener(new SoundboardItemAdapter.ActionListener() {
             @Override
+            @UiThread
             public void onItemClick(int position, View view) {
                 if (!(view instanceof SoundboardItemRow)) {
                     return;
@@ -417,6 +430,30 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.fragment_soundboard_play, menu);
+
+/* FIXME Sortieren?!
+        if (TutorialDao.getInstance(requireActivity()).isChecked(
+                TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)
+                && !TutorialDao.getInstance(requireActivity()).isChecked(
+                TutorialDao.Key.SOUNDBOARD_PLAY_SORT)) {
+
+
+            TapTargetView.showFor(this,
+                    TapTarget.forToolbarMenuItem(
+                            ((AppCompatActivity) requireActivity()).getSupportActionBar(),
+                            R.id.toolbar_menu_sound_sort,
+                            "Sounds Sortieren",
+                            "Klicken, um Sounds im Soundboard zu sortieren"),
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            super.onTargetClick(view); // dismiss view
+                            soundboardItemRow.performClick();
+                        }
+                    });
+        })
+    }
+    */
     }
 
     @Override
@@ -439,6 +476,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
 
         menu.setHeaderTitle(sound.getName());
+
+        @Nullable final Context context = getContext();
+        if (context != null) {
+            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU);
+        }
     }
 
     @Override
@@ -450,7 +492,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
 
         if (!getUserVisibleHint()) {
             // The wrong fragment got the event.
-            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
+            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
+            // -receives-oncontextitemselected-call
             return false; // Pass the event to the next fragment
         }
 
@@ -523,7 +566,8 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         return mediaPlayerService;
     }
 
-    // See https://therubberduckdev.wordpress.com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
+    // See https://therubberduckdev.wordpress
+// .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
     class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
         @Override
         public int getMovementFlags(@NonNull RecyclerView recyclerView,
@@ -531,13 +575,15 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             if (!(viewHolder instanceof SoundboardItemAdapter.ViewHolder)) {
                 return 0;
             }
-            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
+            int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT
+                    | ItemTouchHelper.RIGHT;
             int swipeFlags = 0;
             return makeMovementFlags(dragFlags, swipeFlags);
         }
 
         @Override
-        public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+        public boolean onMove(@NonNull RecyclerView recyclerView,
+                              RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
             int from = viewHolder.getAdapterPosition();
             int to = target.getAdapterPosition();
 
@@ -583,10 +629,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         private final String TAG = UpdateSoundsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        final SoundboardWithSounds soundboardWithSounds;
-        final SortOrder order;
+        private final SoundboardWithSounds soundboardWithSounds;
+        private final SortOrder order;
 
-        SoundSortInSoundboardTask(Context context, SoundboardWithSounds soundboardWithSounds, SortOrder order) {
+        SoundSortInSoundboardTask(Context context, SoundboardWithSounds soundboardWithSounds,
+                                  SortOrder order) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.soundboardWithSounds = soundboardWithSounds;
@@ -656,8 +703,10 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             Map<Sound, Boolean> sounds = new HashMap<>();
             for (UUID soundId : soundIds) {
                 SoundWithSelectableSoundboards soundWithSelectableSoundboards =
-                        SoundDao.getInstance(appContext).findSoundWithSelectableSoundboards(soundId);
-                List<SelectableSoundboard> soundboards = soundWithSelectableSoundboards.getSoundboards();
+                        SoundDao.getInstance(appContext)
+                                .findSoundWithSelectableSoundboards(soundId);
+                List<SelectableSoundboard> soundboards =
+                        soundWithSelectableSoundboards.getSoundboards();
                 Optional<SelectableSoundboard> foundSoundboard =
                         soundboards.stream()
                                 .filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
@@ -694,10 +743,11 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             soundboardItemAdapter.updateSounds(sounds);
         }
 
-        void stopSoundsNotInSoundboard(Map<Sound, Boolean> sounds) {
+        private void stopSoundsNotInSoundboard(Map<Sound, Boolean> sounds) {
             for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
                 if (!soundEntry.getValue()) {
-                    mediaPlayerService.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
+                    mediaPlayerService
+                            .stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
                 }
             }
         }

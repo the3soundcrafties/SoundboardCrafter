@@ -171,7 +171,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         // This is just a dummy result, so that the
         // calling activity can update its GUI. (The user might have removed a
-        // sound from a soudboard or the like.)
+        // sound from a soundboard or the like.)
         Intent resultIntent = new Intent(this, MainActivity.class);
         setResult(// The result is always OK
                 Activity.RESULT_OK,
@@ -401,6 +401,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @UiThread
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE
                 || requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {

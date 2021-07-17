@@ -1,17 +1,25 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 
 import java.util.Collection;
 import java.util.Map;
 
+import de.soundboardcrafter.R;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -22,8 +30,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class SoundboardItemAdapter
         extends RecyclerView.Adapter<SoundboardItemAdapter.ViewHolder> {
-    private static final String TAG = SoundboardItemAdapter.class.getName();
-
     private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private final SoundboardWithSounds soundboard;
 
@@ -36,7 +42,10 @@ public class SoundboardItemAdapter
 
     private ItemTouchHelper touchHelper;
 
+    private boolean rightPlaceToShowTutorialHints;
+
     public interface ActionListener {
+        @UiThread
         void onItemClick(int position, View v);
 
         void onCreateContextMenu(int position, ContextMenu menu);
@@ -55,8 +64,9 @@ public class SoundboardItemAdapter
         }
     }
 
-    SoundboardItemAdapter(@NonNull SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
-                          @NonNull SoundboardWithSounds soundboard) {
+    SoundboardItemAdapter(
+            @NonNull SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
+            @NonNull SoundboardWithSounds soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback =
                 checkNotNull(mediaPlayerServiceCallback,
@@ -109,7 +119,8 @@ public class SoundboardItemAdapter
         mediaPlayerServiceCallback.setOnPlayingStopped(soundboard.getSoundboard(), sound,
                 this::notifyDataSetChanged);
 
-        holder.getSoundboardItemRow().setSound(soundboard.getSoundboard(), sound, mediaPlayerServiceCallback);
+        holder.getSoundboardItemRow()
+                .setSound(soundboard.getSoundboard(), sound, mediaPlayerServiceCallback);
 
         holder.getSoundboardItemRow().setOnClickListener(
                 v -> actionListener.onItemClick(holder.getAdapterPosition(), v)
@@ -123,10 +134,100 @@ public class SoundboardItemAdapter
         );
     }
 
+    void setRightPlaceToShowTutorialHints() {
+        rightPlaceToShowTutorialHints = true;
+    }
+
+    @Override
+    @UiThread
+    public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
+        if (rightPlaceToShowTutorialHints) {
+            final SoundboardItemRow soundboardItemRow = holder.getSoundboardItemRow();
+            showTutorialHintAsNecessaryIfLaidOut(soundboardItemRow);
+        }
+    }
+
+    @UiThread
+    private void showTutorialHintAsNecessaryIfLaidOut(final SoundboardItemRow soundboardItemRow) {
+        if (soundboardItemRow.getSoundItem().getWidth() != 0) {
+            @Nullable final Context context = soundboardItemRow.getContext();
+            if (context != null) {
+                // View has been laid out
+                showTutorialHintAsNecessary(soundboardItemRow, context);
+            }
+        }
+    }
+
+    @UiThread
+    private void showTutorialHintAsNecessary(@NonNull SoundboardItemRow soundboardItemRow,
+                                             @NonNull Context context) {
+        if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
+            showTutorialHint(soundboardItemRow, R.string.tutorial_soundboard_play_start_sound_title,
+                    R.string.tutorial_soundboard_play_start_sound_description,
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            super.onTargetClick(view); // dismiss view
+                            soundboardItemRow.performClick();
+                        }
+
+                        @Override
+                        public void onTargetLongClick(TapTargetView view) {
+                            // Don't dismiss view and don't handle like a single click
+                        }
+                    });
+        } else if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
+            showTutorialHint(soundboardItemRow,
+                    R.string.tutorial_soundboard_play_context_menu_title,
+                    R.string.tutorial_soundboard_play_context_menu_description,
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            // Don't dismiss view
+                        }
+
+                        @Override
+                        public void onTargetLongClick(TapTargetView view) {
+                            super.onTargetClick(view); // dismiss view
+
+                            // Simulate a long in the middle of the item
+                            soundboardItemRow.performLongClick(
+                                    soundboardItemRow.getWidth() / 2f,
+                                    soundboardItemRow.getHeight() / 2f);
+                        }
+                    });
+        }
+
+        rightPlaceToShowTutorialHints = false;
+    }
+
+    private boolean shallShowTutorialHint(@NonNull Context context, TutorialDao.Key key) {
+        return !TutorialDao.getInstance(context).isChecked(key);
+    }
+
+    @UiThread
+    private void showTutorialHint(
+            @NonNull SoundboardItemRow soundboardItemRow, int titleId,
+            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+        soundboardItemRow.getSoundItem().post(() -> {
+            @Nullable final Context innerContext = soundboardItemRow.getContext();
+            if (innerContext instanceof Activity) {
+                TapTargetView.showFor((Activity) innerContext,
+                        TapTarget.forView(soundboardItemRow.getSoundItem(),
+                                innerContext.getResources().getString(titleId),
+                                innerContext.getResources().getString(descriptionId)),
+                        tapTargetViewListener);
+            }
+        }); // We don't care if return value where false - there is always next time.
+    }
+
     void setTouchHelper(ItemTouchHelper touchHelper) {
         this.touchHelper = touchHelper;
-        // https://github.com/sjthn/RecyclerViewDemo/blob/67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith/recyclerviewdemo/UserListAdapter.java
-        // https://therubberduckdev.wordpress.com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/
+        // https://github.com/sjthn/RecyclerViewDemo/blob
+        // /67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith
+        // /recyclerviewdemo/UserListAdapter.java
+        // https://therubberduckdev.wordpress
+        // .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/
     }
 
     /**
@@ -138,7 +239,8 @@ public class SoundboardItemAdapter
         for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
             updateSound(soundEntry.getKey());
             if (!soundEntry.getValue()) {
-                mediaPlayerServiceCallback.stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
+                mediaPlayerServiceCallback
+                        .stopPlaying(soundboard.getSoundboard(), soundEntry.getKey(), true);
             }
         }
     }
@@ -193,11 +295,6 @@ public class SoundboardItemAdapter
         soundboard.removeSound(position);
 
         notifyDataSetChanged();
-    }
-
-    @Nullable
-    ViewHolder getContextMenuViewHolder() {
-        return contextMenuViewHolder;
     }
 
     @Nullable

@@ -35,6 +35,7 @@ import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
+import de.soundboardcrafter.dao.TutorialDao;
 
 /**
  * The activity with which the app is started, showing games, soundboards, and sounds.
@@ -45,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
     private Page selectedPage;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         pager.setCurrentItem(index != -1 ? index : 0, false);
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -105,10 +104,14 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     }
 
     @Override
+    @UiThread
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         final int id = item.getItemId();
         if (id == R.id.toolbar_menu_item_about) {
             startActivity(AboutActivity.newIntent(this));
+            return true;
+        } else if (id == R.id.toolbar_menu_item_restart_tutorial) {
+            TutorialDao.getInstance(this).uncheckAll();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -243,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @UiThread
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
