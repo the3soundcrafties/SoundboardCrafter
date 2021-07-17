@@ -56,4 +56,9 @@ class GameListItemRow extends RelativeLayout {
     GameWithSoundboards getGameWithSoundboards() {
         return gameWithSoundboards;
     }
+
+    @NonNull
+    public TextView getTvGameName() {
+        return gameName;
+    }
 }

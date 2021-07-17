@@ -21,6 +21,10 @@
     <string name="soundboards_play_sort_manually_title">Halten und ziehen zum Sortieren</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>
+    <string name="context_menu_edit_game">Bearbeiten</string>
+    <string name="context_menu_remove_game">Löschen</string>
+    <string name="context_menu_edit_soundboard">Umbenennen</string>
+    <string name="context_menu_remove_soundboard">Löschen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
     <string name="reset_all_message">Alle Spiele, Soundboards und Sound-Einstellungen werden
         gelöscht. Lautstärkeeinstellungen etc. gehen verloren. Sound-Dateien bleiben erhalten.</string>
@@ -66,6 +70,8 @@
     <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
     <string name="tutorial_soundboard_play_context_menu_description">Lang klicken zum Bearbeiten</string>
     <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
+        Umbenennen oder Löschen</string>
+    <string name="tutorial_game_list_context_menu_description">Lang klicken zum
         Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>
     <string name="about_activity_title">Über den Soundboard Crafter</string>

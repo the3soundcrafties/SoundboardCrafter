@@ -14,6 +14,10 @@
     <string name="toolbar_menu_audiofiles_sort">Sort</string>
     <string name="context_menu_edit_sound">Edit</string>
     <string name="context_menu_remove_sound">Remove</string>
+    <string name="context_menu_edit_game">Edit</string>
+    <string name="context_menu_remove_game">Delete</string>
+    <string name="context_menu_edit_soundboard">Rename</string>
+    <string name="context_menu_remove_soundboard">Delete</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by Date</string>
@@ -65,7 +69,9 @@
     <string name="artist_unknown"><![CDATA[<unknown>]]></string>
     <string name="tutorial_soundboard_play_start_sound_description">Click to play</string>
     <string name="tutorial_soundboard_play_context_menu_description">Long-click to edit</string>
-    <string name="tutorial_soundboard_list_context_menu_description">Long-click to edit</string>
+    <string name="tutorial_soundboard_list_context_menu_description">Long-click to rename
+        or delete</string>
+    <string name="tutorial_game_list_context_menu_description">Long-click to edit</string>
     <string name="toolbar_menu_item_about">About</string>
     <string name="about_activity_title">About</string>
     <string name="about_text_html">

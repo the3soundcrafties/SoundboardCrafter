@@ -40,6 +40,7 @@ import de.soundboardcrafter.activity.game.edit.GameEditActivity;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
@@ -137,6 +138,11 @@ public class GameListFragment extends Fragment
         GameListItemRow itemRow = (GameListItemRow) adapterContextMenuInfo.targetView;
 
         menu.setHeaderTitle(itemRow.getGameWithSoundboards().getGame().getName());
+
+        @Nullable final Context context = getContext();
+        if (context != null) {
+            TutorialDao.getInstance(context).check(TutorialDao.Key.GAME_LIST_CONTEXT_MENU);
+        }
     }
 
     @Override
@@ -144,7 +150,8 @@ public class GameListFragment extends Fragment
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
         if (!getUserVisibleHint()) {
             // The wrong fragment got the event.
-            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
+            // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
+            // -receives-oncontextitemselected-call
             return false; // Pass the event to the next fragment
         }
         AdapterView.AdapterContextMenuInfo menuInfo =
@@ -153,7 +160,8 @@ public class GameListFragment extends Fragment
         GameWithSoundboards gameWithSoundboards = itemRow.getGameWithSoundboards();
         switch (item.getItemId()) {
             case R.id.context_menu_edit_game:
-                Intent intent = GameEditActivity.newIntent(requireActivity(), gameWithSoundboards.getGame());
+                Intent intent = GameEditActivity
+                        .newIntent(requireActivity(), gameWithSoundboards.getGame());
                 startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
                 return true;
             case R.id.context_menu_remove_game:
@@ -216,6 +224,10 @@ public class GameListFragment extends Fragment
         adapter = new GameListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();
+
+        if (getUserVisibleHint()) {
+            adapter.markAsRightPlaceToShowTutorialHints();
+        }
     }
 
     @UiThread

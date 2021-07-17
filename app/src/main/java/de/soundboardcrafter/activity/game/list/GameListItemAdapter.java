@@ -2,19 +2,21 @@ package de.soundboardcrafter.activity.game.list;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import java.util.List;
 
+import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Adapter for a GameItem.
  */
-class GameListItemAdapter extends BaseAdapter {
+class GameListItemAdapter extends AbstractTutorialListAdapter {
     private final List<GameWithSoundboards> gamesWithSoundboards;
 
     GameListItemAdapter(List<GameWithSoundboards> gamesWithSoundboards) {
@@ -43,7 +45,16 @@ class GameListItemAdapter extends BaseAdapter {
             convertView = new GameListItemRow(parent.getContext());
         }
         GameListItemRow itemRow = (GameListItemRow) convertView;
+
+        TutorialDao tutorialDao = TutorialDao.getInstance(itemRow.getContext());
+
         itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
+
+        showTutorialHintIfNecessary(position, itemRow, itemRow.getTvGameName(),
+                () -> tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)
+                        && !tutorialDao.isChecked(TutorialDao.Key.GAME_LIST_CONTEXT_MENU),
+                R.string.tutorial_game_list_context_menu_description);
+
         return convertView;
     }
 
