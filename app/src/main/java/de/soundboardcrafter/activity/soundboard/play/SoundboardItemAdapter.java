@@ -33,6 +33,8 @@ public class SoundboardItemAdapter
     private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
     private final SoundboardWithSounds soundboard;
 
+    private TutorialDao tutorialDao;
+
     private ActionListener actionListener;
 
     @Nullable
@@ -134,7 +136,7 @@ public class SoundboardItemAdapter
         );
     }
 
-    void setRightPlaceToShowTutorialHints() {
+    void markAsRightPlaceToShowTutorialHints() {
         rightPlaceToShowTutorialHints = true;
     }
 
@@ -143,6 +145,7 @@ public class SoundboardItemAdapter
     public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
         if (rightPlaceToShowTutorialHints) {
             final SoundboardItemRow soundboardItemRow = holder.getSoundboardItemRow();
+            tutorialDao = TutorialDao.getInstance(soundboardItemRow.getContext());
             showTutorialHintAsNecessaryIfLaidOut(soundboardItemRow);
         }
     }
@@ -162,7 +165,7 @@ public class SoundboardItemAdapter
     private void showTutorialHintAsNecessary(@NonNull SoundboardItemRow soundboardItemRow,
                                              @NonNull Context context) {
         if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
-            showTutorialHint(soundboardItemRow, R.string.tutorial_soundboard_play_start_sound_title,
+            showTutorialHint(soundboardItemRow,
                     R.string.tutorial_soundboard_play_start_sound_description,
                     new TapTargetView.Listener() {
                         @Override
@@ -178,7 +181,6 @@ public class SoundboardItemAdapter
                     });
         } else if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
             showTutorialHint(soundboardItemRow,
-                    R.string.tutorial_soundboard_play_context_menu_title,
                     R.string.tutorial_soundboard_play_context_menu_description,
                     new TapTargetView.Listener() {
                         @Override
@@ -202,19 +204,18 @@ public class SoundboardItemAdapter
     }
 
     private boolean shallShowTutorialHint(@NonNull Context context, TutorialDao.Key key) {
-        return !TutorialDao.getInstance(context).isChecked(key);
+        return !tutorialDao.isChecked(key);
     }
 
     @UiThread
     private void showTutorialHint(
-            @NonNull SoundboardItemRow soundboardItemRow, int titleId,
+            @NonNull SoundboardItemRow itemRow,
             int descriptionId, TapTargetView.Listener tapTargetViewListener) {
-        soundboardItemRow.getSoundItem().post(() -> {
-            @Nullable final Context innerContext = soundboardItemRow.getContext();
+        itemRow.getSoundItem().post(() -> {
+            @Nullable final Context innerContext = itemRow.getContext();
             if (innerContext instanceof Activity) {
                 TapTargetView.showFor((Activity) innerContext,
-                        TapTarget.forView(soundboardItemRow.getSoundItem(),
-                                innerContext.getResources().getString(titleId),
+                        TapTarget.forView(itemRow.getSoundItem(),
                                 innerContext.getResources().getString(descriptionId)),
                         tapTargetViewListener);
             }

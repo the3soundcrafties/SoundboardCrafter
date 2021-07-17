@@ -18,7 +18,8 @@ public class TutorialDao {
     public enum Key {
         SOUNDBOARD_PLAY_START_SOUND,
         SOUNDBOARD_PLAY_CONTEXT_MENU,
-        SOUNDBOARD_PLAY_SORT
+        // SOUNDBOARD_PLAY_SORT,
+        SOUNDBOARD_LIST_CONTEXT_MENU
     }
 
     private static final String SHARED_PREFERENCES =

@@ -18,7 +18,7 @@
     <string name="toolbar_menu_audiofiles_folders_all">Alle</string>
     <string name="toolbar_menu_audiofiles_assets">Mitgelieferte</string>
     <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
-    <string name="soundboards_play_sort_manually_title">Ziehen zum Sortieren</string>
+    <string name="soundboards_play_sort_manually_title">Halten und ziehen zum Sortieren</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
@@ -63,10 +63,10 @@
     <string name="soundboard_file_not_found">Sound-Datei nicht gefunden - aus Soundboard(s) entfernt</string>
     <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
     <string name="artist_unknown"><![CDATA[<unbekannt>]]></string>
-    <string name="tutorial_soundboard_play_start_sound_title">Abspielen</string>
     <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
-    <string name="tutorial_soundboard_play_context_menu_title">Bearbeiten</string>
     <string name="tutorial_soundboard_play_context_menu_description">Lang klicken zum Bearbeiten</string>
+    <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
+        Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>
     <string name="about_activity_title">Über den Soundboard Crafter</string>
     <string name="about_text_html">

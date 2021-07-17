@@ -41,6 +41,7 @@ import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
@@ -134,6 +135,11 @@ public class SoundboardListFragment extends Fragment
         SoundboardListItemRow itemRow = (SoundboardListItemRow) adapterContextMenuInfo.targetView;
 
         menu.setHeaderTitle(itemRow.getSoundboardWithSounds().getName());
+
+        @Nullable final Context context = getContext();
+        if (context != null) {
+            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU);
+        }
     }
 
     @Override
@@ -226,6 +232,9 @@ public class SoundboardListFragment extends Fragment
         List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
         list.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
         adapter.setSoundboards(list);
+        if (getUserVisibleHint()) {
+            adapter.markAsRightPlaceToShowTutorialHints();
+        }
     }
 
     @UiThread

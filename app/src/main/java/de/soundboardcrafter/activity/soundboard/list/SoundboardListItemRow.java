@@ -16,7 +16,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 /**
  * Tile for a single sound in a soundboard, allows the sound to be played and stopped again.
  */
-public class SoundboardListItemRow extends RelativeLayout {
+class SoundboardListItemRow extends RelativeLayout {
     @NonNull
     private final TextView soundboardName;
     @Nonnull
@@ -52,6 +52,10 @@ public class SoundboardListItemRow extends RelativeLayout {
         return getResources().getQuantityString(
                 R.plurals.sound_count_text,
                 count, count);
+    }
 
+    @NonNull
+    TextView getTvSoundboardName() {
+        return soundboardName;
     }
 }

@@ -156,7 +156,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         Log.d(TAG, "MediaPlayerService is connected");
 
         if (soundboardItemAdapter != null && getUserVisibleHint()) {
-            soundboardItemAdapter.setRightPlaceToShowTutorialHints();
+            soundboardItemAdapter.markAsRightPlaceToShowTutorialHints();
         }
     }
 
