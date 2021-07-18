@@ -17,8 +17,8 @@ import static android.content.Context.MODE_PRIVATE;
 public class TutorialDao {
     public enum Key {
         SOUNDBOARD_PLAY_START_SOUND,
+        AUDIO_FILE_LIST_EDIT,
         SOUNDBOARD_PLAY_CONTEXT_MENU,
-        // SOUNDBOARD_PLAY_SORT,
         SOUNDBOARD_LIST_CONTEXT_MENU,
         GAME_LIST_CONTEXT_MENU
     }
@@ -27,7 +27,7 @@ public class TutorialDao {
             TutorialDao.class.getName() + "_Prefs";
 
     private static TutorialDao instance;
-    private Context appContext;
+    private final Context appContext;
 
     public static TutorialDao getInstance(final Context context) {
         if (instance == null) {

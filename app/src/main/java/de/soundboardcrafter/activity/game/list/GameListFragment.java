@@ -63,7 +63,6 @@ public class GameListFragment extends Fragment
     SoundEventListener soundEventListenerActivity;
 
     private ListView listView;
-    private Button addNewGame;
     private GameListItemAdapter adapter;
 
     @Override
@@ -91,7 +90,7 @@ public class GameListFragment extends Fragment
             onClickGame(adapter.getItem(position));
         });
 
-        addNewGame = rootView.findViewById(R.id.new_game);
+        Button addNewGame = rootView.findViewById(R.id.new_game);
         addNewGame.setOnClickListener(e ->
                 startActivityForResult(
                         GameCreateActivity.newIntent(getContext()),
@@ -158,18 +157,18 @@ public class GameListFragment extends Fragment
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         GameListItemRow itemRow = (GameListItemRow) menuInfo.targetView;
         GameWithSoundboards gameWithSoundboards = itemRow.getGameWithSoundboards();
-        switch (item.getItemId()) {
-            case R.id.context_menu_edit_game:
-                Intent intent = GameEditActivity
-                        .newIntent(requireActivity(), gameWithSoundboards.getGame());
-                startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
-                return true;
-            case R.id.context_menu_remove_game:
-                new RemoveGameTask(requireActivity(), gameWithSoundboards).execute();
-                adapter.remove(gameWithSoundboards);
-                return true;
-            default:
-                return false;
+        final int id = item.getItemId();
+        if (id == R.id.context_menu_edit_game) {
+            Intent intent = GameEditActivity
+                    .newIntent(requireActivity(), gameWithSoundboards.getGame());
+            startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
+            return true;
+        } else if (id == R.id.context_menu_remove_game) {
+            new RemoveGameTask(requireActivity(), gameWithSoundboards).execute();
+            adapter.remove(gameWithSoundboards);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -240,9 +239,7 @@ public class GameListFragment extends Fragment
     /**
      * A background task, used to remove soundboard with the given indexes from the soundboard
      */
-    class RemoveGameTask extends AsyncTask<Integer, Void, Void> {
-        private final String TAG = RemoveGameTask.class.getName();
-
+    static class RemoveGameTask extends AsyncTask<Integer, Void, Void> {
         private final WeakReference<Context> appContextRef;
         private final UUID gameId;
 

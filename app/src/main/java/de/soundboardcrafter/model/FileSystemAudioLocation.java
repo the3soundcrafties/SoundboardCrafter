@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 /**
  * The location <i>in the device's file system</i> where an audio file may reside.
  */
@@ -51,9 +53,8 @@ public class FileSystemAudioLocation implements IAudioLocation {
     }
 
     @Override
+    @Nonnull
     public String toString() {
-        return "FileSystemAudioLocation{" +
-                "path='" + path + '\'' +
-                '}';
+        return "FileSystemAudioLocation{path='" + path + '\'' + '}';
     }
 }

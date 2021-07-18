@@ -50,10 +50,13 @@ import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoun
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.dao.SoundDao;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.AssetAudioLocation;
 import de.soundboardcrafter.model.FileSystemAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Shows Soundboard in a Grid
@@ -272,6 +275,8 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private void changeFolder(String newFolder) {
+        checkNotNull(folder, "newFolder");
+
         if (folder instanceof FileSystemAudioLocation) {
             changeFolder(new FileSystemAudioLocation(newFolder));
         } else if (folder instanceof AssetAudioLocation) {
@@ -286,7 +291,7 @@ public class AudioFileListFragment extends Fragment implements
     private IAudioLocation getFolder(Bundle savedInstanceState) {
         @Nullable String type = savedInstanceState.getString(STATE_FOLDER_TYPE);
         @Nullable String path = savedInstanceState.getString(STATE_FOLDER_PATH);
-        if (type == null) {
+        if (type == null || path == null) {
             return null;
         }
 
@@ -347,18 +352,18 @@ public class AudioFileListFragment extends Fragment implements
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_menu_audiofiles_by_folder:
-                toggleByFolder();
-                return true;
-            case R.id.toolbar_menu_audiofiles_sort_alpha:
-                sort(SortOrder.BY_NAME);
-                return true;
-            case R.id.toolbar_menu_audiofiles_sort_date:
-                sort(SortOrder.BY_DATE);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        final int id = item.getItemId();
+        if (id == R.id.toolbar_menu_audiofiles_by_folder) {
+            toggleByFolder();
+            return true;
+        } else if (id == R.id.toolbar_menu_audiofiles_sort_alpha) {
+            sort(SortOrder.BY_NAME);
+            return true;
+        } else if (id == R.id.toolbar_menu_audiofiles_sort_date) {
+            sort(SortOrder.BY_DATE);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -547,7 +552,9 @@ public class AudioFileListFragment extends Fragment implements
         Log.d(TAG, "Editing sound for audio file " +
                 audioModelAndSound.getAudioModel().getAudioLocation());
 
-        Intent intent = AudiofileListSoundEditActivity.newIntent(getContext(), sound);
+        TutorialDao.getInstance(requireContext()).check(TutorialDao.Key.AUDIO_FILE_LIST_EDIT);
+
+        Intent intent = AudiofileListSoundEditActivity.newIntent(requireContext(), sound);
         startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
     }
 
@@ -608,6 +615,10 @@ public class AudioFileListFragment extends Fragment implements
             ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
         stopPlaying();
         adapter.setAudioFolderEntries(audioFolderEntries);
+
+        if (getUserVisibleHint()) {
+            adapter.markAsRightPlaceToShowTutorialHints();
+        }
     }
 
     @UiThread
@@ -844,7 +855,7 @@ public class AudioFileListFragment extends Fragment implements
     /**
      * A background task, used to save the sound
      */
-    class SaveNewSoundTask extends AsyncTask<Void, Void, Void> {
+    static class SaveNewSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveNewSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;

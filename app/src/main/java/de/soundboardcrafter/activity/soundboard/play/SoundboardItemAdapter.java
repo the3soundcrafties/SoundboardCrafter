@@ -42,8 +42,6 @@ public class SoundboardItemAdapter
 
     private int contextMenuPosition = -1;
 
-    private ItemTouchHelper touchHelper;
-
     private boolean rightPlaceToShowTutorialHints;
 
     public interface ActionListener {
@@ -156,15 +154,14 @@ public class SoundboardItemAdapter
             @Nullable final Context context = soundboardItemRow.getContext();
             if (context != null) {
                 // View has been laid out
-                showTutorialHintAsNecessary(soundboardItemRow, context);
+                showTutorialHintAsNecessary(soundboardItemRow);
             }
         }
     }
 
     @UiThread
-    private void showTutorialHintAsNecessary(@NonNull SoundboardItemRow soundboardItemRow,
-                                             @NonNull Context context) {
-        if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
+    private void showTutorialHintAsNecessary(@NonNull SoundboardItemRow soundboardItemRow) {
+        if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
             showTutorialHint(soundboardItemRow,
                     R.string.tutorial_soundboard_play_start_sound_description,
                     new TapTargetView.Listener() {
@@ -179,7 +176,7 @@ public class SoundboardItemAdapter
                             // Don't dismiss view and don't handle like a single click
                         }
                     });
-        } else if (shallShowTutorialHint(context, TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
+        } else if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
             showTutorialHint(soundboardItemRow,
                     R.string.tutorial_soundboard_play_context_menu_description,
                     new TapTargetView.Listener() {
@@ -203,10 +200,6 @@ public class SoundboardItemAdapter
         rightPlaceToShowTutorialHints = false;
     }
 
-    private boolean shallShowTutorialHint(@NonNull Context context, TutorialDao.Key key) {
-        return !tutorialDao.isChecked(key);
-    }
-
     @UiThread
     private void showTutorialHint(
             @NonNull SoundboardItemRow itemRow,
@@ -223,7 +216,6 @@ public class SoundboardItemAdapter
     }
 
     void setTouchHelper(ItemTouchHelper touchHelper) {
-        this.touchHelper = touchHelper;
         // https://github.com/sjthn/RecyclerViewDemo/blob
         // /67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith
         // /recyclerviewdemo/UserListAdapter.java

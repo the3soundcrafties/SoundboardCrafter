@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,6 +33,8 @@ class AudioFileRow extends RelativeLayout {
     private final ImageView playingImage;
     @NonNull
     private final TextView audioName;
+    @NonNull
+    private final View iconLinkSoundToSoundboards;
     @Nonnull
     private final TextView audioArtistAndLength;
 
@@ -44,6 +47,7 @@ class AudioFileRow extends RelativeLayout {
         inflater.inflate(R.layout.audiofile_list_file, this, true);
         playingImage = findViewById(R.id.icon);
         audioName = findViewById(R.id.audio_name);
+        iconLinkSoundToSoundboards = findViewById(R.id.icon_link_sound_to_soundboards);
         audioArtistAndLength = findViewById(R.id.audio_artist_and_length);
     }
 
@@ -55,9 +59,8 @@ class AudioFileRow extends RelativeLayout {
         audioModelAndSound = audioFileAndSound;
         audioName.setText(formatName());
         audioArtistAndLength.setText(formatArtistAndLength());
-
-        ImageView iconAdd = findViewById(R.id.icon_link_sound_to_soundboards);
-        iconAdd.setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
+        iconLinkSoundToSoundboards
+                .setOnClickListener(l -> callback.onEditAudioFile(audioModelAndSound));
     }
 
     private String formatName() {
@@ -89,5 +92,10 @@ class AudioFileRow extends RelativeLayout {
     @UiThread
     void setImage(int imageResource) {
         playingImage.setImageResource(imageResource);
+    }
+
+    @NonNull
+    View getIconLinkSoundToSoundboards() {
+        return iconLinkSoundToSoundboards;
     }
 }

@@ -15,8 +15,11 @@ import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
+
 /**
- * Adapter for a SoundBoardItem. Display a Button with Text and Icon
+ * Adapter for a SoundBoardItem. Display a Button with text and icon.
  */
 class SoundboardListItemAdapter extends AbstractTutorialListAdapter {
     private final List<SoundboardWithSounds> soundboards;
@@ -69,10 +72,12 @@ class SoundboardListItemAdapter extends AbstractTutorialListAdapter {
 
         itemRow.setSoundboard(soundboards.get(position));
 
-        showTutorialHintIfNecessary(position, itemRow, itemRow.getTvSoundboardName(),
-                () -> tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)
-                        && !tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU),
-                R.string.tutorial_soundboard_list_context_menu_description);
+        showTutorialHintIfNecessary(position, (View) itemRow,
+                () -> tutorialDao.isChecked(SOUNDBOARD_PLAY_START_SOUND)
+                        && !tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU),
+                activity -> showTutorialHintForLongClick(activity, (View) itemRow,
+                        itemRow.getTvSoundboardName(),
+                        R.string.tutorial_soundboard_list_context_menu_description));
 
         return convertView;
     }

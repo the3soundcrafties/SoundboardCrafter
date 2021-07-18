@@ -13,6 +13,9 @@ import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
+import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
+
 /**
  * Adapter for a GameItem.
  */
@@ -50,10 +53,12 @@ class GameListItemAdapter extends AbstractTutorialListAdapter {
 
         itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
 
-        showTutorialHintIfNecessary(position, itemRow, itemRow.getTvGameName(),
-                () -> tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)
-                        && !tutorialDao.isChecked(TutorialDao.Key.GAME_LIST_CONTEXT_MENU),
-                R.string.tutorial_game_list_context_menu_description);
+        showTutorialHintIfNecessary(position, (View) itemRow,
+                () -> tutorialDao.isChecked(SOUNDBOARD_PLAY_START_SOUND)
+                        && !tutorialDao.isChecked(GAME_LIST_CONTEXT_MENU),
+                activity -> showTutorialHintForLongClick(activity, (View) itemRow,
+                        itemRow.getTvGameName(),
+                        R.string.tutorial_game_list_context_menu_description));
 
         return convertView;
     }
