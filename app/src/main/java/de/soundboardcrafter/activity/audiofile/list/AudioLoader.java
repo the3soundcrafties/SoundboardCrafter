@@ -313,27 +313,33 @@ class AudioLoader {
 
     private Date extractDate(MediaMetadataRetriever metadataRetriever) {
         // See
-        // https://stackoverflow.com/questions/38648437/android-mediametadataretriever-metadata-key-date-gives-only-date-of-video-on-gal/39828238
+        // https://stackoverflow.com/questions/38648437/android-mediametadataretriever-metadata
+        // -key-date-gives-only-date-of-video-on-gal/39828238
+        @Nullable
         String raw = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
 
-        try {
-            return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault()).parse(raw);
-        } catch (IllegalArgumentException | ParseException e) {
+        if (raw != null) {
             try {
-                return new SimpleDateFormat("yyyy MM dd", Locale.getDefault()).parse(raw);
-            } catch (IllegalArgumentException | ParseException e1) {
+                return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault()).parse(raw);
+            } catch (IllegalArgumentException | ParseException e) {
                 try {
-                    return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH)
-                            .parse(raw);
-                } catch (IllegalArgumentException | ParseException e2) {
+                    return new SimpleDateFormat("yyyy MM dd", Locale.getDefault()).parse(raw);
+                } catch (IllegalArgumentException | ParseException e1) {
                     try {
-                        return new SimpleDateFormat("yyyy MM dd", Locale.ENGLISH).parse(raw);
-                    } catch (IllegalArgumentException | ParseException e3) {
-                        return new Date();
+                        return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH)
+                                .parse(raw);
+                    } catch (IllegalArgumentException | ParseException e2) {
+                        try {
+                            return new SimpleDateFormat("yyyy MM dd", Locale.ENGLISH).parse(raw);
+                        } catch (IllegalArgumentException | ParseException e3) {
+                            // ->
+                        }
                     }
                 }
             }
         }
+
+        return new Date();
     }
 
     private AudioModel createAudioModelOnDevice(Context context,
@@ -377,7 +383,8 @@ class AudioLoader {
         ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
         for (Map.Entry<String, Integer> subfolderAndCount : audioFolderMapIn.entrySet()) {
             audioFolders.add(new AudioFolder(
-                    new FileSystemAudioLocation(subfolderAndCount.getKey()), subfolderAndCount.getValue()));
+                    new FileSystemAudioLocation(subfolderAndCount.getKey()),
+                    subfolderAndCount.getValue()));
         }
 
         return Pair.create(ImmutableList.copyOf(audioListIn), audioFolders.build());
