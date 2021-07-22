@@ -31,7 +31,7 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.AssetAudioLocation;
 import de.soundboardcrafter.model.FileSystemAudioLocation;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 class AudioLoader {
     /**
