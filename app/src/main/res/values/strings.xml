@@ -77,13 +77,13 @@
     <string name="about_text_html">
         <![CDATA[
         Soundboard Crafter
-        <p>Version 0.0.1</p>
+        <p>Version 0.2.0</p>
         <p>&#160;</p>
-        <p>&#169;2021 Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
+        <p>&#169;2021 The 3 Sound Crafties:<br/>Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
         <p>&#160;</p>
         <p><i>Programming:</i><br>&#160;Nikolaj Budzyn<br>&#160;Julia Felkel</p>
         <p>&#160;</p>
-        <p><i>Source Code:</i><br>&#160;<a href="https://github.com/jfelkel/SoundboardCrafter">GitHub</a>&nbsp;&ndash; <a href="https://github.com/jfelkel/SoundboardCrafter/blob/master/LICENSE">License/a></p>
+        <p><i>Source Code:</i><br>&#160;<a href="https://github.com/the3soundcrafties/SoundboardCrafter">GitHub</a>&nbsp;&ndash; <a href="https://github.com/the3soundcrafties/SoundboardCrafter/blob/master/LICENSE">License/a></p>
         <p>&#160;</p>
         <p><i>Libraries:</i><br>&#160;<a href="https://github.com/KeepSafe/TapTargetView">TapTargetView</a>&nbsp;&ndash; <a href="https://github.com/KeepSafe/TapTargetView/blob/master/LICENSE">License</a></p>
         <p><i>Sounds:</i>
