@@ -67,7 +67,9 @@ public class AudioFileListFragment extends Fragment implements
         SoundEventListener {
     private enum SortOrder {
         BY_NAME(Comparator.comparing(AudioModelAndSound::getCollationKey)),
-        BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded).reversed());
+        BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded,
+                Comparator.nullsFirst(Comparator.reverseOrder())));
+
         private final Comparator<AudioModelAndSound> comparator;
 
         SortOrder(Comparator<AudioModelAndSound> comparator) {

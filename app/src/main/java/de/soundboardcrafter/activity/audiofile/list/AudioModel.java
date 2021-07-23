@@ -7,10 +7,12 @@ import java.text.CollationKey;
 import java.util.Date;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.ThreadSafeCollator;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * An audio file data / metadata.
@@ -30,11 +32,19 @@ class AudioModel {
     private transient CollationKey collationKey;
 
     private final String artist;
-    private final Date dateAdded;
-    private final
-    long durationSecs;
 
-    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist, Date dateAdded, long durationSecs) {
+    @Nullable
+    private final Date dateAdded;
+
+    private final long durationSecs;
+
+    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist,
+               long durationSecs) {
+        this(audioLocation, name, artist, null, durationSecs);
+    }
+
+    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist,
+               @Nullable Date dateAdded, long durationSecs) {
         this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
         this.name = checkNotNull(name, "name is null");
         this.artist = artist;
@@ -72,6 +82,7 @@ class AudioModel {
         return artist;
     }
 
+    @Nullable
     Date getDateAdded() {
         return dateAdded;
     }
@@ -84,7 +95,8 @@ class AudioModel {
         out.defaultWriteObject();
     }
 
-    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(final java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         setCollationKey();
     }

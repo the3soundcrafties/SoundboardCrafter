@@ -252,7 +252,7 @@ class AudioLoader {
                 fileDescriptor.getStartOffset(),
                 fileDescriptor.getLength());
 
-        @NonNull String name = extractName(metadataRetriever, filename);
+        @NonNull String name = extractName(filename);
         long durationSecs = extractDurationSecs(metadataRetriever);
         @NonNull String artist = extractArtist(context, metadataRetriever);
 
@@ -278,14 +278,8 @@ class AudioLoader {
         return raw;
     }
 
-    private String extractName(MediaMetadataRetriever metadataRetriever, String filename) {
-        @Nullable String title =
-                metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        if (!Strings.isNullOrEmpty(title)) {
-            return title;
-        }
-
-        int indexOfDot = filename.indexOf(".");
+    private String extractName(String filename) {
+        int indexOfDot = filename.lastIndexOf(".");
         if (indexOfDot <= 0) {
             return filename;
         }

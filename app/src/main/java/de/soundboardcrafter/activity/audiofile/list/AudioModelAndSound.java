@@ -1,12 +1,13 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.text.CollationKey;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import de.soundboardcrafter.model.Sound;
 
@@ -73,6 +74,7 @@ class AudioModelAndSound extends AbstractAudioFolderEntry {
         return sound;
     }
 
+    @Nullable
     Date getDateAdded() {
         return audioModel.getDateAdded();
     }
