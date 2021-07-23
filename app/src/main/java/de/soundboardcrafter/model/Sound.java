@@ -62,7 +62,8 @@ public class Sound extends AbstractEntity {
         this(UUID.randomUUID(), audioLocation, name, 100, false);
     }
 
-    public Sound(UUID id, @NonNull IAudioLocation audioLocation, @NonNull String name, int volumePercentage, boolean loop) {
+    public Sound(UUID id, @NonNull IAudioLocation audioLocation, @NonNull String name,
+                 int volumePercentage, boolean loop) {
         super(id);
         this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
         setName(checkNotNull(name, "name is null"));
@@ -125,7 +126,8 @@ public class Sound extends AbstractEntity {
         out.defaultWriteObject();
     }
 
-    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(final java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         setCollationKey();
     }

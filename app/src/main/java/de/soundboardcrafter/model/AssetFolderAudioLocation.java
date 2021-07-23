@@ -5,21 +5,21 @@ import androidx.annotation.NonNull;
 import java.util.Objects;
 
 /**
- * The location <i>in the assets folder</i> where an audio file may reside.
+ * The certain folder <i>inside the assets folder</i> where an audio file may reside.
  */
-public class AssetAudioLocation implements IAudioLocation {
+public class AssetFolderAudioLocation implements IAudioLocation {
     /**
      * Path to the audio file in the assets folder
      */
     @NonNull
     private final String assetPath;
 
-    public AssetAudioLocation(@NonNull final String assetPath) {
+    public AssetFolderAudioLocation(@NonNull final String assetPath) {
         this.assetPath = assetPath;
     }
 
     @Override
-    public String getName() {
+    public String getDisplayName() {
         int lastIndexOfSlash = assetPath.lastIndexOf("/");
         if (lastIndexOfSlash < 0) {
             return assetPath;
@@ -41,7 +41,7 @@ public class AssetAudioLocation implements IAudioLocation {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        AssetAudioLocation that = (AssetAudioLocation) o;
+        AssetFolderAudioLocation that = (AssetFolderAudioLocation) o;
         return assetPath.equals(that.assetPath);
     }
 
@@ -52,7 +52,7 @@ public class AssetAudioLocation implements IAudioLocation {
 
     @Override
     public String toString() {
-        return "AssetAudioLocation{" +
+        return "AssetFolderAudioLocation{" +
                 "assetPath='" + assetPath + '\'' +
                 '}';
     }

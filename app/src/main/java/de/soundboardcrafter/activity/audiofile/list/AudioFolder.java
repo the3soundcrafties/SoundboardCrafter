@@ -4,22 +4,22 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A folder containing audio files - or folders with (folders with...) audio files.
  * Might be on the device or in the assets directory.
  */
 class AudioFolder extends AbstractAudioFolderEntry {
-    private final IAudioLocation audioLocation;
+    private final IAudioLocation folderLocation;
     private final int numAudioFiles;
 
-    AudioFolder(@NonNull IAudioLocation audioLocation, int numAudioFiles) {
-        this.audioLocation = checkNotNull(audioLocation, "audioLocation was null");
+    AudioFolder(@NonNull IAudioLocation folderLocation, int numAudioFiles) {
+        this.folderLocation = checkNotNull(folderLocation, "audioLocation was null");
         this.numAudioFiles = numAudioFiles;
     }
 
@@ -27,21 +27,17 @@ class AudioFolder extends AbstractAudioFolderEntry {
      * Returns only the folder name (not the whole path).
      */
     public String getName() {
-        return audioLocation.getName();
+        return folderLocation.getDisplayName();
     }
 
     public String getPath() {
-        if (audioLocation instanceof FileSystemAudioLocation) {
-            return ((FileSystemAudioLocation) audioLocation).getPath();
-        } else if (audioLocation instanceof AssetAudioLocation) {
-            return ((AssetAudioLocation) audioLocation).getAssetPath();
+        if (folderLocation instanceof FileSystemFolderAudioLocation) {
+            return ((FileSystemFolderAudioLocation) folderLocation).getPath();
+        } else if (folderLocation instanceof AssetFolderAudioLocation) {
+            return ((AssetFolderAudioLocation) folderLocation).getAssetPath();
         } else {
-            throw new IllegalStateException("Unexpected audio location: " + audioLocation);
+            throw new IllegalStateException("Unexpected audio location: " + folderLocation);
         }
-    }
-
-    public IAudioLocation getAudioLocation() {
-        return audioLocation;
     }
 
     int getNumAudioFiles() {
@@ -61,19 +57,19 @@ class AudioFolder extends AbstractAudioFolderEntry {
         }
         AudioFolder that = (AudioFolder) o;
         return numAudioFiles == that.numAudioFiles &&
-                Objects.equals(audioLocation, that.audioLocation);
+                Objects.equals(folderLocation, that.folderLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), audioLocation, numAudioFiles);
+        return Objects.hash(super.hashCode(), folderLocation, numAudioFiles);
     }
 
     @Override
     @NonNull
     public String toString() {
         return "AudioFolder{" +
-                "audioLocation='" + audioLocation + '\'' +
+                "audioLocation='" + folderLocation + '\'' +
                 ", numAudioFiles=" + numAudioFiles +
                 '}';
     }

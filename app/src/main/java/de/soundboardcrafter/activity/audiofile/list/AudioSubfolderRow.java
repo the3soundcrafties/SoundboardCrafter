@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 
-import static androidx.core.util.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Row in the list of audio files representing one subfolder.

@@ -5,7 +5,7 @@
     <item
         android:id="@+id/toolbar_menu_audiofiles_by_folder"
         android:icon="@drawable/ic_long_list"
-        android:title="@string/toolbar_menu_audiofiles_folders_all"
+        android:title="@string/toolbar_menu_audiofiles_folders_all_on_device"
         app:showAsAction="ifRoom|withText" />
     <item
         android:icon="@drawable/ic_menu_sort"

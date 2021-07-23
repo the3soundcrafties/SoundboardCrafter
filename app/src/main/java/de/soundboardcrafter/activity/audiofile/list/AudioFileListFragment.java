@@ -51,12 +51,15 @@ import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.TutorialDao;
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
+import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Shows Soundboard in a Grid
@@ -94,8 +97,8 @@ public class AudioFileListFragment extends Fragment implements
     private static final String STATE_FOLDER_PATH = "folderPath";
 
     /**
-     * Request code used whenever a sound edit
-     * fragment is started from this activity
+     * Request code used whenever this activity starts a sound edit
+     * fragment
      */
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
@@ -114,8 +117,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private SortOrder sortOrder;
 
-    @Nullable
-    private IAudioLocation folder;
+    private IAudioFileSelection selection;
 
     /**
      * Creates an <code>AudioFileListFragment</code>.
@@ -129,7 +131,7 @@ public class AudioFileListFragment extends Fragment implements
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        //as soon the media player service is connected, the play/stop icons can be set correctly
+        // As soon the media player service is connected, the play/stop icons can be set correctly
         updateUI();
 
         Log.d(TAG, "MediaPlayerService is connected");
@@ -210,10 +212,10 @@ public class AudioFileListFragment extends Fragment implements
 
         if (savedInstanceState != null) {
             sortOrder = (SortOrder) savedInstanceState.getSerializable(STATE_SORT_ORDER);
-            setFolder(getFolder(savedInstanceState));
+            setSelection(getFolder(savedInstanceState));
         } else {
             sortOrder = SortOrder.BY_NAME;
-            setFolder(new AssetAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+            setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
         }
 
         byFolderMenuItem = null;
@@ -221,18 +223,18 @@ public class AudioFileListFragment extends Fragment implements
         initAudioFileListItemAdapter();
 
         iconFolder.setOnClickListener(v -> {
-                    if (folder == null || isRootFolder()) {
+                    if (selection instanceof AnywhereInTheFileSystemAudioLocation || isRootFolder()) {
                         return;
                     }
 
                     String folderPath = getFolderPath();
-                    int lastIndexOfSlash = folderPath.lastIndexOf("/");
+                    int lastIndexOfSlash = requireNonNull(folderPath).lastIndexOf("/");
                     if (lastIndexOfSlash < 0) {
                         return;
                     }
 
                     String newFolder = folderPath.substring(0, lastIndexOfSlash);
-                    if (newFolder.isEmpty() && folder instanceof FileSystemAudioLocation) {
+                    if (newFolder.isEmpty() && selection instanceof FileSystemFolderAudioLocation) {
                         newFolder = "/";
                     }
 
@@ -253,56 +255,55 @@ public class AudioFileListFragment extends Fragment implements
 
         if (ActivityCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
-        } // otherwise we will receive an event later
+            new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
+        } // Otherwise, we will receive an event later.
 
         return rootView;
     }
 
     private @Nullable
     String getFolderPath() {
-        if (folder == null) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             return null;
         }
 
-        if (folder instanceof FileSystemAudioLocation) {
-            return ((FileSystemAudioLocation) folder).getPath();
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            return ((FileSystemFolderAudioLocation) selection).getPath();
         }
 
-        if (folder instanceof AssetAudioLocation) {
-            return ((AssetAudioLocation) folder).getAssetPath();
+        if (selection instanceof AssetFolderAudioLocation) {
+            return ((AssetFolderAudioLocation) selection).getAssetPath();
         }
 
-        throw new IllegalStateException("Unexpected folder type: " + folder.getClass());
+        throw new IllegalStateException("Unexpected folder type: " + selection.getClass());
     }
 
     private void changeFolder(String newFolder) {
-        checkNotNull(folder, "newFolder");
+        checkNotNull(selection, "newFolder");
 
-        if (folder instanceof FileSystemAudioLocation) {
-            changeFolder(new FileSystemAudioLocation(newFolder));
-        } else if (folder instanceof AssetAudioLocation) {
-            changeFolder(new AssetAudioLocation(newFolder));
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            changeFolder(new FileSystemFolderAudioLocation(newFolder));
+        } else if (selection instanceof AssetFolderAudioLocation) {
+            changeFolder(new AssetFolderAudioLocation(newFolder));
         } else {
             throw new IllegalStateException(
-                    "Unexpected folder type: " + folder.getClass());
+                    "Unexpected selection type: " + selection.getClass());
         }
     }
 
-    @Nullable
-    private IAudioLocation getFolder(Bundle savedInstanceState) {
+    private IAudioFileSelection getFolder(Bundle savedInstanceState) {
         @Nullable String type = savedInstanceState.getString(STATE_FOLDER_TYPE);
         @Nullable String path = savedInstanceState.getString(STATE_FOLDER_PATH);
         if (type == null || path == null) {
-            return null;
+            return AnywhereInTheFileSystemAudioLocation.INSTANCE;
         }
 
         if (type.equals(STATE_FOLDER_TYPE_FILE)) {
-            return new FileSystemAudioLocation(path);
+            return new FileSystemFolderAudioLocation(path);
         }
 
         if (type.equals(STATE_FOLDER_TYPE_ASSET)) {
-            return new AssetAudioLocation(path);
+            return new AssetFolderAudioLocation(path);
         }
 
         throw new IllegalStateException("Unexpected folder type " + type);
@@ -313,17 +314,18 @@ public class AudioFileListFragment extends Fragment implements
             return;
         }
 
-        if (folder == null) {
-            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all);
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all_on_device);
             byFolderMenuItem.setIcon(R.drawable.ic_long_list);
-        } else if (folder instanceof FileSystemAudioLocation) {
+        } else if (selection instanceof FileSystemFolderAudioLocation) {
             byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
             byFolderMenuItem.setIcon(R.drawable.ic_by_folder);
-        } else if (folder instanceof AssetAudioLocation) {
+        } else if (selection instanceof AssetFolderAudioLocation) {
             byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_assets);
             byFolderMenuItem.setIcon(R.drawable.ic_included);
         } else {
-            throw new IllegalStateException("Unexpected type of folder: " + folder.getClass());
+            throw new IllegalStateException(
+                    "Unexpected type of selection: " + selection.getClass());
         }
     }
 
@@ -370,23 +372,24 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private void toggleByFolder() {
-        if (folder == null) {
-            setFolder(new FileSystemAudioLocation("/"));
-        } else if (folder instanceof FileSystemAudioLocation) {
-            setFolder(new AssetAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+            setSelection(new FileSystemFolderAudioLocation("/"));
+        } else if (selection instanceof FileSystemFolderAudioLocation) {
+            setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
         } else {
-            setFolder(null);
+            setSelection(AnywhereInTheFileSystemAudioLocation.INSTANCE);
         }
 
         setAudioFolderEntries(ImmutableList.of());
 
-        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
+        new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
     }
 
-    private void setFolder(@Nullable IAudioLocation folder) {
-        this.folder = folder;
+    private void setSelection(IAudioFileSelection selection) {
+        this.selection = selection;
         folderPath.setText(calcFolderDisplayPath());
-        setVisibilityFolder(folder != null ? View.VISIBLE : View.GONE);
+        setVisibilityFolder(selection instanceof AnywhereInTheFileSystemAudioLocation ? View.GONE :
+                View.VISIBLE);
         if (isRootFolder()) {
             iconFolder.setVisibility(View.INVISIBLE);
         }
@@ -394,26 +397,26 @@ public class AudioFileListFragment extends Fragment implements
 
     private @Nullable
     String calcFolderDisplayPath() {
-        if (folder == null) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             return null;
         }
 
-        if (folder instanceof FileSystemAudioLocation) {
-            return calcFolderDisplayPath((FileSystemAudioLocation) folder);
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            return calcFolderDisplayPath((FileSystemFolderAudioLocation) selection);
         }
 
-        if (folder instanceof AssetAudioLocation) {
-            return calcFolderDisplayPath((AssetAudioLocation) folder);
+        if (selection instanceof AssetFolderAudioLocation) {
+            return calcFolderDisplayPath((AssetFolderAudioLocation) selection);
         }
 
-        throw new IllegalStateException("Unexpected type of folder: " + folder.getClass());
+        throw new IllegalStateException("Unexpected type of folder: " + selection.getClass());
     }
 
-    private static String calcFolderDisplayPath(@NonNull FileSystemAudioLocation folder) {
+    private static String calcFolderDisplayPath(@NonNull FileSystemFolderAudioLocation folder) {
         return folder.getPath();
     }
 
-    private static String calcFolderDisplayPath(@NonNull AssetAudioLocation folder) {
+    private static String calcFolderDisplayPath(@NonNull AssetFolderAudioLocation folder) {
         if (isRootFolder(folder)) {
             return "/";
         }
@@ -422,26 +425,26 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private boolean isRootFolder() {
-        if (folder == null) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             return false;
         }
 
-        if (folder instanceof FileSystemAudioLocation) {
-            return isRootFolder((FileSystemAudioLocation) folder);
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            return isRootFolder((FileSystemFolderAudioLocation) selection);
         }
 
-        if (folder instanceof AssetAudioLocation) {
-            return isRootFolder((AssetAudioLocation) folder);
+        if (selection instanceof AssetFolderAudioLocation) {
+            return isRootFolder((AssetFolderAudioLocation) selection);
         }
 
-        throw new IllegalStateException("Unexpected type of folder: " + folder.getClass());
+        throw new IllegalStateException("Unexpected type of folder: " + selection.getClass());
     }
 
-    private static boolean isRootFolder(@NonNull FileSystemAudioLocation folder) {
+    private static boolean isRootFolder(@NonNull FileSystemFolderAudioLocation folder) {
         return "/".equals(folder.getPath());
     }
 
-    private static boolean isRootFolder(@NonNull AssetAudioLocation folder) {
+    private static boolean isRootFolder(@NonNull AssetFolderAudioLocation folder) {
         return AudioLoader.ASSET_SOUND_PATH.equals(folder.getAssetPath());
     }
 
@@ -454,7 +457,7 @@ public class AudioFileListFragment extends Fragment implements
     private void sort(SortOrder sortOrder) {
         this.sortOrder = sortOrder;
 
-        new FindAudioFileTask(requireContext(), folder, sortOrder).execute();
+        new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
     }
 
     private void onClickAudioSubfolder(AudioSubfolderRow audioSubfolderRow) {
@@ -463,7 +466,7 @@ public class AudioFileListFragment extends Fragment implements
             return;
         }
 
-        if (folder == null) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             // (some race condition, perhaps?!)
             return;
         }
@@ -472,7 +475,7 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private void changeFolder(@NonNull IAudioLocation newFolder) {
-        setFolder(newFolder);
+        setSelection(newFolder);
 
         new FindAudioFileTask(requireContext(), newFolder, sortOrder).execute();
     }
@@ -591,7 +594,7 @@ public class AudioFileListFragment extends Fragment implements
             return;
         }
 
-        new FindAudioFileTask(context, folder, sortOrder).execute();
+        new FindAudioFileTask(context, selection, sortOrder).execute();
     }
 
     @Override
@@ -602,7 +605,7 @@ public class AudioFileListFragment extends Fragment implements
         }
 
         // The sound NAME may have been changed.
-        new FindAudioFileTask(context, folder, sortOrder).execute();
+        new FindAudioFileTask(context, selection, sortOrder).execute();
     }
 
     @UiThread
@@ -650,17 +653,19 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     private void putFolder(@NonNull Bundle outState) {
-        if (folder == null) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             outState.putString(STATE_FOLDER_TYPE, null);
             outState.putString(STATE_FOLDER_PATH, null);
-        } else if (folder instanceof FileSystemAudioLocation) {
+        } else if (selection instanceof FileSystemFolderAudioLocation) {
             outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_FILE);
-            outState.putString(STATE_FOLDER_PATH, ((FileSystemAudioLocation) folder).getPath());
-        } else if (folder instanceof AssetAudioLocation) {
+            outState.putString(STATE_FOLDER_PATH,
+                    ((FileSystemFolderAudioLocation) selection).getPath());
+        } else if (selection instanceof AssetFolderAudioLocation) {
             outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_ASSET);
-            outState.putString(STATE_FOLDER_PATH, ((AssetAudioLocation) folder).getAssetPath());
+            outState.putString(STATE_FOLDER_PATH,
+                    ((AssetFolderAudioLocation) selection).getAssetPath());
         } else {
-            throw new IllegalStateException("Unexpected folder type " + folder.getClass());
+            throw new IllegalStateException("Unexpected folder type " + selection.getClass());
         }
     }
 
@@ -674,8 +679,7 @@ public class AudioFileListFragment extends Fragment implements
 
         private final WeakReference<Context> appContextRef;
 
-        @Nullable
-        private final IAudioLocation folder;
+        private final IAudioFileSelection selection;
 
         private final Comparator<AbstractAudioFolderEntry> entryComparator =
                 new Comparator<AbstractAudioFolderEntry>() {
@@ -705,11 +709,11 @@ public class AudioFileListFragment extends Fragment implements
                 };
         private final SortOrder sortOrder;
 
-        FindAudioFileTask(Context context, @Nullable IAudioLocation folder,
+        FindAudioFileTask(Context context, IAudioFileSelection selection,
                           @NonNull SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.folder = folder;
+            this.selection = selection;
             this.sortOrder = sortOrder;
         }
 
@@ -730,68 +734,21 @@ public class AudioFileListFragment extends Fragment implements
         }
 
         /**
-         * Retrieves audio files (and audio folders) from the file system or the assets folder
-         * and corresponding sounds from the database.
+         * Retrieves the audio files (and audio folders) according to the
+         * selection as well as the corresponding sounds from the database.
          */
         @WorkerThread
-        private ImmutableList<? extends AbstractAudioFolderEntry> loadAudioFolderEntries(
-                Context appContext, AudioLoader audioLoader) {
-            if (folder == null) {
-                return loadAllAudioEntries(appContext, audioLoader);
-            }
-
-            return loadAudioFolderEntriesForFolder(appContext, audioLoader);
-        }
-
-        /**
-         * Retrieves all audio files from the file system and the assets folder
-         * and corresponding sounds from the database.
-         */
-        @WorkerThread
-        private ImmutableList<AudioModelAndSound>
-        loadAllAudioEntries(Context appContext, AudioLoader audioLoader) {
-            ImmutableList<AudioModel> audioModels =
-                    audioLoader.getAllAudios(appContext);
-
-            Log.d(TAG, "Audio files loaded.");
-
-            Log.d(TAG, "Loading sounds from database...");
-
-            SoundDao soundDao = SoundDao.getInstance(appContext);
-            Map<IAudioLocation, Sound> soundMap = soundDao.findAllByAudioLocation();
-
-            Log.d(TAG, "Sounds loaded.");
-
-            ArrayList<AudioModelAndSound> res = new ArrayList<>(audioModels.size());
-            for (AudioModel audioModel : audioModels) {
-                res.add(
-                        new AudioModelAndSound(
-                                audioModel,
-                                soundMap.get(audioModel.getAudioLocation())));
-            }
-
-            res.sort(entryComparator);
-
-            return ImmutableList.copyOf(res);
-        }
-
-        /**
-         * Retrieves the audio files (and audio folders) from
-         * the selected folder in the file system or assets
-         * as well as the corresponding sounds from the database.
-         */
-        @WorkerThread
-        private ImmutableList<AbstractAudioFolderEntry> loadAudioFolderEntriesForFolder(
+        private ImmutableList<AbstractAudioFolderEntry> loadAudioFolderEntries(
                 Context appContext, AudioLoader audioLoader) {
             Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> audioModelsAndFolders =
-                    loadAudioFolderEntriesForFolderWithoutSounds(appContext, audioLoader);
+                    loadAudioFolderEntriesWithoutSounds(appContext, audioLoader);
 
             Log.d(TAG, "Audio files loaded.");
 
             Log.d(TAG, "Loading sounds from database...");
 
             SoundDao soundDao = SoundDao.getInstance(appContext);
-            Map<IAudioLocation, Sound> soundMap = soundDao.findAllByAudioLocation();
+            Map<IAudioFileSelection, Sound> soundMap = soundDao.findAllByAudioLocation();
 
             Log.d(TAG, "Sounds loaded.");
 
@@ -801,10 +758,9 @@ public class AudioFileListFragment extends Fragment implements
                                     audioModelsAndFolders.second.size());
             res.addAll(audioModelsAndFolders.second);
             for (AudioModel audioModel : audioModelsAndFolders.first) {
-                res.add(
-                        new AudioModelAndSound(
-                                audioModel,
-                                soundMap.get(audioModel.getAudioLocation())));
+                res.add(new AudioModelAndSound(
+                        audioModel,
+                        soundMap.get(audioModel.getAudioLocation())));
             }
 
             res.sort(entryComparator);
@@ -818,24 +774,24 @@ public class AudioFileListFragment extends Fragment implements
          */
         @WorkerThread
         private Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>>
-        loadAudioFolderEntriesForFolderWithoutSounds(Context appContext, AudioLoader audioLoader) {
-            if (folder == null) {
-                throw new IllegalStateException(
-                        "folder was null when loading audio entries for folder");
+        loadAudioFolderEntriesWithoutSounds(Context appContext, AudioLoader audioLoader) {
+            if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+                return new Pair<>(audioLoader.getAudiosFromDevice(appContext), ImmutableList.of());
             }
 
-            if (folder instanceof FileSystemAudioLocation) {
-                FileSystemAudioLocation fileSystemFolder = (FileSystemAudioLocation) folder;
+            if (selection instanceof FileSystemFolderAudioLocation) {
+                FileSystemFolderAudioLocation fileSystemFolder =
+                        (FileSystemFolderAudioLocation) selection;
                 return audioLoader.getAudioFromDevice(appContext, fileSystemFolder.getPath());
             }
 
-            if (folder instanceof AssetAudioLocation) {
-                AssetAudioLocation assetFolder = (AssetAudioLocation) folder;
+            if (selection instanceof AssetFolderAudioLocation) {
+                AssetFolderAudioLocation assetFolder = (AssetFolderAudioLocation) selection;
                 return audioLoader.getAudioFromAssets(appContext, assetFolder.getAssetPath());
             }
 
             throw new IllegalStateException(
-                    "folder instance of unexpected class: " + folder.getClass());
+                    "folder instance of unexpected class: " + selection.getClass());
         }
 
         @Override

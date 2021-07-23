@@ -2,8 +2,8 @@ package de.soundboardcrafter.dao;
 
 import androidx.annotation.NonNull;
 
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 
 /**
@@ -91,17 +91,19 @@ class DBSchema {
         }
 
         /**
-         * Converts a {@link LocationType} and a <code>path</code> to an {@link IAudioLocation}.
+         * Converts a {@link LocationType} and a <code>path</code> to an
+         * {@link IAudioLocation}.
          */
-        public static IAudioLocation toAudioLocation(
+        static IAudioLocation toAudioLocation(
                 @NonNull SoundTable.LocationType locationType, @NonNull String path) {
             switch (locationType) {
                 case FILE:
-                    return new FileSystemAudioLocation(path);
+                    return new FileSystemFolderAudioLocation(path);
                 case ASSET:
-                    return new AssetAudioLocation(path);
+                    return new AssetFolderAudioLocation(path);
                 default:
-                    throw new IllegalStateException("Unexpected audio location type: " + locationType);
+                    throw new IllegalStateException(
+                            "Unexpected audio location type: " + locationType);
             }
         }
     }

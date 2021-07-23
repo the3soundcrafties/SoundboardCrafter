@@ -7,21 +7,21 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
- * The location <i>in the device's file system</i> where an audio file may reside.
+ * The certain folder <i>in the device's file system</i> where an audio file may reside.
  */
-public class FileSystemAudioLocation implements IAudioLocation {
+public class FileSystemFolderAudioLocation implements IAudioLocation {
     /**
      * Path to the audio file in the device's file system
      */
     @NonNull
     private final String path;
 
-    public FileSystemAudioLocation(@NonNull final String path) {
+    public FileSystemFolderAudioLocation(@NonNull final String path) {
         this.path = path;
     }
 
     @Override
-    public String getName() {
+    public String getDisplayName() {
         int lastIndexOfSlash = path.lastIndexOf("/");
         if (lastIndexOfSlash < 0) {
             return path;
@@ -43,7 +43,7 @@ public class FileSystemAudioLocation implements IAudioLocation {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FileSystemAudioLocation that = (FileSystemAudioLocation) o;
+        FileSystemFolderAudioLocation that = (FileSystemFolderAudioLocation) o;
         return path.equals(that.path);
     }
 
@@ -55,6 +55,6 @@ public class FileSystemAudioLocation implements IAudioLocation {
     @Override
     @Nonnull
     public String toString() {
-        return "FileSystemAudioLocation{path='" + path + '\'' + '}';
+        return "FileSystemFolderAudioLocation{path='" + path + '\'' + '}';
     }
 }

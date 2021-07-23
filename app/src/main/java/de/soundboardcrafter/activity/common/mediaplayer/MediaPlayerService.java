@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
+import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -130,7 +131,8 @@ public class MediaPlayerService extends Service {
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
                     getString(R.string.media_player_notification_channel_name),
                     NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription(getString(R.string.media_player_notification_channel_description));
+            channel.setDescription(
+                    getString(R.string.media_player_notification_channel_description));
             channel.setShowBadge(false);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
@@ -223,7 +225,7 @@ public class MediaPlayerService extends Service {
      * Adds a media player and starts playing.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
-     * @see #play(String, IAudioLocation, SoundboardMediaPlayer.OnPlayingStopped)
+     * @see #play(String, IAudioFileSelection, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped)
@@ -260,7 +262,8 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * Starts playing from that {@link IAudioLocation} - without adding a media player and without
+     * Starts playing from that {@link IAudioLocation} - without adding a media player and
+     * without
      * necessarily starting a foreground service etc.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
@@ -292,8 +295,13 @@ public class MediaPlayerService extends Service {
     }
 
     /*
-    For apps that target Android 5.0 (API level 21) and later, audio apps should use AudioAttributes to describe the type of audio your app is playing. For example, apps that play speech should specify CONTENT_TYPE_SPEECH.
-    Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method, which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about the audio context and capabilities of your app. The system uses this information to manage the gain and loss of audio focus automatically.
+    For apps that target Android 5.0 (API level 21) and later, audio apps should use
+    AudioAttributes to describe the type of audio your app is playing. For example, apps that
+    play speech should specify CONTENT_TYPE_SPEECH.
+    Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method,
+     which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about
+      the audio context and capabilities of your app. The system uses this information to manage
+      the gain and loss of audio focus automatically.
     */
 
     private void updateMediaSessionNotificationAndForegroundService() {
@@ -348,7 +356,8 @@ public class MediaPlayerService extends Service {
                         .setShowWhen(false)
                         .build();
 
-        // https://medium.com/androiddevelopers/migrating-mediastyle-notifications-to-support-android-o-29c7edeca9b7
+        // https://medium.com/androiddevelopers/migrating-mediastyle-notifications-to-support
+        // -android-o-29c7edeca9b7
 
         // Without this, the service will be killed shortly when the
         // user leaves the app and closes the devices
@@ -358,7 +367,8 @@ public class MediaPlayerService extends Service {
     private PlaybackStateCompat createPlaybackStateNotPlaying() {
         return new PlaybackStateCompat.Builder()
                 .setActions(0)
-                .setState(PlaybackStateCompat.STATE_STOPPED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
+                .setState(PlaybackStateCompat.STATE_STOPPED,
+                        PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN,
                         1.0f)
                 .build();
     }
@@ -419,7 +429,8 @@ public class MediaPlayerService extends Service {
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
     private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
-                                 IAudioLocation audioLocation, int volumePercentage, boolean loop)
+                                 IAudioLocation audioLocation, int volumePercentage,
+                                 boolean loop)
             throws IOException {
         SoundboardMediaPlayers.initMediaPlayer(getApplicationContext(),
                 mediaPlayer, soundName, audioLocation, volumePercentage, loop);

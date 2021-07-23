@@ -16,8 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -69,7 +69,8 @@ class SoundboardMediaPlayers {
      */
     static void initMediaPlayer(Context context,
                                 SoundboardMediaPlayer mediaPlayer, String soundName,
-                                @NonNull IAudioLocation audioLocation, int volumePercentage, boolean loop)
+                                @NonNull IAudioLocation audioLocation, int volumePercentage,
+                                boolean loop)
             throws IOException {
         mediaPlayer.setSoundName(soundName);
         initDataSource(context, mediaPlayer, audioLocation);
@@ -82,11 +83,12 @@ class SoundboardMediaPlayers {
     }
 
     private static void initDataSource(Context context, SoundboardMediaPlayer mediaPlayer,
-                                       @NonNull IAudioLocation audioLocation) throws IOException {
-        if (audioLocation instanceof FileSystemAudioLocation) {
-            mediaPlayer.setDataSource(((FileSystemAudioLocation) audioLocation).getPath());
-        } else if (audioLocation instanceof AssetAudioLocation) {
-            @NonNull String assetPath = ((AssetAudioLocation) audioLocation).getAssetPath();
+                                       @NonNull IAudioLocation audioLocation)
+            throws IOException {
+        if (audioLocation instanceof FileSystemFolderAudioLocation) {
+            mediaPlayer.setDataSource(((FileSystemFolderAudioLocation) audioLocation).getPath());
+        } else if (audioLocation instanceof AssetFolderAudioLocation) {
+            @NonNull String assetPath = ((AssetFolderAudioLocation) audioLocation).getAssetPath();
             AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath);
             mediaPlayer.setDataSource(
                     fileDescriptor.getFileDescriptor(),
@@ -106,7 +108,8 @@ class SoundboardMediaPlayers {
         setOnPlayingStopped(searchId, onPlayingStopped);
     }
 
-    private void setOnPlayingStopped(MediaPlayerSearchId searchId, @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+    private void setOnPlayingStopped(MediaPlayerSearchId searchId, @Nullable
+            SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer activePlayer =
                 activePlayers.get(searchId);
         if (activePlayer != null) {
@@ -407,7 +410,8 @@ class SoundboardMediaPlayers {
      * players currently fading out (if contained).
      */
     @UiThread
-    void putActive(@Nullable Soundboard soundboard, Sound sound, SoundboardMediaPlayer mediaPlayer) {
+    void putActive(@Nullable Soundboard soundboard, Sound sound,
+                   SoundboardMediaPlayer mediaPlayer) {
         MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
 
         putActive(searchId, mediaPlayer);

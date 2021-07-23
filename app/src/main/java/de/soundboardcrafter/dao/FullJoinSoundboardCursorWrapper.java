@@ -17,7 +17,7 @@ import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Essentially a cursor over a soundboard that's joined with all its sounds.
@@ -39,16 +39,20 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
         if (gameId != null) {
             res = res
                     + "JOIN " + SoundboardGameTable.NAME + " sg "
-                    + "ON sg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " " //
+                    + "ON sg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " = sb."
+                    + SoundboardTable.Cols.ID + " " //
                     + "AND sg." + SoundboardGameTable.Cols.GAME_ID + " = ? ";
         }
 
         res = res
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
-                + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = sb." + SoundboardTable.Cols.ID + " "
+                + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = sb."
+                + SoundboardTable.Cols.ID + " "
                 + "LEFT JOIN " + SoundTable.NAME + " s "
-                + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID + " " //
-                + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX;
+                + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID
+                + " " //
+                + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs."
+                + SoundboardSoundTable.Cols.POS_INDEX;
 
         return res;
     }

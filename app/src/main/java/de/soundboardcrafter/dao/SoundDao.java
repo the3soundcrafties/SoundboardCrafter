@@ -15,8 +15,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
+import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
@@ -53,8 +54,8 @@ public class SoundDao extends AbstractDao {
     /**
      * Finds all sounds, mapped on their respective {@link IAudioLocation}.
      */
-    public ImmutableMap<IAudioLocation, Sound> findAllByAudioLocation() {
-        ImmutableMap.Builder<IAudioLocation, Sound> res = ImmutableMap.builder();
+    public ImmutableMap<IAudioFileSelection, Sound> findAllByAudioLocation() {
+        ImmutableMap.Builder<IAudioFileSelection, Sound> res = ImmutableMap.builder();
 
         try (SoundCursorWrapper cursor = querySounds(null, new String[]{})) {
             while (cursor.moveToNext()) {
@@ -167,7 +168,8 @@ public class SoundDao extends AbstractDao {
         ContentValues values = new ContentValues();
         values.put(SoundTable.Cols.ID, sound.getId().toString());
         values.put(SoundTable.Cols.NAME, sound.getName());
-        // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method-that-supports-boolean
+        // https://stackoverflow.com/questions/5861460/why-does-contentvalues-have-a-put-method
+        // -that-supports-boolean
         values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
         values.put(SoundTable.Cols.LOCATION_TYPE,
                 toLocationType(sound.getAudioLocation()).name());
@@ -177,12 +179,12 @@ public class SoundDao extends AbstractDao {
     }
 
     private String toPath(IAudioLocation audioLocation) {
-        if (audioLocation instanceof FileSystemAudioLocation) {
-            return ((FileSystemAudioLocation) audioLocation).getPath();
+        if (audioLocation instanceof FileSystemFolderAudioLocation) {
+            return ((FileSystemFolderAudioLocation) audioLocation).getPath();
         }
 
-        if (audioLocation instanceof AssetAudioLocation) {
-            return ((AssetAudioLocation) audioLocation).getAssetPath();
+        if (audioLocation instanceof AssetFolderAudioLocation) {
+            return ((AssetFolderAudioLocation) audioLocation).getAssetPath();
         }
 
         throw new IllegalStateException("Unexpected audio location type " +
@@ -190,11 +192,11 @@ public class SoundDao extends AbstractDao {
     }
 
     private SoundTable.LocationType toLocationType(IAudioLocation audioLocation) {
-        if (audioLocation instanceof FileSystemAudioLocation) {
+        if (audioLocation instanceof FileSystemFolderAudioLocation) {
             return SoundTable.LocationType.FILE;
         }
 
-        if (audioLocation instanceof AssetAudioLocation) {
+        if (audioLocation instanceof AssetFolderAudioLocation) {
             return SoundTable.LocationType.ASSET;
         }
 

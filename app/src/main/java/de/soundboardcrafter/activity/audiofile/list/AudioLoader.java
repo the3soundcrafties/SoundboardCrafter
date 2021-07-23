@@ -25,33 +25,22 @@ import java.util.List;
 import java.util.Map;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.model.AssetAudioLocation;
-import de.soundboardcrafter.model.FileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.emptyToNull;
 
 class AudioLoader {
     /**
      * Path inside the assets directory where the sounds are located.
      */
     static final String ASSET_SOUND_PATH = "sounds";
-
-    /**
-     * Loads all audio files from the device and the assets.
-     */
-    ImmutableList<AudioModel> getAllAudios(final Context context) {
-        final ImmutableList.Builder<AudioModel> res = ImmutableList.builder();
-
-        res.addAll(getAudiosFromDevice(context));
-        res.addAll(getAudiosFromAssets(context));
-
-        return res.build();
-    }
-
+    
     /**
      * Loads all audio files from the device.
      */
-    private ImmutableList<AudioModel> getAudiosFromDevice(Context context) {
+    ImmutableList<AudioModel> getAudiosFromDevice(Context context) {
         final ImmutableList.Builder<AudioModel> res = ImmutableList.builder();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -155,7 +144,7 @@ class AudioLoader {
         final ImmutableList.Builder<AudioModel> res = ImmutableList.builder();
         for (String fileName : fileNames) {
             String assetPath =
-                    Joiner.on("/").skipNulls().join(Strings.emptyToNull(directory), fileName);
+                    Joiner.on("/").skipNulls().join(emptyToNull(directory), fileName);
 
             if (fileName.contains(".")) {
                 // It's a sound file.
@@ -192,7 +181,7 @@ class AudioLoader {
 
         try {
             AssetManager assets = context.getAssets();
-            return getAudiosAndDirectSubFolders(context, assets, folder);
+            return getAudiosAndDirectSubFoldersFromAssets(context, assets, folder);
         } catch (IOException e) {
             Log.w("IOException while loading assets: " + e, e);
             return Pair.create(ImmutableList.of(), ImmutableList.of());
@@ -207,7 +196,7 @@ class AudioLoader {
      * @return The audio files and the direct subFolders
      */
     private Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>>
-    getAudiosAndDirectSubFolders(Context context, AssetManager assets, String directory)
+    getAudiosAndDirectSubFoldersFromAssets(Context context, AssetManager assets, String directory)
             throws IOException {
         @Nullable String[] fileNames = assets.list(directory);
 
@@ -220,7 +209,7 @@ class AudioLoader {
 
         for (String fileName : fileNames) {
             String assetPath =
-                    Joiner.on("/").skipNulls().join(Strings.emptyToNull(directory), fileName);
+                    Joiner.on("/").skipNulls().join(emptyToNull(directory), fileName);
 
             if (fileName.contains(".")) {
                 // It's a sound file.
@@ -229,15 +218,41 @@ class AudioLoader {
                 audioFileList.add(audioModel);
             } else {
                 // It's a sub directory.
-                AudioFolder audioFolder =
-                        new AudioFolder(
-                                new AssetAudioLocation(assetPath),
-                                getAudios(context, assets, assetPath).size());
+                AudioFolder audioFolder = new AudioFolder(
+                        new AssetFolderAudioLocation(assetPath),
+                        getNumAudioFiles(assets, assetPath));
                 directSubFolders.add(audioFolder);
             }
         }
 
         return Pair.create(audioFileList.build(), directSubFolders.build());
+    }
+
+    /**
+     * Retrieves the number of audio files in this asset directory, including all sub directories
+     *
+     * @param directory directory in the assets folder, neither starting nor ending with a slash
+     */
+    private int getNumAudioFiles(AssetManager assets, String directory)
+            throws IOException {
+        @Nullable String[] fileNames = assets.list(directory);
+        if (fileNames == null) {
+            return 0;
+        }
+
+        int res = 0;
+        for (String fileName : fileNames) {
+            String assetPath = Joiner.on("/").skipNulls().join(emptyToNull(directory), fileName);
+
+            if (fileName.contains(".")) {
+                // It's a sound file.
+                res++;
+            } else {
+                // It's a sub directory.
+                res += getNumAudioFiles(assets, assetPath);
+            }
+        }
+        return res;
     }
 
     private AudioModel createAudioModelFromAsset(Context context,
@@ -257,7 +272,7 @@ class AudioLoader {
         @NonNull String artist = extractArtist(context, metadataRetriever);
 
         return new AudioModel(
-                new AssetAudioLocation(assetPath),
+                new AssetFolderAudioLocation(assetPath),
                 name,
                 artist,
                 durationSecs);
@@ -304,7 +319,7 @@ class AudioLoader {
                                                 String path, String name,
                                                 String artistRaw,
                                                 int dateAddedMillis, long durationMillis) {
-        return new AudioModel(new FileSystemAudioLocation(path),
+        return new AudioModel(new FileSystemFolderAudioLocation(path),
                 name,
                 formatArtist(context, artistRaw),
                 new Date(dateAddedMillis * 1000L),
@@ -341,7 +356,7 @@ class AudioLoader {
         ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
         for (Map.Entry<String, Integer> subfolderAndCount : audioFolderMapIn.entrySet()) {
             audioFolders.add(new AudioFolder(
-                    new FileSystemAudioLocation(subfolderAndCount.getKey()),
+                    new FileSystemFolderAudioLocation(subfolderAndCount.getKey()),
                     subfolderAndCount.getValue()));
         }
 

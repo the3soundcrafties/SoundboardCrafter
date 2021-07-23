@@ -1,17 +1,18 @@
 package de.soundboardcrafter.model;
 
-import java.io.Serializable;
-
 /**
- * The location where an audio file may reside: In the file system
- * or in the assets folder
- * <p></p>
+ * A certain folder where an audio file may reside:
+ * <ul>
+ * <li>In a certain folder in the file system
+ * <li>In a certain folder in the assets
+ * </ul>>
+ * <p/>
  * Every subclass needs to provide {@link #equals(Object)} and {@link #hashCode()}
  * as appropriate for a <i>value object</i>.
  */
-public interface IAudioLocation extends Serializable {
+public interface IAudioLocation extends IAudioFileSelection {
     /**
-     * Returns the name (not the full path).
+     * Returns the display name (not necessary the full path).
      */
-    String getName();
+    String getDisplayName();
 }

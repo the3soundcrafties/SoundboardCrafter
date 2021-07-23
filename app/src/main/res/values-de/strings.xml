@@ -15,7 +15,7 @@
     <string name="toolbar_menu_audiofiles_sort_alpha">Nach Name sortieren</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Von Hand sortieren</string>
     <string name="toolbar_menu_audiofiles_sort_date">Nach Datum sortieren</string>
-    <string name="toolbar_menu_audiofiles_folders_all">Alle</string>
+    <string name="toolbar_menu_audiofiles_folders_all_on_device">Alle auf dem Gerät</string>
     <string name="toolbar_menu_audiofiles_assets">Mitgelieferte</string>
     <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
     <string name="soundboards_play_sort_manually_title">Halten und ziehen zum Sortieren</string>
