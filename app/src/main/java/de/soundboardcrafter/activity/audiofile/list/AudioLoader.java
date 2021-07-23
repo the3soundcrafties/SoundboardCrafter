@@ -18,13 +18,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import de.soundboardcrafter.R;
@@ -257,14 +254,12 @@ class AudioLoader {
 
         @NonNull String name = extractName(metadataRetriever, filename);
         long durationSecs = extractDurationSecs(metadataRetriever);
-        Date date = extractDate(metadataRetriever);
         @NonNull String artist = extractArtist(context, metadataRetriever);
 
         return new AudioModel(
                 new AssetAudioLocation(assetPath),
                 name,
                 artist,
-                date,
                 durationSecs);
     }
 
@@ -309,37 +304,6 @@ class AudioLoader {
         } catch (NumberFormatException e) {
             return 0;
         }
-    }
-
-    private Date extractDate(MediaMetadataRetriever metadataRetriever) {
-        // See
-        // https://stackoverflow.com/questions/38648437/android-mediametadataretriever-metadata
-        // -key-date-gives-only-date-of-video-on-gal/39828238
-        @Nullable
-        String raw = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
-
-        if (raw != null) {
-            try {
-                return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault()).parse(raw);
-            } catch (IllegalArgumentException | ParseException e) {
-                try {
-                    return new SimpleDateFormat("yyyy MM dd", Locale.getDefault()).parse(raw);
-                } catch (IllegalArgumentException | ParseException e1) {
-                    try {
-                        return new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH)
-                                .parse(raw);
-                    } catch (IllegalArgumentException | ParseException e2) {
-                        try {
-                            return new SimpleDateFormat("yyyy MM dd", Locale.ENGLISH).parse(raw);
-                        } catch (IllegalArgumentException | ParseException e3) {
-                            // ->
-                        }
-                    }
-                }
-            }
-        }
-
-        return new Date();
     }
 
     private AudioModel createAudioModelOnDevice(Context context,
