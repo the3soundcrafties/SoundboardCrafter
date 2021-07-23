@@ -796,8 +796,8 @@ public class AudioFileListFragment extends Fragment implements
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<? extends
-                AbstractAudioFolderEntry> audioFolderEntries) {
+        protected void onPostExecute(
+                ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {

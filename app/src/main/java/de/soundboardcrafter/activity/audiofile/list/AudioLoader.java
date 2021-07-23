@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -14,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 
@@ -36,7 +35,7 @@ class AudioLoader {
      * Path inside the assets directory where the sounds are located.
      */
     static final String ASSET_SOUND_PATH = "sounds";
-    
+
     /**
      * Loads all audio files from the device.
      */
@@ -44,7 +43,9 @@ class AudioLoader {
         final ImmutableList.Builder<AudioModel> res = ImmutableList.builder();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.AudioColumns.DATA,
+        // MediaStore.Audio.AudioColumns.DURATION has "always" been there and
+        // works fine
+        @SuppressLint("InlinedApi") String[] projection = {MediaStore.Audio.AudioColumns.DATA,
                 MediaStore.Audio.AudioColumns.TITLE,
                 MediaStore.Audio.ArtistColumns.ARTIST,
                 MediaStore.Audio.AudioColumns.DATE_ADDED,
@@ -56,7 +57,6 @@ class AudioLoader {
                 while (c.moveToNext()) {
                     String path = c.getString(0);
                     res.add(createAudioModelOnDevice(
-                            context,
                             path, c.getString(1), c.getString(2),
                             c.getInt(3), c.getLong(4)));
                 }
@@ -65,7 +65,6 @@ class AudioLoader {
 
         return res.build();
     }
-
 
     /**
      * Loads all audio files and subFolders in a given folder <i>on the device</i>.
@@ -84,7 +83,8 @@ class AudioLoader {
         final Map<String, Integer> subFoldersAndAudioFileCounts = new HashMap<>();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.AudioColumns.DATA,
+        // DURATION has "always" been there and is working fine
+        @SuppressLint("InlinedApi") String[] projection = {MediaStore.Audio.AudioColumns.DATA,
                 MediaStore.Audio.AudioColumns.TITLE,
                 MediaStore.Audio.ArtistColumns.ARTIST,
                 MediaStore.Audio.AudioColumns.DATE_ADDED,
@@ -100,7 +100,6 @@ class AudioLoader {
                     String path = c.getString(0);
                     if (isInFolder(path, folder)) {
                         audioFileList.add(createAudioModelOnDevice(
-                                context,
                                 path, c.getString(1), c.getString(2),
                                 c.getInt(3), c.getLong(4)));
                     }
@@ -114,53 +113,6 @@ class AudioLoader {
 
         return toAudioFilesAndSubFoldersFromDevice(audioFileList, subFoldersAndAudioFileCounts);
     }
-
-    /**
-     * Loads all audio files from the assets.
-     */
-    private ImmutableList<AudioModel> getAudiosFromAssets(final Context context) {
-        try {
-            AssetManager assets = context.getAssets();
-            return getAudios(context, assets, ASSET_SOUND_PATH);
-        } catch (IOException e) {
-            Log.w("IOException while loading assets: " + e, e);
-            return ImmutableList.of();
-        }
-    }
-
-    /**
-     * Loads all audio files from the assets in this directory, including all sub directories
-     *
-     * @param directory directory in the assets folder, neither starting nor ending with a slash
-     */
-    private ImmutableList<AudioModel> getAudios(Context context,
-                                                AssetManager assets, String directory)
-            throws IOException {
-        @Nullable String[] fileNames = assets.list(directory);
-        if (fileNames == null) {
-            return ImmutableList.of();
-        }
-
-        final ImmutableList.Builder<AudioModel> res = ImmutableList.builder();
-        for (String fileName : fileNames) {
-            String assetPath =
-                    Joiner.on("/").skipNulls().join(emptyToNull(directory), fileName);
-
-            if (fileName.contains(".")) {
-                // It's a sound file.
-                AudioModel audioModel =
-                        createAudioModelFromAsset(context, assets, assetPath, fileName);
-
-                res.add(audioModel);
-            } else {
-                // It's a sub directory.
-                res.addAll(getAudios(context, assets, assetPath));
-            }
-        }
-
-        return res.build();
-    }
-
 
     /**
      * Loads all audio files and subFolders in a given folder <i>from the assets</i>.
@@ -181,7 +133,7 @@ class AudioLoader {
 
         try {
             AssetManager assets = context.getAssets();
-            return getAudiosAndDirectSubFoldersFromAssets(context, assets, folder);
+            return getAudiosAndDirectSubFoldersFromAssets(assets, folder);
         } catch (IOException e) {
             Log.w("IOException while loading assets: " + e, e);
             return Pair.create(ImmutableList.of(), ImmutableList.of());
@@ -193,10 +145,10 @@ class AudioLoader {
      * also creates all direct subFolders.
      *
      * @param directory directory in the assets folder, neither starting nor ending with slash
-     * @return The audio files and the direct subFolders
+     * @return The audio files, and the direct subFolders
      */
     private Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>>
-    getAudiosAndDirectSubFoldersFromAssets(Context context, AssetManager assets, String directory)
+    getAudiosAndDirectSubFoldersFromAssets(AssetManager assets, String directory)
             throws IOException {
         @Nullable String[] fileNames = assets.list(directory);
 
@@ -214,7 +166,7 @@ class AudioLoader {
             if (fileName.contains(".")) {
                 // It's a sound file.
                 AudioModel audioModel =
-                        createAudioModelFromAsset(context, assets, assetPath, fileName);
+                        createAudioModelFromAsset(assets, assetPath, fileName);
                 audioFileList.add(audioModel);
             } else {
                 // It's a sub directory.
@@ -255,8 +207,7 @@ class AudioLoader {
         return res;
     }
 
-    private AudioModel createAudioModelFromAsset(Context context,
-                                                 AssetManager assets,
+    private AudioModel createAudioModelFromAsset(AssetManager assets,
                                                  String assetPath,
                                                  String filename)
             throws IOException {
@@ -267,9 +218,9 @@ class AudioLoader {
                 fileDescriptor.getStartOffset(),
                 fileDescriptor.getLength());
 
-        @NonNull String name = extractName(filename);
+        @NonNull String name = skipExtension(filename);
         long durationSecs = extractDurationSecs(metadataRetriever);
-        @NonNull String artist = extractArtist(context, metadataRetriever);
+        @Nullable String artist = extractArtist(metadataRetriever);
 
         return new AudioModel(
                 new AssetFolderAudioLocation(assetPath),
@@ -278,22 +229,23 @@ class AudioLoader {
                 durationSecs);
     }
 
-    @NonNull
-    private String extractArtist(Context context, MediaMetadataRetriever metadataRetriever) {
+    @Nullable
+    private String extractArtist(MediaMetadataRetriever metadataRetriever) {
         @Nullable String raw =
                 metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        return formatArtist(context, raw);
+        return formatArtist(raw);
     }
 
-    private String formatArtist(Context context, @Nullable String raw) {
-        if (Strings.isNullOrEmpty(raw) || raw.equals("<unknown>")) {
-            return context.getString(R.string.artist_unknown);
+    @Nullable
+    private String formatArtist(@Nullable String raw) {
+        if (raw == null || raw.equals("<unknown>")) {
+            return null;
         }
 
-        return raw;
+        return emptyToNull(raw.trim());
     }
 
-    private String extractName(String filename) {
+    private String skipExtension(String filename) {
         int indexOfDot = filename.lastIndexOf(".");
         if (indexOfDot <= 0) {
             return filename;
@@ -315,13 +267,12 @@ class AudioLoader {
         }
     }
 
-    private AudioModel createAudioModelOnDevice(Context context,
-                                                String path, String name,
+    private AudioModel createAudioModelOnDevice(String path, String name,
                                                 String artistRaw,
                                                 int dateAddedMillis, long durationMillis) {
         return new AudioModel(new FileSystemFolderAudioLocation(path),
                 name,
-                formatArtist(context, artistRaw),
+                formatArtist(artistRaw),
                 new Date(dateAddedMillis * 1000L),
                 (long) Math.ceil(durationMillis / 1000f));
     }
@@ -346,7 +297,7 @@ class AudioLoader {
     }
 
     /**
-     * Converts a list of audio files and some subFolders with the number of
+     * Converts a list of audio files, and some subFolders with the number of
      * audio file contained therein to a {@link Pair} of audio files and
      * {@link AudioFolder}s. Assuming, everything is located on the device.
      */

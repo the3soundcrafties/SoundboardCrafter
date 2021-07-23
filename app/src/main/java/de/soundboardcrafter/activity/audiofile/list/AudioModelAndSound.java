@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import de.soundboardcrafter.model.Sound;
 
 /**
- * Meta data of an audio file, perhaps with a sound.
+ * Metadata of an audio file, perhaps with a sound.
  */
 class AudioModelAndSound extends AbstractAudioFolderEntry {
     private final AudioModel audioModel;

@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.google.common.base.Joiner;
+
 import java.util.Locale;
 import java.util.UUID;
 
@@ -68,9 +70,9 @@ class AudioFileRow extends RelativeLayout {
     }
 
     private String formatArtistAndLength() {
-        return audioModelAndSound.getAudioModel().getArtist()
-                + " · " +
-                formatLength();
+        return Joiner.on(" · ").skipNulls().join(
+                audioModelAndSound.getAudioModel().getArtist(),
+                formatLength());
     }
 
     @Nullable

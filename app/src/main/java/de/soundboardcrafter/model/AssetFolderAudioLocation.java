@@ -50,6 +50,7 @@ public class AssetFolderAudioLocation implements IAudioLocation {
         return Objects.hash(assetPath);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "AssetFolderAudioLocation{" +

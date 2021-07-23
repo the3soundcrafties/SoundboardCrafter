@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.ThreadSafeCollator;
@@ -31,6 +32,7 @@ class AudioModel {
     @NonNull
     private transient CollationKey collationKey;
 
+    @Nullable
     private final String artist;
 
     @Nullable
@@ -38,12 +40,14 @@ class AudioModel {
 
     private final long durationSecs;
 
-    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist,
-               long durationSecs) {
+    @ParametersAreNonnullByDefault
+    AudioModel(IAudioLocation audioLocation, String name,
+               @Nullable String artist, long durationSecs) {
         this(audioLocation, name, artist, null, durationSecs);
     }
 
-    AudioModel(@NonNull IAudioLocation audioLocation, @NonNull String name, String artist,
+    @ParametersAreNonnullByDefault
+    AudioModel(IAudioLocation audioLocation, String name, @Nullable String artist,
                @Nullable Date dateAdded, long durationSecs) {
         this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
         this.name = checkNotNull(name, "name is null");
@@ -78,6 +82,7 @@ class AudioModel {
         return collationKey;
     }
 
+    @Nullable
     String getArtist() {
         return artist;
     }
