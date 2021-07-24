@@ -9,6 +9,7 @@ import androidx.annotation.WorkerThread;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -52,12 +53,19 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
+     * Returns whether there are any soundboards. Might be slow.
+     */
+    public boolean areAny() {
+        return !findAllByAudioLocation().isEmpty();
+    }
+
+    /**
      * Finds all sounds, mapped on their respective {@link IAudioLocation}.
      */
     public ImmutableMap<IAudioFileSelection, Sound> findAllByAudioLocation() {
         ImmutableMap.Builder<IAudioFileSelection, Sound> res = ImmutableMap.builder();
 
-        try (SoundCursorWrapper cursor = querySounds(null, new String[]{})) {
+        try (SoundCursorWrapper cursor = queryAll()) {
             while (cursor.moveToNext()) {
                 Sound sound = cursor.getSound();
                 res.put(sound.getAudioLocation(), sound);
@@ -66,7 +74,6 @@ public class SoundDao extends AbstractDao {
 
         return res.build();
     }
-
 
     /**
      * Finds a sound by ID, includes all soundboards and a mark, which of them are
@@ -116,6 +123,10 @@ public class SoundDao extends AbstractDao {
         }
     }
 
+    private SoundCursorWrapper queryAll() {
+        return querySounds(null, new String[]{});
+    }
+
     private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
@@ -128,6 +139,18 @@ public class SoundDao extends AbstractDao {
                 );
 
         return new SoundCursorWrapper(cursor);
+    }
+
+    /**
+     * Inserts these sounds - they must not be contained in the
+     * database before - duplicates in the collection are not supported!
+     * <p>
+     * (This method is only useful for initialization purposes.)
+     */
+    public void insert(Collection<Sound> sounds) {
+        for (Sound sound : sounds) {
+            insert(sound);
+        }
     }
 
     /**

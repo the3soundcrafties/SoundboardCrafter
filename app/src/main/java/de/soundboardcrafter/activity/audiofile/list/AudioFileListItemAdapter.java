@@ -13,6 +13,9 @@ import java.util.List;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
 import de.soundboardcrafter.dao.TutorialDao;
+import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
+import de.soundboardcrafter.model.audio.AudioFolder;
+import de.soundboardcrafter.model.audio.AudioModelAndSound;
 
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;

@@ -44,6 +44,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity;
@@ -57,6 +58,10 @@ import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
+import de.soundboardcrafter.model.audio.AudioFolder;
+import de.soundboardcrafter.model.audio.AudioModelAndSound;
+import de.soundboardcrafter.model.audio.FullAudioModel;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
@@ -255,7 +260,7 @@ public class AudioFileListFragment extends Fragment implements
 
         if (ActivityCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
+            new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
         } // Otherwise, we will receive an event later.
 
         return rootView;
@@ -382,7 +387,7 @@ public class AudioFileListFragment extends Fragment implements
 
         setAudioFolderEntries(ImmutableList.of());
 
-        new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
+        new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
     }
 
     private void setSelection(IAudioFileSelection selection) {
@@ -457,7 +462,7 @@ public class AudioFileListFragment extends Fragment implements
     private void sort(SortOrder sortOrder) {
         this.sortOrder = sortOrder;
 
-        new FindAudioFileTask(requireContext(), selection, sortOrder).execute();
+        new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
     }
 
     private void onClickAudioSubfolder(AudioSubfolderRow audioSubfolderRow) {
@@ -477,7 +482,7 @@ public class AudioFileListFragment extends Fragment implements
     private void changeFolder(@NonNull IAudioLocation newFolder) {
         setSelection(newFolder);
 
-        new FindAudioFileTask(requireContext(), newFolder, sortOrder).execute();
+        new FindAudioFilesTask(requireContext(), newFolder, sortOrder).execute();
     }
 
     private void onClickAudioFile(AudioFileRow audioFileItemRow,
@@ -594,7 +599,7 @@ public class AudioFileListFragment extends Fragment implements
             return;
         }
 
-        new FindAudioFileTask(context, selection, sortOrder).execute();
+        new FindAudioFilesTask(context, selection, sortOrder).execute();
     }
 
     @Override
@@ -605,7 +610,7 @@ public class AudioFileListFragment extends Fragment implements
         }
 
         // The sound NAME may have been changed.
-        new FindAudioFileTask(context, selection, sortOrder).execute();
+        new FindAudioFilesTask(context, selection, sortOrder).execute();
     }
 
     @UiThread
@@ -673,9 +678,9 @@ public class AudioFileListFragment extends Fragment implements
      * A background task, used to retrieve audio files (and audio folders)
      * and corresponding sounds from the database.
      */
-    class FindAudioFileTask extends AsyncTask<Void, Void,
+    class FindAudioFilesTask extends AsyncTask<Void, Void,
             ImmutableList<? extends AbstractAudioFolderEntry>> {
-        private final String TAG = FindAudioFileTask.class.getName();
+        private final String TAG = FindAudioFilesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
 
@@ -709,8 +714,8 @@ public class AudioFileListFragment extends Fragment implements
                 };
         private final SortOrder sortOrder;
 
-        FindAudioFileTask(Context context, IAudioFileSelection selection,
-                          @NonNull SortOrder sortOrder) {
+        FindAudioFilesTask(Context context, IAudioFileSelection selection,
+                           @NonNull SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.selection = selection;
@@ -726,11 +731,9 @@ public class AudioFileListFragment extends Fragment implements
                 return null;
             }
 
-            AudioLoader audioLoader = new AudioLoader();
-
             Log.d(TAG, "Loading audio files from file system...");
 
-            return loadAudioFolderEntries(appContext, audioLoader);
+            return loadAudioFolderEntries(appContext);
         }
 
         /**
@@ -739,16 +742,16 @@ public class AudioFileListFragment extends Fragment implements
          */
         @WorkerThread
         private ImmutableList<AbstractAudioFolderEntry> loadAudioFolderEntries(
-                Context appContext, AudioLoader audioLoader) {
-            Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>> audioModelsAndFolders =
-                    loadAudioFolderEntriesWithoutSounds(appContext, audioLoader);
+                Context appContext) {
+            Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> audioModelsAndFolders =
+                    new AudioLoader().loadAudioFolderEntriesWithoutSounds(appContext, selection);
 
             Log.d(TAG, "Audio files loaded.");
 
             Log.d(TAG, "Loading sounds from database...");
 
-            SoundDao soundDao = SoundDao.getInstance(appContext);
-            Map<IAudioFileSelection, Sound> soundMap = soundDao.findAllByAudioLocation();
+            Map<IAudioFileSelection, Sound> soundMap =
+                    SoundDao.getInstance(appContext).findAllByAudioLocation();
 
             Log.d(TAG, "Sounds loaded.");
 
@@ -757,7 +760,7 @@ public class AudioFileListFragment extends Fragment implements
                             audioModelsAndFolders.first.size() +
                                     audioModelsAndFolders.second.size());
             res.addAll(audioModelsAndFolders.second);
-            for (AudioModel audioModel : audioModelsAndFolders.first) {
+            for (FullAudioModel audioModel : audioModelsAndFolders.first) {
                 res.add(new AudioModelAndSound(
                         audioModel,
                         soundMap.get(audioModel.getAudioLocation())));
@@ -766,32 +769,6 @@ public class AudioFileListFragment extends Fragment implements
             res.sort(entryComparator);
 
             return ImmutableList.copyOf(res);
-        }
-
-        /**
-         * Retrieves the audio files (and audio folders) from
-         * the selected folder in the file system or assets.
-         */
-        @WorkerThread
-        private Pair<ImmutableList<AudioModel>, ImmutableList<AudioFolder>>
-        loadAudioFolderEntriesWithoutSounds(Context appContext, AudioLoader audioLoader) {
-            if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-                return new Pair<>(audioLoader.getAudiosFromDevice(appContext), ImmutableList.of());
-            }
-
-            if (selection instanceof FileSystemFolderAudioLocation) {
-                FileSystemFolderAudioLocation fileSystemFolder =
-                        (FileSystemFolderAudioLocation) selection;
-                return audioLoader.getAudioFromDevice(appContext, fileSystemFolder.getPath());
-            }
-
-            if (selection instanceof AssetFolderAudioLocation) {
-                AssetFolderAudioLocation assetFolder = (AssetFolderAudioLocation) selection;
-                return audioLoader.getAudioFromAssets(appContext, assetFolder.getAssetPath());
-            }
-
-            throw new IllegalStateException(
-                    "folder instance of unexpected class: " + selection.getClass());
         }
 
         @Override

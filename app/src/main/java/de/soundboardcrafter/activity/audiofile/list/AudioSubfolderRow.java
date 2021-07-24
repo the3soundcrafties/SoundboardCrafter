@@ -12,6 +12,7 @@ import androidx.annotation.UiThread;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.audio.AudioFolder;
 
 import static com.google.common.base.Preconditions.checkState;
 

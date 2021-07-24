@@ -19,6 +19,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.audio.AudioModelAndSound;
 
 /**
  * Row in the list of audio files representing one audio file.

@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.audiofile.list;
+package de.soundboardcrafter.model.audio;
 
 import androidx.annotation.NonNull;
 
@@ -14,24 +14,24 @@ import de.soundboardcrafter.model.Sound;
 /**
  * Metadata of an audio file, perhaps with a sound.
  */
-class AudioModelAndSound extends AbstractAudioFolderEntry {
-    private final AudioModel audioModel;
+public class AudioModelAndSound extends AbstractAudioFolderEntry {
+    private final FullAudioModel audioModel;
 
     @Nullable
     private final Sound sound;
 
-    AudioModelAndSound(AudioModel audioModel, @Nullable Sound sound) {
+    public AudioModelAndSound(FullAudioModel audioModel, @Nullable Sound sound) {
         this.audioModel = audioModel;
         this.sound = sound;
     }
 
     @NonNull
-    AudioModel getAudioModel() {
+    public FullAudioModel getAudioModel() {
         return audioModel;
     }
 
     @NonNull
-    CollationKey getCollationKey() {
+    public CollationKey getCollationKey() {
         // This only works because AudioModel and Sound internally use
         // the same Collator object.
         // (I am assuming, that the user does not fiddle with his
@@ -61,7 +61,7 @@ class AudioModelAndSound extends AbstractAudioFolderEntry {
 
 
     @Nullable
-    UUID getSoundId() {
+    public UUID getSoundId() {
         if (sound == null) {
             return null;
         }
@@ -75,7 +75,7 @@ class AudioModelAndSound extends AbstractAudioFolderEntry {
     }
 
     @Nullable
-    Date getDateAdded() {
+    public Date getDateAdded() {
         return audioModel.getDateAdded();
     }
 

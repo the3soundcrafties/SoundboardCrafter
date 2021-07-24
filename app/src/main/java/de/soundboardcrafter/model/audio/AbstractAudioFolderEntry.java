@@ -1,8 +1,8 @@
-package de.soundboardcrafter.activity.audiofile.list;
+package de.soundboardcrafter.model.audio;
 
 import androidx.annotation.NonNull;
 
-class AbstractAudioFolderEntry {
+public class AbstractAudioFolderEntry {
     @Override
     public boolean equals(Object o) {
         if (this == o) {

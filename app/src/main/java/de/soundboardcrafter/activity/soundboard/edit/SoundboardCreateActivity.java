@@ -6,12 +6,13 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 
 /**
- * Abstract super class for activities for editing a single Game
+ * Abstract super class for activities for editing a single Soundboard
  */
 public class SoundboardCreateActivity extends SingleFragmentActivity {
     /**
@@ -24,7 +25,11 @@ public class SoundboardCreateActivity extends SingleFragmentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+
+        @Nullable final ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.hide();
+        }
     }
 
     @Override

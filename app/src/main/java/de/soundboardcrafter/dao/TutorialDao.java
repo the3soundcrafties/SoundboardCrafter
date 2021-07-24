@@ -23,8 +23,7 @@ public class TutorialDao {
         GAME_LIST_CONTEXT_MENU
     }
 
-    private static final String SHARED_PREFERENCES =
-            TutorialDao.class.getName() + "_Prefs";
+    private static final String SHARED_PREFERENCES = TutorialDao.class.getName() + "_Prefs";
 
     private static TutorialDao instance;
     private final Context appContext;

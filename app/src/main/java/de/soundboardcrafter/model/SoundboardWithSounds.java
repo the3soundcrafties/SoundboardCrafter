@@ -15,15 +15,14 @@ import javax.annotation.Nonnull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A soundboard, that is a keyboard you can play sounds with.
- * The application supports several soundboards.
+ * A {@link Soundboard} with sounds.
  * <p></p>
  * <code>SoundboardWithSounds</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
 public class SoundboardWithSounds implements Serializable {
-    private final @NonNull
-    Soundboard soundboard;
+    @NonNull
+    private final Soundboard soundboard;
 
     /**
      * The sounds on their position on the <code>Soundboard</code>.
@@ -42,8 +41,8 @@ public class SoundboardWithSounds implements Serializable {
         return soundboard;
     }
 
-    public @NonNull
-    UUID getId() {
+    @NonNull
+    public UUID getId() {
         return soundboard.getId();
     }
 

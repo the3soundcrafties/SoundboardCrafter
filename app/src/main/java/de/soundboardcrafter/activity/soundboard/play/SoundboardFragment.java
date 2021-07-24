@@ -653,7 +653,7 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             Log.d(TAG, "Sorting sounds: " + soundboardWithSounds);
             soundboardWithSounds.sortSoundsBy(order.comparator);
 
-            SoundboardDao.getInstance(appContext).linkSoundsInOrder(soundboardWithSounds);
+            SoundboardDao.getInstance(appContext).relinkSoundsInOrder(soundboardWithSounds);
 
             return soundboardWithSounds;
         }

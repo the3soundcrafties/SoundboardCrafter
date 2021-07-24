@@ -27,7 +27,7 @@ import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Database Access Object for accessing Soundboards in the database
@@ -65,6 +65,13 @@ public class SoundboardDao extends AbstractDao {
         deleteAllSoundboards();
     }
 
+    /**
+     * Returns whether there are any soundboards. Might be slow.
+     */
+    public boolean areAny() {
+        return !findAll().isEmpty();
+    }
+
     public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID gameId) {
         Object[] params;
         if (gameId != null) {
@@ -96,7 +103,8 @@ public class SoundboardDao extends AbstractDao {
                 if (lastSoundboard != null &&
                         soundboard.getId().equals(lastSoundboard.getId())) {
                     // Reuse existing sounds.
-                    FullJoinSoundboardCursorWrapper.IndexedSound indexedSound = row.getIndexedSound();
+                    FullJoinSoundboardCursorWrapper.IndexedSound indexedSound =
+                            row.getIndexedSound();
                     if (indexedSound == null) {
                         throw new IllegalStateException(
                                 "indexedSound was null for second soundboard row");
@@ -110,7 +118,8 @@ public class SoundboardDao extends AbstractDao {
                 } else {
                     if (lastSoundboard != null) {
                         lastSounds.trimToSize();
-                        res.add(new SoundboardWithSounds(lastSoundboard, Lists.newArrayList(lastSounds)));
+                        res.add(new SoundboardWithSounds(lastSoundboard,
+                                Lists.newArrayList(lastSounds)));
                     }
 
                     lastSoundboard = soundboard;
@@ -142,7 +151,8 @@ public class SoundboardDao extends AbstractDao {
 
     private Sound putAdditionalSound(Map<UUID, Sound> sounds, int lastIndex,
                                      Soundboard soundboard,
-                                     @NonNull FullJoinSoundboardCursorWrapper.IndexedSound indexedSound) {
+                                     @NonNull
+                                             FullJoinSoundboardCursorWrapper.IndexedSound indexedSound) {
         checkNotNull(indexedSound, "indexedSound was null");
 
         UUID soundId = indexedSound.getSound().getId();
@@ -173,7 +183,8 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
     private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
-        try (SelectableSoundboardCursorWrapper cursor = new SelectableSoundboardCursorWrapper(rawCursor)) {
+        try (SelectableSoundboardCursorWrapper cursor = new SelectableSoundboardCursorWrapper(
+                rawCursor)) {
             final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
 
             while (cursor.moveToNext()) {
@@ -206,12 +217,27 @@ public class SoundboardDao extends AbstractDao {
         unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound().getId());
     }
 
-    public void linkSoundsInOrder(SoundboardWithSounds soundboardWithSounds) {
-        Soundboard soundboard = soundboardWithSounds.getSoundboard();
-        unlinkAllSounds(soundboard.getId());
+    /**
+     * Inserts the soundboard and all its sounds - they must not be contained in the
+     * database before - sound duplicates in the soundboard are not supported!
+     * <p>
+     * (This method is only useful for initialization purposes.)
+     */
+    public void insertSoundboardAndInsertAllSounds(SoundboardWithSounds soundboardWithSounds) {
+        soundDao.insert(soundboardWithSounds.getSounds());
+        insert(soundboardWithSounds.getSoundboard());
+        linkSoundsInOrder(soundboardWithSounds);
+    }
+
+    public void relinkSoundsInOrder(SoundboardWithSounds soundboardWithSounds) {
+        unlinkAllSounds(soundboardWithSounds.getId());
+        linkSoundsInOrder(soundboardWithSounds);
+    }
+
+    private void linkSoundsInOrder(SoundboardWithSounds soundboardWithSounds) {
         for (int i = 0; i < soundboardWithSounds.getSounds().size(); i++) {
             Sound sound = soundboardWithSounds.getSounds().get(i);
-            linkSoundToSoundboard(soundboard.getId(), i, sound.getId());
+            linkSoundToSoundboard(soundboardWithSounds.getId(), i, sound.getId());
         }
     }
 
@@ -318,7 +344,9 @@ public class SoundboardDao extends AbstractDao {
     }
 
     private void unlinkAllSounds(UUID soundboardId) {
-        getDatabase().delete(SoundboardSoundTable.NAME, SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ?", new String[]{soundboardId.toString()});
+        getDatabase()
+                .delete(SoundboardSoundTable.NAME, SoundboardSoundTable.Cols.SOUNDBOARD_ID + " = ?",
+                        new String[]{soundboardId.toString()});
     }
 
     void unlinkSound(UUID soundId) {
@@ -459,7 +487,8 @@ public class SoundboardDao extends AbstractDao {
 
     public void remove(UUID soundboardId) {
         unlinkAllSounds(soundboardId);
-        getDatabase().delete(SoundboardTable.NAME, SoundboardTable.Cols.ID + " = ?", new String[]{soundboardId.toString()});
+        getDatabase().delete(SoundboardTable.NAME, SoundboardTable.Cols.ID + " = ?",
+                new String[]{soundboardId.toString()});
     }
 
     public List<Soundboard> findAll() {
@@ -477,7 +506,8 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public Soundboard find(UUID soundboardId) {
-        try (SoundboardCursorWrapper cursor = querySoundboards(DBSchema.SoundboardTable.Cols.ID + " = ?",
+        try (SoundboardCursorWrapper cursor = querySoundboards(
+                DBSchema.SoundboardTable.Cols.ID + " = ?",
                 new String[]{soundboardId.toString()})) {
             if (!cursor.moveToNext()) {
                 throw new IllegalStateException("No sound with ID " + soundboardId);
@@ -507,7 +537,7 @@ public class SoundboardDao extends AbstractDao {
     }
 
     public void insert(Soundboard soundboard) {
-        // TODO throw exception if sound name already exists
+        // TODO throw exception if soundboard name already exists
         insertOrThrow(DBSchema.SoundboardTable.NAME, buildContentValues(soundboard));
     }
 

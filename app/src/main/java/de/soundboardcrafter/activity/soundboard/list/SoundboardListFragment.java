@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,26 +30,42 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
+import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.dao.TutorialDao;
+import de.soundboardcrafter.model.Sound;
+import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
+import de.soundboardcrafter.model.audio.BasicAudioModel;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Shows Soundboards in a list
  */
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
+    private static final String SHARED_PREFERENCES =
+            SoundboardListFragment.class.getName() + "_Prefs";
+
+    public enum PrefKey {
+        FIRST_START
+    }
+
     private static final String TAG = SoundboardListFragment.class.getName();
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
@@ -99,7 +116,7 @@ public class SoundboardListFragment extends Fragment
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
 
-        if (ActivityCompat.checkSelfPermission(getActivity(),
+        if (ActivityCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
         } // otherwise we will receive an event later
@@ -295,15 +312,79 @@ public class SoundboardListFragment extends Fragment
                 return null;
             }
 
-            SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
+            generateSoundboardsOnFirstStart(appContext);
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(null);
+            ImmutableList<SoundboardWithSounds> res =
+                    SoundboardDao.getInstance(appContext).findAllWithSounds(null);
 
             Log.d(TAG, "Soundboards loaded.");
 
             return res;
+        }
+
+        private void generateSoundboardsOnFirstStart(Context appContext) {
+            if (isFirstStart(appContext)) {
+
+
+                generateSoundboards(appContext);
+            }
+
+            setFirstStartDone(appContext);
+        }
+
+        private boolean isFirstStart(Context appContext) {
+            return getPrefs(appContext).getBoolean(PrefKey.FIRST_START.name(), true)
+                    // Perhaps if the user cancelled the last start...
+                    // Better be safe.
+                    && !SoundDao.getInstance(appContext).areAny()
+                    && !SoundboardDao.getInstance(appContext).areAny();
+        }
+
+        private void generateSoundboards(Context appContext) {
+            Log.d(TAG, "Generating soundboards from included audio files...");
+
+            AudioLoader audioLoader = new AudioLoader();
+            Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
+                    audioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
+
+            for (Map.Entry<String, List<BasicAudioModel>> entry :
+                    audioModelsByTopFolder.entrySet()) {
+                generateSoundboard(appContext, entry.getKey(), entry.getValue());
+            }
+
+            Log.d(TAG, "Soundboards generated.");
+        }
+
+        private void generateSoundboard(Context appContext, String name,
+                                        List<BasicAudioModel> audioModels) {
+            Soundboard soundboard = new Soundboard(name);
+
+            ArrayList<Sound> sounds = new ArrayList<>(audioModels.size());
+            for (BasicAudioModel audioModel : audioModels) {
+                sounds.add(toSound(audioModel));
+            }
+
+            SoundboardWithSounds soundboardWithSounds =
+                    new SoundboardWithSounds(soundboard, sounds);
+
+            SoundboardDao.getInstance(appContext)
+                    .insertSoundboardAndInsertAllSounds(soundboardWithSounds);
+        }
+
+        private Sound toSound(BasicAudioModel audioModel) {
+            return new Sound(audioModel.getAudioLocation(), audioModel.getName());
+        }
+
+        private void setFirstStartDone(Context appContext) {
+            SharedPreferences.Editor editor = getPrefs(appContext).edit();
+            editor.putBoolean(PrefKey.FIRST_START.name(), false);
+            editor.apply();
+        }
+
+        private SharedPreferences getPrefs(Context appContext) {
+            return appContext.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
         }
 
         @Override

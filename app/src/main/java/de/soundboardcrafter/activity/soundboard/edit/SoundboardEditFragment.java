@@ -79,17 +79,14 @@ public class SoundboardEditFragment extends Fragment {
                     Activity.RESULT_OK,
                     intent);
         }
-
-
     }
 
     @Override
     @UiThread
-    // Called especially when the SoundboardPlaySoundEditActivity returns.
+    // Called in particular when the SoundboardPlaySoundEditActivity returns.
     public void onResume() {
         super.onResume();
     }
-
 
     @Override
     @UiThread
@@ -107,7 +104,8 @@ public class SoundboardEditFragment extends Fragment {
                         saveNewSoundboard();
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-                        intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT,
+                                SoundboardEditFragment.class.getName());
                         requireActivity().setResult(
                                 Activity.RESULT_OK,
                                 intent);
@@ -116,9 +114,11 @@ public class SoundboardEditFragment extends Fragment {
             );
             soundboardEditView.setOnClickListenerCancel(
                     () -> {
-                        Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
+                        Intent intent =
+                                new Intent(requireActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_SOUNDBOARD_ID, soundboard.getId().toString());
-                        intent.putExtra(EXTRA_EDIT_FRAGMENT, SoundboardEditFragment.class.getName());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT,
+                                SoundboardEditFragment.class.getName());
                         requireActivity().setResult(
                                 Activity.RESULT_CANCELED,
                                 intent);
@@ -133,13 +133,11 @@ public class SoundboardEditFragment extends Fragment {
         return rootView;
     }
 
-
     @UiThread
     private void updateUI(Soundboard soundboard) {
         this.soundboard = soundboard;
         soundboardEditView.setName(soundboard.getName());
     }
-
 
     private void saveNewSoundboard() {
         String nameEntered = soundboardEditView.getName();
@@ -148,7 +146,6 @@ public class SoundboardEditFragment extends Fragment {
         }
         new SaveNewSoundboardTask(requireActivity(), soundboard).execute();
     }
-
 
     @Override
     @UiThread
@@ -165,7 +162,6 @@ public class SoundboardEditFragment extends Fragment {
         }
 
     }
-
 
     /**
      * A background task, used to load the soundboard from the database.

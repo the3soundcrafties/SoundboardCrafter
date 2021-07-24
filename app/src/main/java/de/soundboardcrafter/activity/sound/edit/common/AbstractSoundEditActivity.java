@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Sound;
@@ -31,7 +33,10 @@ abstract public class AbstractSoundEditActivity extends SingleFragmentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+        @Nullable final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
     }
 
     @Override

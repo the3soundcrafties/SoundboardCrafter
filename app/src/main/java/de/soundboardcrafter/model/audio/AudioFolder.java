@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.audiofile.list;
+package de.soundboardcrafter.model.audio;
 
 import androidx.annotation.NonNull;
 
@@ -14,11 +14,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A folder containing audio files - or folders with (folders with...) audio files.
  * Might be on the device or in the assets directory.
  */
-class AudioFolder extends AbstractAudioFolderEntry {
+public class AudioFolder extends AbstractAudioFolderEntry {
     private final IAudioLocation folderLocation;
     private final int numAudioFiles;
 
-    AudioFolder(@NonNull IAudioLocation folderLocation, int numAudioFiles) {
+    public AudioFolder(@NonNull IAudioLocation folderLocation, int numAudioFiles) {
         this.folderLocation = checkNotNull(folderLocation, "audioLocation was null");
         this.numAudioFiles = numAudioFiles;
     }
@@ -40,7 +40,7 @@ class AudioFolder extends AbstractAudioFolderEntry {
         }
     }
 
-    int getNumAudioFiles() {
+    public int getNumAudioFiles() {
         return numAudioFiles;
     }
 
