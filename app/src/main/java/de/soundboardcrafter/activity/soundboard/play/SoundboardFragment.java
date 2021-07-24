@@ -295,30 +295,33 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return false;
         }
 
-        switch (item.getItemId()) {
-            case R.id.toolbar_menu_sound_sort_alpha:
-                new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME)
-                        .execute();
-                return true;
-            case R.id.toolbar_menu_sound_sort_manually:
-                if (actionMode != null) {
-                    return false;
-                }
+        final int id = item.getItemId();
+        if (id == R.id.toolbar_menu_sound_sort_alpha) {
+            new SoundSortInSoundboardTask(requireContext(), soundboard, SortOrder.BY_NAME)
+                    .execute();
+            return true;
+        } else if (id == R.id.toolbar_menu_sound_sort_manually) {
+            if (actionMode != null) {
+                return false;
+            }
 
+            if (hostingActivity != null) {
                 hostingActivity.setChangingSoundboardEnabled(false);
+            }
 
-                actionMode = requireAppCompatActivity()
-                        .startSupportActionMode(manualSortingActionModeCallback);
-                if (actionMode == null) {
+            actionMode = requireAppCompatActivity()
+                    .startSupportActionMode(manualSortingActionModeCallback);
+            if (actionMode == null) {
+                if (hostingActivity != null) {
                     hostingActivity.setChangingSoundboardEnabled(true);
-                    return false;
                 }
+                return false;
+            }
 
-                actionMode.setTitle(R.string.soundboards_play_sort_manually_title);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+            actionMode.setTitle(R.string.soundboards_play_sort_manually_title);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -497,30 +500,30 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
             return false; // Pass the event to the next fragment
         }
 
-        switch (item.getItemId()) {
-            case R.id.context_menu_edit_sound:
-                @Nullable Sound sound = soundboardItemAdapter.getContextMenuItem();
-                if (sound == null) {
-                    return false;
-                }
-
-                Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
-
-                Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
-                startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
-                return true;
-            case R.id.context_menu_remove_sound:
-                int position = soundboardItemAdapter.getContextMenuPosition();
-                if (position < 0) {
-                    return false;
-                }
-
-                Log.d(TAG, "Removing sound " + position);
-                soundboardItemAdapter.remove(position);
-                new RemoveSoundsTask(requireActivity()).execute(position);
-                return true;
-            default:
+        final int id = item.getItemId();
+        if (id == R.id.context_menu_edit_sound) {
+            @Nullable Sound sound = soundboardItemAdapter.getContextMenuItem();
+            if (sound == null) {
                 return false;
+            }
+
+            Log.d(TAG, "Editing sound " + this + " \"" + sound.getName() + "\"");
+
+            Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
+            startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
+            return true;
+        } else if (id == R.id.context_menu_remove_sound) {
+            int position = soundboardItemAdapter.getContextMenuPosition();
+            if (position < 0) {
+                return false;
+            }
+
+            Log.d(TAG, "Removing sound " + position);
+            soundboardItemAdapter.remove(position);
+            new RemoveSoundsTask(requireActivity()).execute(position);
+            return true;
+        } else {
+            return false;
         }
     }
 

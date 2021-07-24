@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 
 import java.util.Collection;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -23,9 +22,6 @@ import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Database Access Object for accessing sounds in the database
@@ -88,18 +84,6 @@ public class SoundDao extends AbstractDao {
 
         return new SoundWithSelectableSoundboards(sound, selectableSoundboards);
 
-    }
-
-    /**
-     * Finds these sounds by their IDs.
-     *
-     * @throws IllegalStateException if for some id, no sound exists (or more than one)
-     */
-    public ImmutableList<Sound> findSounds(UUID... soundIds) {
-        return Stream.of(soundIds)
-                .map(this::find)
-                .collect(collectingAndThen(toList(), ImmutableList::copyOf));
-        // TODO Use .collect(ImmutableList::toImmutableList) - why doesn't that work?
     }
 
     /**

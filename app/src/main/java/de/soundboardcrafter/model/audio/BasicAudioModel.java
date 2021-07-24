@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import java.text.CollationKey;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import de.soundboardcrafter.model.IAudioLocation;
@@ -49,7 +50,7 @@ public class BasicAudioModel {
         return name;
     }
 
-    void setCollationKey() {
+    final void setCollationKey() {
         collationKey = nameCollator.getCollationKey(getName());
     }
 
@@ -77,6 +78,7 @@ public class BasicAudioModel {
     }
 
     @Override
+    @Nonnull
     public String toString() {
         return "BasicAudioModel{" +
                 "audioLocation=" + audioLocation +
