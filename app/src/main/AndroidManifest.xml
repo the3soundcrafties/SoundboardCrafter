@@ -2,14 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.soundboardcrafter">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
     <!-- Necessary for MediaPlayer#setWakeMode() -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Necessary for MediaPlayerServer#startForeground() -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Necessary to read media files: https://developer.android.com/training/data-storage/shared/media#query-collection -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +17,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:requestLegacyExternalStorage="true">
+        <!-- https://stackoverflow.com/questions/63098265/read-external-storage-doesnt-work-on
+        -android-10 -->
 
         <activity
             android:name=".activity.main.MainActivity"
