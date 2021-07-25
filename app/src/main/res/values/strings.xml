@@ -96,4 +96,7 @@
         <p><i>Idea and Sound Selection:</i><br>&#160;Anna-Maria Kwasny</p>
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Restart Tutorial</string>
+    <string name="yourSoundsPermissionRationaleTitle">Your Sounds</string>
+    <string name="yourSoundsPermissionRationaleMsg">Give permission to access your own sounds? -
+        Please confirm in the next window or in the app preferences!</string>
 </resources>

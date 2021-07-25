@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
@@ -116,7 +116,7 @@ public class SoundboardListFragment extends Fragment
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
 
-        if (ActivityCompat.checkSelfPermission(requireActivity(),
+        if (ContextCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
         } // otherwise we will receive an event later

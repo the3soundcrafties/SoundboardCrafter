@@ -25,8 +25,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -44,6 +42,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.AbstractReadExternalStorageActivity;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.dao.GameDao;
@@ -56,7 +55,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * The most important activity of the app - it shows all the soundboards so that the user
  * can play sounds.
  */
-public class SoundboardPlayActivity extends AppCompatActivity
+public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
         SoundboardFragment.HostingActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
@@ -65,7 +64,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private static final String SHARED_PREFERENCES =
             SoundboardPlayActivity.class.getName() + "_Prefs";
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
     private ScreenSlidePagerAdapter pagerAdapter;
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
@@ -226,12 +224,10 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+        if (!isPermissionReadExternalStorageGrantedIfNoAskForIt()) {
             return;
         }
+
         pagerAdapter.clear(false);
         new FindSoundboardsTask(this, gameId).execute();
     }
@@ -284,6 +280,26 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private void resetAllOrCancel() {
         ResetAllDialogFragment dialog = new ResetAllDialogFragment();
         dialog.show(getSupportFragmentManager(), DIALOG_RESET_ALL);
+    }
+
+    @Override
+    @UiThread
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                if (shouldShowRequestPermissionRationale(
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showPermissionRationale();
+                } else {
+                    // User denied. Stop the app.
+                    // TODO Handle gracefully
+                    finishAndRemoveTask();
+                    return;
+                }
+            }
+        }
     }
 
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
@@ -393,21 +409,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
                             .map(SoundboardWithSounds::getSoundboard)
                             .collect(Collectors.toList()),
                     false);
-        }
-    }
-
-    @Override
-    @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE
-                || requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // User denied. Stop the app.
-                finishAndRemoveTask();
-                return;
-            }
         }
     }
 

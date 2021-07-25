@@ -8,6 +8,7 @@
     <!-- Necessary for MediaPlayerServer#startForeground() -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- "Dangerous permissions" (need to be requested from the user): -->
     <!-- Necessary to read media files: https://developer.android.com/training/data-storage/shared/media#query-collection -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 

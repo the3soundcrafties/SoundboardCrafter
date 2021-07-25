@@ -64,7 +64,7 @@
         <item quantity="other">%d Soundboards</item>
     </plurals>
     <string name="soundboards_default_toolbar">Alle Soundboards</string>
-    <string name="soundboard_file_not_found">Sound-Datei nicht gefunden - aus Soundboard(s) entfernt</string>
+    <string name="soundboard_file_not_found">Sound-Datei nicht gefunden – aus Soundboard(s) entfernt</string>
     <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
     <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
     <string name="tutorial_soundboard_play_context_menu_description">Lang klicken zum Bearbeiten</string>
@@ -99,4 +99,6 @@
         <p><i>Idee und Sound-Auswahl:</i><br>&#160;Anna-Maria Kwasny</p>
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Noch einmal Tipps geben</string>
+    <string name="yourSoundsPermissionRationaleTitle">Eigene Sounds</string>
+    <string name="yourSoundsPermissionRationaleMsg">Zugriff auf eigene Sounds erlauben? Dann im nächsten Fenster bestätigen – oder in den Einstellungen!</string>
 </resources>

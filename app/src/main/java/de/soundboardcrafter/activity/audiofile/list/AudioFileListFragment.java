@@ -28,7 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -258,7 +258,7 @@ public class AudioFileListFragment extends Fragment implements
                     }
                 });
 
-        if (ActivityCompat.checkSelfPermission(requireActivity(),
+        if (ContextCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
         } // Otherwise, we will receive an event later.

@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -32,6 +30,7 @@ import java.util.function.Supplier;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.about.AboutActivity;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
+import de.soundboardcrafter.activity.common.AbstractReadExternalStorageActivity;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
@@ -40,7 +39,8 @@ import de.soundboardcrafter.dao.TutorialDao;
 /**
  * The activity with which the app is started, showing games, soundboards, and sounds.
  */
-public class MainActivity extends AppCompatActivity implements SoundEventListener {
+public class MainActivity extends AbstractReadExternalStorageActivity
+        implements SoundEventListener {
     private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
     private static final String KEY_SELECTED_PAGE = "selectedPage";
     private ViewPager pager;
@@ -86,12 +86,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @Override
     protected void onStart() {
         super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
-            return;
-        }
+        isPermissionReadExternalStorageGrantedIfNoAskForIt();
     }
 
     @Override
@@ -249,12 +244,18 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // User denied. Stop the app.
-                finishAndRemoveTask();
-                return;
+                if (shouldShowRequestPermissionRationale(
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showPermissionRationale();
+                } else {
+                    // User denied. Stop the app.
+                    // TODO Handle gracefully
+                    finishAndRemoveTask();
+                    return;
+                }
             }
 
-            // We don't need other permissions, so start reading data.
+            // We don't need any other permissions, so start reading data.
             somethingMightHaveChanged();
         }
     }
