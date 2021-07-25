@@ -117,7 +117,7 @@ public class SoundboardListFragment extends Fragment
         });
 
         if (ActivityCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
         } // otherwise we will receive an event later
 

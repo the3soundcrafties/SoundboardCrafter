@@ -259,7 +259,7 @@ public class AudioFileListFragment extends Fragment implements
                 });
 
         if (ActivityCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
         } // Otherwise, we will receive an event later.
 

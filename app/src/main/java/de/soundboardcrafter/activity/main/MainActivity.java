@@ -41,7 +41,7 @@ import de.soundboardcrafter.dao.TutorialDao;
  * The activity with which the app is started, showing games, soundboards, and sounds.
  */
 public class MainActivity extends AppCompatActivity implements SoundEventListener {
-    private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
+    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
     private static final String KEY_SELECTED_PAGE = "selectedPage";
     private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -86,10 +86,10 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     @Override
     protected void onStart() {
         super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
             return;
         }
     }
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements SoundEventListene
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
+        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
                 finishAndRemoveTask();
