@@ -65,9 +65,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private static final String SHARED_PREFERENCES =
             SoundboardPlayActivity.class.getName() + "_Prefs";
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
-    private static final int REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1024;
+    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
     private ScreenSlidePagerAdapter pagerAdapter;
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 0;
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     public static final String EXTRA_GAME_ID = "GameId";
@@ -227,10 +226,10 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
             return;
         }
         pagerAdapter.clear(false);
@@ -403,7 +402,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE
-                || requestCode == REQUEST_PERMISSIONS_WRITE_EXTERNAL_STORAGE) {
+                || requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // User denied. Stop the app.
                 finishAndRemoveTask();

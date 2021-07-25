@@ -3,9 +3,12 @@
     package="de.soundboardcrafter">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- Necessary for MediaPlayer#setWakeMode() -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Necessary for MediaPlayerServer#startForeground() -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
