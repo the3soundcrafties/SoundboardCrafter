@@ -1,10 +1,12 @@
 package de.soundboardcrafter.activity.sound.edit.common;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -13,9 +15,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -30,10 +35,12 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 
-import static androidx.core.util.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Activity for editing a single sound (name, volume etc.).
@@ -44,6 +51,7 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUND_ID = "soundId";
     public static final String EXTRA_SOUND_ID = "soundId";
 
+    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
 
     private SoundEditView soundEditView;
 
@@ -178,10 +186,13 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
         }
 
         if (!service.isActivelyPlaying(sound.getSound())) {
-            try {
-                service.play(null, sound.getSound(), null);
-            } catch (IOException e) {
-                handleSoundFileNotFound();
+            if (sound.getSound().getAudioLocation() instanceof AssetFolderAudioLocation
+                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                try {
+                    service.play(null, sound.getSound(), null);
+                } catch (IOException e) {
+                    handleSoundFileNotFound();
+                }
             }
         }
     }
@@ -192,10 +203,12 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                         Snackbar.LENGTH_LONG)
                 .setAction(getString(R.string.update_all_soundboards_and_sounds),
                         view -> {
-                            new DeleteSoundTask(requireActivity(), sound.getSound().getId()).execute();
+                            new DeleteSoundTask(requireActivity(), sound.getSound().getId())
+                                    .execute();
                             sound = null;
 
-                            Intent intent = new Intent(getActivity(), SoundboardPlaySoundEditActivity.class);
+                            Intent intent = new Intent(getActivity(),
+                                    SoundboardPlaySoundEditActivity.class);
                             // EXTRA_SOUND_ID stays null!
                             requireActivity().setResult(
                                     // There is no cancel button - the result is always OK
@@ -346,10 +359,10 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
             return res;
         }
 
-
         @Override
         @UiThread
-        protected void onPostExecute(SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
+        protected void onPostExecute(
+                SoundWithSelectableSoundboards soundWithSelectableSoundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -362,8 +375,75 @@ public class SoundEditFragment extends Fragment implements ServiceConnection {
                 return;
             }
 
-            updateUI(soundWithSelectableSoundboards);
+            final IAudioLocation audioLocation =
+                    soundWithSelectableSoundboards.getSound().getAudioLocation();
+
+            if (audioLocation instanceof AssetFolderAudioLocation
+                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                updateUI(soundWithSelectableSoundboards);
+            } // Otherwise, the fragment will receive an event later.
         }
+    }
+
+    @UiThread
+    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
+        if (ContextCompat.checkSelfPermission(requireActivity(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestReadExternalPermission();
+
+            return false;
+        }
+        return true;
+    }
+
+    // This works, because the fragment ist not nested. And we *have* to do this here,
+    // because our activity won't get the correct requestCode.
+    // See https://stackoverflow.com/questions/36170324/receive-incorrect-resultcode-in-activitys
+    // -onrequestpermissionsresult-when-reque/36186666 .
+    @Override
+    @UiThread
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (getActivity() == null) {
+            return;
+        }
+
+        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                // if (shouldShowRequestPermissionRationale(Manifest.permission
+                // .READ_EXTERNAL_STORAGE)) {
+                showPermissionRationale();
+                //}
+                return;
+            }
+
+            // We don't need any other permissions, so start preparing the sound
+            Bundle arguments = getArguments();
+            if (arguments != null) {
+                final UUID soundId = UUID.fromString(arguments.getString(ARG_SOUND_ID));
+                new FindSoundTask(requireActivity(), soundId).execute();
+            }
+        }
+    }
+
+    private void showPermissionRationale() {
+        new AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.yourSoundsPermissionRationaleTitle)
+                .setMessage(R.string.yourSoundsPermissionRationaleMsg)
+                .setPositiveButton(android.R.string.ok,
+                        (dialog, which) -> requestReadExternalPermission())
+                .setNegativeButton(android.R.string.cancel,
+                        (dialog, which) -> requireActivity().finish())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void requestReadExternalPermission() {
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
     }
 
     /**

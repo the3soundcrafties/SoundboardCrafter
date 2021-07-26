@@ -100,5 +100,5 @@
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Noch einmal Tipps geben</string>
     <string name="yourSoundsPermissionRationaleTitle">Eigene Sounds</string>
-    <string name="yourSoundsPermissionRationaleMsg">Zugriff auf eigene Sounds erlauben? Dann im nächsten Fenster bestätigen – oder in den Einstellungen!</string>
+    <string name="yourSoundsPermissionRationaleMsg">Eigene Sounds verwenden? Erfordert die Berechtigung zum Zugrfiff auf Mediendateien.</string>
 </resources>

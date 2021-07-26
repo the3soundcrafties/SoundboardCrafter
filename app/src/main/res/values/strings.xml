@@ -97,6 +97,5 @@
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Restart Tutorial</string>
     <string name="yourSoundsPermissionRationaleTitle">Your Sounds</string>
-    <string name="yourSoundsPermissionRationaleMsg">Give permission to access your own sounds? -
-        Please confirm in the next window or in the app preferences!</string>
+    <string name="yourSoundsPermissionRationaleMsg">If you give permission to access your local media, you can add your own sounds to the soundsboards.</string>
 </resources>

@@ -395,7 +395,7 @@ public class AudioFileListFragment extends Fragment implements
             setSelection(newSelection);
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
             setAudioFolderEntries(ImmutableList.of());
-        } // Otherwise, our activity will receive an event later.
+        } // Otherwise, the fragment will receive an event later.
     }
 
     private void setSelection(IAudioFileSelection selection) {
@@ -492,7 +492,7 @@ public class AudioFileListFragment extends Fragment implements
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             setSelection(newFolder);
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
-        } // Otherwise, our activity will receive an event later.
+        } // Otherwise, the fragment will receive an event later.
     }
 
     private void onClickAudioFile(AudioFileRow audioFileItemRow,
@@ -672,7 +672,7 @@ public class AudioFileListFragment extends Fragment implements
         if (selection instanceof AssetFolderAudioLocation
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
-        } // Otherwise, our activity will receive an event later.
+        } // Otherwise, the fragment will receive an event later.
     }
 
     @UiThread
