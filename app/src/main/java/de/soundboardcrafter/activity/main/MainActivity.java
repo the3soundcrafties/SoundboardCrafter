@@ -1,7 +1,5 @@
 package de.soundboardcrafter.activity.main;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -30,7 +29,6 @@ import java.util.function.Supplier;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.about.AboutActivity;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
-import de.soundboardcrafter.activity.common.AbstractReadExternalStorageActivity;
 import de.soundboardcrafter.activity.game.list.GameListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
@@ -39,9 +37,8 @@ import de.soundboardcrafter.dao.TutorialDao;
 /**
  * The activity with which the app is started, showing games, soundboards, and sounds.
  */
-public class MainActivity extends AbstractReadExternalStorageActivity
+public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
     private static final String KEY_SELECTED_PAGE = "selectedPage";
     private ViewPager pager;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -86,7 +83,6 @@ public class MainActivity extends AbstractReadExternalStorageActivity
     @Override
     protected void onStart() {
         super.onStart();
-        isPermissionReadExternalStorageGrantedIfNoAskForIt();
     }
 
     @Override
@@ -234,30 +230,6 @@ public class MainActivity extends AbstractReadExternalStorageActivity
             return registeredFragments.stream()
                     .filter(Objects::nonNull).iterator();
         }
-
-    }
-
-    @Override
-    @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                if (shouldShowRequestPermissionRationale(
-                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    showPermissionRationale();
-                } else {
-                    // User denied. Stop the app.
-                    // TODO Handle gracefully
-                    finishAndRemoveTask();
-                    return;
-                }
-            }
-
-            // We don't need any other permissions, so start reading data.
-            somethingMightHaveChanged();
-        }
     }
 
     @Override
@@ -265,7 +237,6 @@ public class MainActivity extends AbstractReadExternalStorageActivity
     public void onResume() {
         super.onResume();
     }
-
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -277,6 +248,4 @@ public class MainActivity extends AbstractReadExternalStorageActivity
 
         outState.putString(KEY_SELECTED_PAGE, selectedPageName);
     }
-
-
 }

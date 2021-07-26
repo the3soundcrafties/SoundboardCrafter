@@ -12,6 +12,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 import androidx.annotation.WorkerThread;
 
 import com.google.common.base.Joiner;
@@ -52,6 +53,7 @@ public class AudioLoader {
      * Retrieves the audio files (and audio folders) from
      * the selected folder in the file system or assets.
      */
+    @SuppressLint("MissingPermission")
     @WorkerThread
     public Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>>
     loadAudioFolderEntriesWithoutSounds(Context context, IAudioFileSelection selection) {
@@ -77,6 +79,7 @@ public class AudioLoader {
     /**
      * Loads all audio files from the device.
      */
+    @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
     private ImmutableList<FullAudioModel> getAudiosFromDevice(Context context) {
         final ImmutableList.Builder<FullAudioModel> res = ImmutableList.builder();
 
@@ -109,6 +112,7 @@ public class AudioLoader {
      *
      * @return The audio files and the subFolders
      */
+    @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
     private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudiosFromDevice(
             final Context context, @Nonnull String folder) {
         checkNotNull(folder, "folder was null");

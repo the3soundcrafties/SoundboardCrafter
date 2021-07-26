@@ -25,6 +25,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -42,7 +45,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.AbstractReadExternalStorageActivity;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.dao.GameDao;
@@ -55,7 +57,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * The most important activity of the app - it shows all the soundboards so that the user
  * can play sounds.
  */
-public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
+public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
         SoundboardFragment.HostingActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
@@ -68,6 +70,8 @@ public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     public static final String EXTRA_GAME_ID = "GameId";
+
+    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
 
     private MediaPlayerService mediaPlayerService;
     private DeactivatableViewPager pager;
@@ -232,6 +236,20 @@ public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
         new FindSoundboardsTask(this, gameId).execute();
     }
 
+    private boolean isPermissionReadExternalStorageGrantedIfNoAskForIt() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestReadExternalPermission();
+            return false;
+        }
+        return true;
+    }
+
+    private void requestReadExternalPermission() {
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+    }
+
     @Override
     public void soundsDeleted() {
         pagerAdapter.clear(false);
@@ -282,6 +300,7 @@ public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
         dialog.show(getSupportFragmentManager(), DIALOG_RESET_ALL);
     }
 
+    @SuppressWarnings("UnnecessaryReturnStatement")
     @Override
     @UiThread
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -291,15 +310,32 @@ public class SoundboardPlayActivity extends AbstractReadExternalStorageActivity
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 if (shouldShowRequestPermissionRationale(
                         Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    showPermissionRationale();
+                    showPermissionRationale(requestCode);
                 } else {
-                    // User denied. Stop the app.
-                    // TODO Handle gracefully
-                    finishAndRemoveTask();
+                    // User denied. Stop the activity.
+                    // TODO Check on a sound-by-sound basis
+                    finish();
                     return;
                 }
             }
         }
+    }
+
+    private void showPermissionRationale(final int requestCode) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.yourSoundsPermissionRationaleTitle)
+                .setMessage(R.string.yourSoundsPermissionRationaleMsg)
+                .setPositiveButton(android.R.string.ok,
+                        (dialog, which) -> requestReadExternalPermission(requestCode))
+                .setNegativeButton(android.R.string.cancel,
+                        (dialog, which) -> finish())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void requestReadExternalPermission(int requestCode) {
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                requestCode);
     }
 
     class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {

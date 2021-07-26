@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
-import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
@@ -225,7 +224,7 @@ public class MediaPlayerService extends Service {
      * Adds a media player and starts playing.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
-     * @see #play(String, IAudioFileSelection, SoundboardMediaPlayer.OnPlayingStopped)
+     * @see #play(String, IAudioLocation, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped)
@@ -293,16 +292,6 @@ public class MediaPlayerService extends Service {
             throw e;
         }
     }
-
-    /*
-    For apps that target Android 5.0 (API level 21) and later, audio apps should use
-    AudioAttributes to describe the type of audio your app is playing. For example, apps that
-    play speech should specify CONTENT_TYPE_SPEECH.
-    Apps running Android 8.0 (API level 26) or greater should use the requestAudioFocus() method,
-     which takes an AudioFocusRequest parameter. The AudioFocusRequest contains information about
-      the audio context and capabilities of your app. The system uses this information to manage
-      the gain and loss of audio focus automatically.
-    */
 
     private void updateMediaSessionNotificationAndForegroundService() {
         if (mediaPlayers.activePlayersEmpty()) {

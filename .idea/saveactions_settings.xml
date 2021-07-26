@@ -12,7 +12,6 @@
         <option value="useBlocks" />
         <option value="unnecessaryThis" />
         <option value="explicitTypeCanBeDiamond" />
-        <option value="suppressAnnotation" />
         <option value="unnecessarySemicolon" />
         <option value="accessCanBeTightened" />
       </set>
