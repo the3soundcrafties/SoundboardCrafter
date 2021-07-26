@@ -14,6 +14,7 @@ import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Game;
 
 import static de.soundboardcrafter.activity.common.ActivityConstants.BASE_PACKAGE;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Abstract super class for activities for editing a single Game
@@ -33,7 +34,7 @@ public class GameEditActivity extends SingleFragmentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+        requireNonNull(getSupportActionBar()).hide();
     }
 
     @Override

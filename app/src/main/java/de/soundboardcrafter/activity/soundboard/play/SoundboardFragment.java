@@ -99,10 +99,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         // Called when the user selects a contextual menu item
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-                default:
-                    return false;
-            }
+            return false;
         }
 
         // Called when the user exits the action mode
@@ -520,6 +517,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     @Override
     @UiThread
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

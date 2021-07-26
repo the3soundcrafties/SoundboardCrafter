@@ -12,12 +12,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A sound that could be played from a soundboard.
+ * A sound which could be played from a soundboard.
  * <p></p>
- * A <code>Sound</code> can be a single short event or a long,
+ * A <code>Sound</code> can be a single short event, or a long,
  * ever-repeated song.
  * <p></p>
- * <code>Sound</code>s are basically links to some audio file on the device.
+ * <code>Sound</code>s are basically links to an audio file on the device.
  * <p></p>
  * <code>Sound</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
@@ -41,10 +41,12 @@ public class Sound extends AbstractEntity {
     /**
      * Display name
      */
+    @SuppressWarnings("NotNullFieldNotInitialized")
     @NonNull
     private String name;
 
     // CollationKeys may not be serializable
+    @SuppressWarnings("NotNullFieldNotInitialized")
     @NonNull
     private transient CollationKey collationKey;
 

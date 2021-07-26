@@ -50,7 +50,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
 
     private SoundWithSelectableSoundboards sound;
 
-    private SoundEditChangeListener soundEditChangeListener = new SoundEditChangeListener();
+    private final SoundEditChangeListener soundEditChangeListener = new SoundEditChangeListener();
 
     private MediaPlayerService mediaPlayerService;
 
@@ -207,7 +207,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
                                     // There is no cancel button - the result is always OK
                                     Activity.RESULT_OK,
                                     intent);
-                            getActivity().finish();
+                            requireActivity().finish();
                         });
         snackbar.show();
     }

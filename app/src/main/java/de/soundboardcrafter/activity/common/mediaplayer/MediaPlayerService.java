@@ -147,6 +147,7 @@ public class MediaPlayerService extends Service {
     }
 
 
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private void handleIntent(@Nullable Intent intent) {
         if (intent == null) {
             return;

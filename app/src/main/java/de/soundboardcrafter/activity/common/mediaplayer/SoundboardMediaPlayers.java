@@ -347,9 +347,8 @@ class SoundboardMediaPlayers {
      */
     @UiThread
     void stopPlaying(boolean fadeOut) {
-        for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
-             activePlayers.entrySet().iterator(); entryIt.hasNext(); ) {
-            Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry = entryIt.next();
+        for (Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry :
+                activePlayers.entrySet()) {
             MediaPlayerSearchId searchId = entry.getKey();
             SoundboardMediaPlayer player = entry.getValue();
 
@@ -388,7 +387,7 @@ class SoundboardMediaPlayers {
      */
     private void startFaderIfNotRunning() {
         if (playersFadingOut.isEmpty()) {
-            // Currently there is no Fader running - start one!
+            // Currently, there is no Fader running - start one!
             uiThreadHandler.postDelayed(fader, 50);
         }
     }
@@ -425,18 +424,6 @@ class SoundboardMediaPlayers {
     private void putActive(MediaPlayerSearchId searchId, SoundboardMediaPlayer mediaPlayer) {
         playersFadingOut.remove(searchId);
         activePlayers.put(searchId, mediaPlayer);
-    }
-
-    /**
-     * Puts this player into the map of players fading out - also removing it from the
-     * active players (if contained).
-     */
-    @UiThread
-    private void putFadingOut(@Nullable Soundboard soundboard, Sound sound,
-                              SoundboardMediaPlayer mediaPlayer) {
-        MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
-
-        putFadingOut(searchId, mediaPlayer);
     }
 
     /**
