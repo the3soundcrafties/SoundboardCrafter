@@ -1,12 +1,10 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,10 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableList;
@@ -45,6 +40,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -70,7 +66,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Shows Soundboard in a Grid
  */
-public class AudioFileListFragment extends Fragment implements
+public class AudioFileListFragment extends AbstractPermissionFragment implements
         ServiceConnection,
         AudioFileRow.Callback,
         SoundEventListener {
@@ -101,8 +97,6 @@ public class AudioFileListFragment extends Fragment implements
     private static final String STATE_FOLDER_TYPE_FILE = "file";
     private static final String STATE_FOLDER_TYPE_ASSET = "asset";
     private static final String STATE_FOLDER_PATH = "folderPath";
-
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
 
     /**
      * Request code used whenever this activity starts a sound edit
@@ -675,16 +669,15 @@ public class AudioFileListFragment extends Fragment implements
         } // Otherwise, the fragment will receive an event later.
     }
 
-    @UiThread
-    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
-        if (ContextCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestReadExternalPermission();
+    @Override
+    protected void onPermissionReadExternalStorageGranted() {
+        // We don't need any other permissions, so start reading data.
+        somethingMightHaveChanged();
+    }
 
-            return false;
-        }
-        return true;
+    @Override
+    protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
+        fallbackSelection();
     }
 
     private void fallbackSelection() {
@@ -693,51 +686,6 @@ public class AudioFileListFragment extends Fragment implements
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
             setAudioFolderEntries(ImmutableList.of());
         }
-    }
-
-    private void requestReadExternalPermission() {
-        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
-    }
-
-    // This works, because the fragment ist not nested. And we *have* to do this here,
-    // because our activity won't get the correct requestCode.
-    // See https://stackoverflow.com/questions/36170324/receive-incorrect-resultcode-in-activitys
-    // -onrequestpermissionsresult-when-reque/36186666 .
-    @Override
-    @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (getActivity() == null) {
-            return;
-        }
-
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // if (shouldShowRequestPermissionRationale(Manifest.permission
-                // .READ_EXTERNAL_STORAGE)) {
-                showPermissionRationale();
-                //}
-                return;
-            }
-
-            // We don't need any other permissions, so start reading data.
-            somethingMightHaveChanged();
-        }
-    }
-
-    private void showPermissionRationale() {
-        new AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.yourSoundsPermissionRationaleTitle)
-                .setMessage(R.string.yourSoundsPermissionRationaleMsg)
-                .setPositiveButton(android.R.string.ok,
-                        (dialog, which) -> requestReadExternalPermission())
-                .setNegativeButton(android.R.string.cancel,
-                        (dialog, which) -> fallbackSelection())
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
     }
 
     @Override

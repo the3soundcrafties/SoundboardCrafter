@@ -1,12 +1,10 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,11 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,6 +43,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
@@ -67,7 +63,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
 /**
  * Shows Soundboard in a Grid
  */
-public class SoundboardFragment extends Fragment implements ServiceConnection {
+public class SoundboardFragment extends AbstractPermissionFragment implements ServiceConnection {
     public interface HostingActivity {
         void soundsDeleted();
 
@@ -79,8 +75,6 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
     private static final String ARG_SOUNDBOARD = "Soundboard";
 
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
-
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
 
     // See https://developer.android.com/guide/topics/ui/menus.html and
     // https://medium.com/over-engineering/using-androids-actionmode-e903181f2ee3 .
@@ -292,57 +286,14 @@ public class SoundboardFragment extends Fragment implements ServiceConnection {
         }
     }
 
-    @UiThread
-    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
-        if (ContextCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestReadExternalPermission();
-
-            return false;
-        }
-        return true;
-    }
-
-    private void requestReadExternalPermission() {
-        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
-    }
-
-    // This works, because the fragment ist not nested. And we *have* to do this here,
-    // because our activity won't get the correct requestCode.
-    // See https://stackoverflow.com/questions/36170324/receive-incorrect-resultcode-in-activitys
-    // -onrequestpermissionsresult-when-reque/36186666 .
     @Override
-    @UiThread
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (getActivity() == null) {
-            return;
-        }
-
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // if (shouldShowRequestPermissionRationale(Manifest.permission
-                // .READ_EXTERNAL_STORAGE)) {
-                showPermissionRationale();
-                //}
-                return;
-            }
-        }
+    protected void onPermissionReadExternalStorageGranted() {
+        // User has to click once again.
     }
 
-    private void showPermissionRationale() {
-        new AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.yourSoundsPermissionRationaleTitle)
-                .setMessage(R.string.yourSoundsPermissionRationaleMsg)
-                .setPositiveButton(android.R.string.ok,
-                        (dialog, which) -> requestReadExternalPermission())
-                .setNegativeButton(android.R.string.cancel, null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+    @Override
+    protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
+        // Nothing happens
     }
 
     private void handleSoundFileNotFound(Sound sound) {
