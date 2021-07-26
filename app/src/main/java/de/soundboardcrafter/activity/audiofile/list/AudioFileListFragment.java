@@ -391,7 +391,7 @@ public class AudioFileListFragment extends Fragment implements
         }
 
         if (!readExternalPermissionNecessary
-                || isPermissionReadExternalStorageGrantedIfNoAskForIt()) {
+                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             setSelection(newSelection);
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
             setAudioFolderEntries(ImmutableList.of());
@@ -489,7 +489,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private void changeFolder(@NonNull IAudioLocation newFolder) {
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNoAskForIt()) {
+                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             setSelection(newFolder);
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
         } // Otherwise, our activity will receive an event later.
@@ -506,36 +506,41 @@ public class AudioFileListFragment extends Fragment implements
         stopPlaying();
 
         if (!positionWasPlaying) {
-            // FIXME check permissions before playing a sound from the device
-
-            adapter.setPositionPlaying(position);
-
             AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
-            audioFileItemRow.setImage(R.drawable.ic_stop);
-            try {
-                mediaPlayer = service.play(audioModelAndSound.getName(),
-                        audioModelAndSound.getAudioModel().getAudioLocation(),
-                        () -> {
-                            adapter.setPositionPlaying(null);
-                            mediaPlayer = null;
-                        });
-            } catch (IOException e) {
-                @Nullable UUID soundId = audioModelAndSound.getSoundId();
+            final IAudioLocation audioLocation =
+                    audioModelAndSound.getAudioModel().getAudioLocation();
 
-                adapter.setPositionPlaying(null);
-                mediaPlayer = null;
-                Snackbar snackbar = Snackbar
-                        .make(listView, getString(R.string.audiofile_not_found),
-                                Snackbar.LENGTH_LONG)
-                        .setAction(getString(R.string.update_all_soundboards_and_sounds),
-                                view -> {
-                                    if (soundId != null) {
-                                        new DeleteSoundTask(requireActivity(), soundId).execute();
-                                    } else if (soundEventListenerActivity != null) {
-                                        soundEventListenerActivity.somethingMightHaveChanged();
-                                    }
-                                });
-                snackbar.show();
+            if (audioLocation instanceof AssetFolderAudioLocation
+                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                adapter.setPositionPlaying(position);
+
+                audioFileItemRow.setImage(R.drawable.ic_stop);
+                try {
+                    mediaPlayer = service.play(audioModelAndSound.getName(),
+                            audioLocation,
+                            () -> {
+                                adapter.setPositionPlaying(null);
+                                mediaPlayer = null;
+                            });
+                } catch (IOException e) {
+                    @Nullable UUID soundId = audioModelAndSound.getSoundId();
+
+                    adapter.setPositionPlaying(null);
+                    mediaPlayer = null;
+                    Snackbar snackbar = Snackbar
+                            .make(listView, getString(R.string.audiofile_not_found),
+                                    Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.update_all_soundboards_and_sounds),
+                                    view -> {
+                                        if (soundId != null) {
+                                            new DeleteSoundTask(requireActivity(), soundId)
+                                                    .execute();
+                                        } else if (soundEventListenerActivity != null) {
+                                            soundEventListenerActivity.somethingMightHaveChanged();
+                                        }
+                                    });
+                    snackbar.show();
+                }
             }
         }
     }
@@ -548,7 +553,6 @@ public class AudioFileListFragment extends Fragment implements
         mediaPlayer = null;
     }
 
-    // TODO Inherit from some MediaPlayerFragment?! Use some MediaPlayerSupport??!
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             // TODO Necessary?! Also done in onResume()
@@ -666,13 +670,13 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     private void startFindingAudioFilesOrAskForPermission() {
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNoAskForIt()) {
+                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
         } // Otherwise, our activity will receive an event later.
     }
 
     @UiThread
-    private boolean isPermissionReadExternalStorageGrantedIfNoAskForIt() {
+    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
         if (ContextCompat.checkSelfPermission(requireActivity(),
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {

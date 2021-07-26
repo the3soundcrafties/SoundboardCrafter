@@ -57,10 +57,10 @@ abstract public class AbstractSoundEditActivity extends SingleFragmentActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        isPermissionReadExternalStorageGrantedIfNoAskForIt();
+        isPermissionReadExternalStorageGrantedIfNotAskForIt();
     }
 
-    private boolean isPermissionReadExternalStorageGrantedIfNoAskForIt() {
+    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestReadExternalPermission();

@@ -228,7 +228,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        if (!isPermissionReadExternalStorageGrantedIfNoAskForIt()) {
+        if (!isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             return;
         }
 
@@ -236,7 +236,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         new FindSoundboardsTask(this, gameId).execute();
     }
 
-    private boolean isPermissionReadExternalStorageGrantedIfNoAskForIt() {
+    private boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestReadExternalPermission();
