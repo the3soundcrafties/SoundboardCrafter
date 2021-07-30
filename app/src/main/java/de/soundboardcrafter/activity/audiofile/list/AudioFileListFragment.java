@@ -1,5 +1,13 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
+import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_USE_OWN_SOUNDS;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,6 +35,8 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableList;
 
@@ -59,9 +69,6 @@ import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioFolder;
 import de.soundboardcrafter.model.audio.AudioModelAndSound;
 import de.soundboardcrafter.model.audio.FullAudioModel;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Shows Soundboard in a Grid
@@ -186,26 +193,6 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
-
-        /*
-        Animator scaleUp = ObjectAnimator.ofPropertyValuesHolder((Object) null,
-                PropertyValuesHolder.ofFloat("translateY", 0, -300));
-        scaleUp.setDuration(3000);
-        scaleUp.setStartDelay(3000);
-        scaleUp.setInterpolator(new OvershootInterpolator());
-
-        Animator scaleDown = ObjectAnimator.ofPropertyValuesHolder((Object) null,
-                PropertyValuesHolder.ofFloat("translateY", -300, 0));
-        scaleDown.setDuration(3000);
-        scaleDown.setInterpolator(new OvershootInterpolator());
-
-
-        LayoutTransition itemLayoutTransition = new LayoutTransition();
-        itemLayoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp);
-        itemLayoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown);
-
-        rootView.setLayoutTransition(itemLayoutTransition);
-        */
 
         folderLayout = rootView.findViewById(R.id.folderLayout);
         iconFolder = rootView.findViewById(R.id.icon_folder);
@@ -335,6 +322,46 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
         byFolderMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_by_folder);
         updateByFolderMenuItem();
+
+        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+
+        if (tutorialDao.areAllChecked(SOUNDBOARD_PLAY_START_SOUND, SOUNDBOARD_PLAY_CONTEXT_MENU,
+                AUDIO_FILE_LIST_EDIT, SOUNDBOARD_LIST_CONTEXT_MENU)
+                && !tutorialDao.isChecked(SOUNDBOARD_LIST_USE_OWN_SOUNDS)) {
+            folderLayout.post(() -> {
+                @Nullable final Context context = folderLayout.getContext();
+                if (context instanceof Activity) {
+                    Activity activity = (Activity) context;
+                    @Nullable final View view =
+                            activity.findViewById(R.id.toolbar_menu_audiofiles_by_folder);
+                    if (view != null) {
+                        showTutorialHintForClick(tutorialDao, activity, view);
+                    }
+                }
+            }); // We don't care if return value where false - there is always next time.
+        }
+    }
+
+    private void showTutorialHintForClick(TutorialDao tutorialDao, Activity activity,
+                                          @NonNull View view) {
+        TapTargetView.showFor(activity,
+                TapTarget.forView(view, activity.getResources().getString(
+                        R.string.tutorial_audio_file_list_local_audio))
+                        .targetRadius(33),
+                new TapTargetView.Listener() {
+                    @Override
+                    public void onTargetClick(TapTargetView tapTargetView) {
+                        super.onTargetClick(tapTargetView); // dismiss tapTargetView
+
+                        tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
+                        view.performClick();
+                    }
+
+                    @Override
+                    public void onTargetLongClick(TapTargetView view) {
+                        // Don't dismiss view and don't handle like a single click
+                    }
+                });
     }
 
     @Override
@@ -373,13 +400,17 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         final boolean readExternalPermissionNecessary;
         final IAudioFileSelection newSelection;
 
+        TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+            tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = new FileSystemFolderAudioLocation("/");
         } else if (selection instanceof FileSystemFolderAudioLocation) {
             readExternalPermissionNecessary = false;
             newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
         } else {
+            tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         }
@@ -496,7 +527,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             return;
         }
 
-        @Nullable boolean positionWasPlaying = adapter.isPlaying(position);
+        boolean positionWasPlaying = adapter.isPlaying(position);
         stopPlaying();
 
         if (!positionWasPlaying) {
@@ -572,7 +603,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         Log.d(TAG, "Editing sound for audio file " +
                 audioModelAndSound.getAudioModel().getAudioLocation());
 
-        TutorialDao.getInstance(requireContext()).check(TutorialDao.Key.AUDIO_FILE_LIST_EDIT);
+        TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
 
         Intent intent = AudiofileListSoundEditActivity.newIntent(requireContext(), sound);
         startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);

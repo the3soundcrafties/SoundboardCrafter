@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_audiofile_list.xml" value="0.12" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_list_item.xml" value="0.1" />
       </map>
     </option>

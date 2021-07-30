@@ -69,11 +69,11 @@ abstract public class AbstractTutorialListAdapter extends BaseAdapter {
                 });
     }
 
-
     protected void showTutorialHintForClick(Activity activity, View view, int descriptionId) {
         TapTargetView.showFor(activity,
                 TapTarget.forView(view,
-                        activity.getResources().getString(descriptionId)),
+                        activity.getResources().getString(descriptionId))
+                        .targetRadius(33),
                 new TapTargetView.Listener() {
                     @Override
                     public void onTargetClick(TapTargetView tapTargetView) {

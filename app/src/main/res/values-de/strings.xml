@@ -71,6 +71,7 @@
     <string name="tutorial_soundboard_play_context_menu_description">Lang klicken zum Bearbeiten</string>
     <string name="tutorial_audio_file_list_edit">Hier klicken, um Sound einem Soundboard
         hinzuzufügen</string>
+    <string name="tutorial_audio_file_list_local_audio">Hier klicken, um eigene Sounds zu verwenden</string>
     <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
         Umbenennen oder Löschen</string>
     <string name="tutorial_game_list_context_menu_description">Lang klicken zum

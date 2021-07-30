@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -212,8 +213,7 @@ public class GameListFragment extends Fragment
     @UiThread
     private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {
         List<GameWithSoundboards> list = Lists.newArrayList(games);
-        list.sort((g1, g2) ->
-                g1.getGame().getCollationKey().compareTo(g2.getGame().getCollationKey()));
+        list.sort(Comparator.comparing(g -> g.getGame().getCollationKey()));
         adapter = new GameListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();

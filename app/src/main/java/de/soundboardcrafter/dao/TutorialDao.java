@@ -16,10 +16,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @UiThread
 public class TutorialDao {
     public enum Key {
+        // We must take care that only one of the hints is
+        // shown at a time.
         SOUNDBOARD_PLAY_START_SOUND,
-        AUDIO_FILE_LIST_EDIT,
         SOUNDBOARD_PLAY_CONTEXT_MENU,
+        AUDIO_FILE_LIST_EDIT,
         SOUNDBOARD_LIST_CONTEXT_MENU,
+        SOUNDBOARD_LIST_USE_OWN_SOUNDS,
         GAME_LIST_CONTEXT_MENU
     }
 
@@ -40,6 +43,16 @@ public class TutorialDao {
 
     private TutorialDao(Context context) {
         appContext = context.getApplicationContext();
+    }
+
+    public boolean areAllChecked(Key... keys) {
+        for (Key key : keys) {
+            if (!isChecked(key)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public boolean isChecked(Key key) {

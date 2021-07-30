@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.ContextMenu;
@@ -22,8 +24,6 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundboardWithSounds;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Adapter for a soundboard item.
@@ -209,7 +209,8 @@ public class SoundboardItemAdapter
             if (innerContext instanceof Activity) {
                 TapTargetView.showFor((Activity) innerContext,
                         TapTarget.forView(itemRow.getSoundItem(),
-                                innerContext.getResources().getString(descriptionId)),
+                                innerContext.getResources().getString(descriptionId))
+                                .targetRadius(66),
                         tapTargetViewListener);
             }
         }); // We don't care if return value where false - there is always next time.

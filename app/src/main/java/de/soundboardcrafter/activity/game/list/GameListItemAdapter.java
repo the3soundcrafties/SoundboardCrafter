@@ -1,5 +1,11 @@
 package de.soundboardcrafter.activity.game.list;
 
+import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
+import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_USE_OWN_SOUNDS;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
+
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -12,9 +18,6 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
-
-import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
 
 /**
  * Adapter for a GameItem.
@@ -54,7 +57,11 @@ class GameListItemAdapter extends AbstractTutorialListAdapter {
         itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
 
         showTutorialHintIfNecessary(position, (View) itemRow,
-                () -> tutorialDao.isChecked(SOUNDBOARD_PLAY_START_SOUND)
+                () -> tutorialDao.areAllChecked(
+                        SOUNDBOARD_PLAY_START_SOUND,
+                        AUDIO_FILE_LIST_EDIT,
+                        SOUNDBOARD_LIST_CONTEXT_MENU,
+                        SOUNDBOARD_LIST_USE_OWN_SOUNDS)
                         && !tutorialDao.isChecked(GAME_LIST_CONTEXT_MENU),
                 activity -> showTutorialHintForLongClick(activity, (View) itemRow,
                         itemRow.getTvGameName(),
