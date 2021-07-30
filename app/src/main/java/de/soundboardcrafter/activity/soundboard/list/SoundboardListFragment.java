@@ -115,6 +115,14 @@ public class SoundboardListFragment extends Fragment
         return rootView;
     }
 
+    private void buildAddButton(View rootView) {
+        Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
+        addNewSoundboard.setOnClickListener(e ->
+                startActivityForResult(
+                        SoundboardCreateActivity.newIntent(
+                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
+    }
+
     private void buildListView(@NonNull LayoutInflater inflater, View rootView) {
         listView = rootView.findViewById(R.id.list_view_soundboard);
         loadingFooterView =
@@ -136,14 +144,6 @@ public class SoundboardListFragment extends Fragment
 
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
-    }
-
-    private void buildAddButton(View rootView) {
-        Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
-        addNewSoundboard.setOnClickListener(e ->
-                startActivityForResult(
-                        SoundboardCreateActivity.newIntent(
-                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
     }
 
     @Override
