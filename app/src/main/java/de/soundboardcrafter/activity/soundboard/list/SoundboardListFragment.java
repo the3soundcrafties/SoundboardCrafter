@@ -57,10 +57,10 @@ import de.soundboardcrafter.model.audio.BasicAudioModel;
  */
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
-    private static final String SHARED_PREFERENCES =
-            SoundboardListFragment.class.getName() + "_Prefs";
+    // Will not be included in backup! See backup_descriptor.
+    private static final String FIRST_START_SHARED_PREFERENCES = "FirstStart_Prefs";
 
-    public enum PrefKey {
+    public enum FirstStartPrefKey {
         FIRST_START
     }
 
@@ -289,15 +289,15 @@ public class SoundboardListFragment extends Fragment
     }
 
     private static boolean shallGenerateSoundboards(Context context) {
-        return getPrefs(context).getBoolean(PrefKey.FIRST_START.name(), true)
+        return getFirstStartPrefs(context).getBoolean(FirstStartPrefKey.FIRST_START.name(), true)
                 // If the user already had some soundboards before uninstalling, they shall keep
                 // them. To not duplicate soundboards, we do not insert any soundboards after
                 // reinstall in this case.
                 && !SoundboardDao.getInstance(context).areAny();
     }
 
-    private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+    private static SharedPreferences getFirstStartPrefs(Context context) {
+        return context.getSharedPreferences(FIRST_START_SHARED_PREFERENCES, MODE_PRIVATE);
     }
 
     /**
@@ -421,8 +421,8 @@ public class SoundboardListFragment extends Fragment
         }
 
         private void setFirstStartDone(Context appContext) {
-            SharedPreferences.Editor editor = getPrefs(appContext).edit();
-            editor.putBoolean(PrefKey.FIRST_START.name(), false);
+            SharedPreferences.Editor editor = getFirstStartPrefs(appContext).edit();
+            editor.putBoolean(FirstStartPrefKey.FIRST_START.name(), false);
             editor.apply();
         }
 
