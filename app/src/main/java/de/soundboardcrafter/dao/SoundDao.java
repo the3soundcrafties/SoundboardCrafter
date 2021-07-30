@@ -224,7 +224,7 @@ public class SoundDao extends AbstractDao {
     }
 
 
-    void deleteAllSounds() {
+    public void deleteAllSounds() {
         getDatabase().delete(SoundTable.NAME, null, new String[]{});
     }
 }

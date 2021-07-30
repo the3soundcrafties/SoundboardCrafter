@@ -103,14 +103,7 @@ public class SoundboardListFragment extends Fragment
 
         buildListView(inflater, rootView);
 
-        if (isFirstStart(getActivity())) {
-            setLoadingProgress(0);
-            listView.addFooterView(loadingFooterView);
-        } else {
-            listView.removeFooterView(loadingFooterView);
-        }
-
-        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
+        somethingMightHaveChanged();
 
         return rootView;
     }
@@ -245,7 +238,8 @@ public class SoundboardListFragment extends Fragment
             return;
         }
 
-        if (isFirstStart(getActivity())) {
+        if (shallGenerateSoundboards(getActivity())) {
+            setLoadingProgress(0);
             listView.addFooterView(loadingFooterView);
         } else {
             listView.removeFooterView(loadingFooterView);
@@ -294,11 +288,11 @@ public class SoundboardListFragment extends Fragment
         }
     }
 
-    private static boolean isFirstStart(Context context) {
+    private static boolean shallGenerateSoundboards(Context context) {
         return getPrefs(context).getBoolean(PrefKey.FIRST_START.name(), true)
-                // Perhaps if the user cancelled the last start...
-                // Better be safe.
-                && !SoundDao.getInstance(context).areAny()
+                // If the user already had some soundboards before uninstalling, they shall keep
+                // them. To not duplicate soundboards, we do not insert any soundboards after
+                // reinstall in this case.
                 && !SoundboardDao.getInstance(context).areAny();
     }
 
@@ -357,7 +351,7 @@ public class SoundboardListFragment extends Fragment
                 return null;
             }
 
-            generateSoundboardsOnFirstStart(appContext);
+            generateSoundboardsOnFirstStartIfAppropriate(appContext);
 
             Log.d(TAG, "Loading soundboards...");
 
@@ -369,8 +363,8 @@ public class SoundboardListFragment extends Fragment
             return res;
         }
 
-        private void generateSoundboardsOnFirstStart(Context appContext) {
-            if (isFirstStart(appContext)) {
+        private void generateSoundboardsOnFirstStartIfAppropriate(Context appContext) {
+            if (shallGenerateSoundboards(appContext)) {
                 generateSoundboards(appContext);
             }
 
@@ -380,6 +374,12 @@ public class SoundboardListFragment extends Fragment
         private void generateSoundboards(Context appContext) {
             Log.d(TAG, "Generating soundboards from included audio files...");
             publishProgress(10);
+
+            // We must be sure not to insert the same sounds into the database again - so we
+            // remove all sounds before inserting the new soundboards.
+            SoundDao.getInstance(appContext).deleteAllSounds();
+
+            publishProgress(20);
 
             AudioLoader audioLoader = new AudioLoader();
             Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
@@ -391,7 +391,7 @@ public class SoundboardListFragment extends Fragment
             for (Map.Entry<String, List<BasicAudioModel>> entry :
                     audioModelsByTopFolder.entrySet()) {
                 generateSoundboard(appContext, entry.getKey(), entry.getValue());
-                publishProgress(10 + 80 * i / numSoundboards);
+                publishProgress(20 + 70 * i / numSoundboards);
 
                 i++;
             }
