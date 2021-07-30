@@ -1,11 +1,9 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,12 +16,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
@@ -83,6 +81,8 @@ public class SoundboardListFragment extends Fragment
     SoundEventListener soundEventListenerActivity;
 
     private ListView listView;
+    private View loadingFooterView;
+    private ProgressBar loadingProgressBar;
     private SoundboardListItemAdapter adapter;
 
     /**
@@ -98,7 +98,12 @@ public class SoundboardListFragment extends Fragment
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_soundboard_list,
                 container, false);
+
         listView = rootView.findViewById(R.id.list_view_soundboard);
+        loadingFooterView =
+                inflater.inflate(R.layout.fragment_soundboard_list_loading, listView, false);
+        loadingProgressBar = loadingFooterView.findViewById(R.id.footerProgressBar);
+
         Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
         addNewSoundboard.setOnClickListener(e ->
                 startActivityForResult(
@@ -108,6 +113,10 @@ public class SoundboardListFragment extends Fragment
         registerForContextMenu(listView);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
+            if (adapter.isEmpty()) {
+                return;
+            }
+
             SoundboardWithSounds soundboard = adapter.getItem(position);
 
             Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
@@ -116,10 +125,14 @@ public class SoundboardListFragment extends Fragment
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
 
-        if (ContextCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
-        } // otherwise we will receive an event later
+        if (isFirstStart(getActivity())) {
+            setLoadingProgress(0);
+            listView.addFooterView(loadingFooterView);
+        } else {
+            listView.removeFooterView(loadingFooterView);
+        }
+
+        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
 
         return rootView;
     }
@@ -223,6 +236,12 @@ public class SoundboardListFragment extends Fragment
             return;
         }
 
+        if (isFirstStart(getActivity())) {
+            listView.addFooterView(loadingFooterView);
+        } else {
+            listView.removeFooterView(loadingFooterView);
+        }
+
         new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
     }
 
@@ -243,8 +262,14 @@ public class SoundboardListFragment extends Fragment
         updateUI();
     }
 
+    private void setLoadingProgress(int percent) {
+        loadingProgressBar.setProgress(percent);
+    }
+
     @UiThread
     private void setSoundboards(ImmutableList<SoundboardWithSounds> soundboards) {
+        loadingProgressBar.setProgress(100);
+        listView.removeFooterView(loadingFooterView);
         List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
         list.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
         adapter.setSoundboards(list);
@@ -258,6 +283,18 @@ public class SoundboardListFragment extends Fragment
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
+    }
+
+    private static boolean isFirstStart(Context context) {
+        return getPrefs(context).getBoolean(PrefKey.FIRST_START.name(), true)
+                // Perhaps if the user cancelled the last start...
+                // Better be safe.
+                && !SoundDao.getInstance(context).areAny()
+                && !SoundboardDao.getInstance(context).areAny();
+    }
+
+    private static SharedPreferences getPrefs(Context context) {
+        return context.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
     }
 
     /**
@@ -293,7 +330,7 @@ public class SoundboardListFragment extends Fragment
      * A background task, used to retrieve soundboards from the database.
      */
     class FindSoundboardsTask
-            extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
+            extends AsyncTask<Void, Integer, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = SoundboardListFragment.FindSoundboardsTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -326,34 +363,32 @@ public class SoundboardListFragment extends Fragment
 
         private void generateSoundboardsOnFirstStart(Context appContext) {
             if (isFirstStart(appContext)) {
-
-
                 generateSoundboards(appContext);
             }
 
             setFirstStartDone(appContext);
         }
 
-        private boolean isFirstStart(Context appContext) {
-            return getPrefs(appContext).getBoolean(PrefKey.FIRST_START.name(), true)
-                    // Perhaps if the user cancelled the last start...
-                    // Better be safe.
-                    && !SoundDao.getInstance(appContext).areAny()
-                    && !SoundboardDao.getInstance(appContext).areAny();
-        }
-
         private void generateSoundboards(Context appContext) {
             Log.d(TAG, "Generating soundboards from included audio files...");
+            publishProgress(10);
 
             AudioLoader audioLoader = new AudioLoader();
             Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
                     audioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
 
+            int numSoundboards = audioModelsByTopFolder.size();
+            int i = 0;
+
             for (Map.Entry<String, List<BasicAudioModel>> entry :
                     audioModelsByTopFolder.entrySet()) {
                 generateSoundboard(appContext, entry.getKey(), entry.getValue());
+                publishProgress(10 + 80 * i / numSoundboards);
+
+                i++;
             }
 
+            publishProgress(90);
             Log.d(TAG, "Soundboards generated.");
         }
 
@@ -383,8 +418,18 @@ public class SoundboardListFragment extends Fragment
             editor.apply();
         }
 
-        private SharedPreferences getPrefs(Context appContext) {
-            return appContext.getSharedPreferences(SHARED_PREFERENCES, MODE_PRIVATE);
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            Context appContext = appContextRef.get();
+
+            if (appContext == null) {
+                // application context no longer available, I guess that progress
+                // will be of no use to anyone.
+                // (Anyway - there is no reason to cancel preparing the soundboards.)
+                return;
+            }
+
+            setLoadingProgress(values[0]);
         }
 
         @Override

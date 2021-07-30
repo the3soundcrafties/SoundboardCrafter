@@ -14,19 +14,18 @@
         app:layout_constraintBottom_toTopOf="@+id/list_view_soundboard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-
-        />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ListView
         android:id="@+id/list_view_soundboard"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="40dp"
         app:layout_constraintHeight_max="wrap"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/new_soundboard" />
+        app:layout_constraintTop_toBottomOf="@+id/new_soundboard"
+        android:footerDividersEnabled="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

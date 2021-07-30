@@ -48,6 +48,7 @@
     <string name="save">Save</string>
     <string name="new_soundboard">Add new soundboard</string>
     <string name="new_soundboard_name">NEW</string>
+    <string name="soundboard_list_preparing">Preparing soundboards…</string>
     <string name="new_game_name">NEW</string>
     <string name="sound_name">Sound name</string>
     <string name="sound_add">Add to soundboard</string>
