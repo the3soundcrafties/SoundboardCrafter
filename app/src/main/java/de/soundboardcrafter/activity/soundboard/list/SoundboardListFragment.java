@@ -332,7 +332,6 @@ public class SoundboardListFragment extends Fragment
             soundboardDao.remove(soundboardId);
             return null;
         }
-
     }
 
     /**
