@@ -101,5 +101,5 @@
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Noch einmal Tipps geben</string>
     <string name="yourSoundsPermissionRationaleTitle">Eigene Sounds</string>
-    <string name="yourSoundsPermissionRationaleMsg">Eigene Sounds verwenden? Erfordert die Berechtigung zum Zugriff auf Mediendateien.</string>
+    <string name="yourSoundsPermissionRationaleMsg">Eigene Sounds verwenden? Erfordert die Berechtigung zum Zugriff auf Mediendateien (Android -Einstellungen / Apps / Berechtigungen)</string>
 </resources>
