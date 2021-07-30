@@ -1,13 +1,13 @@
 package de.soundboardcrafter.dao;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.UiThread;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Used to read and write the state of the tutorial.
@@ -23,7 +23,10 @@ public class TutorialDao {
         GAME_LIST_CONTEXT_MENU
     }
 
-    private static final String SHARED_PREFERENCES = TutorialDao.class.getName() + "_Prefs";
+    // Will not be included in backup! See backup_descriptor.
+    // To test this, use "adb shell bmgr backupnow de.soundboardcrafter" to make a backup the app's
+    // data, then uninstall and reinstall the app.
+    private static final String SHARED_PREFERENCES = "Tutorial_Prefs";
 
     private static TutorialDao instance;
     private final Context appContext;
