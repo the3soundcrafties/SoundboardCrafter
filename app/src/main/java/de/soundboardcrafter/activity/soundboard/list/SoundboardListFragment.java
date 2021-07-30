@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -50,8 +52,6 @@ import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 import de.soundboardcrafter.model.audio.BasicAudioModel;
 
-import static android.content.Context.MODE_PRIVATE;
-
 /**
  * Shows Soundboards in a list
  */
@@ -99,16 +99,28 @@ public class SoundboardListFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_soundboard_list,
                 container, false);
 
+        buildAddButton(rootView);
+
+        buildListView(inflater, rootView);
+
+        if (isFirstStart(getActivity())) {
+            setLoadingProgress(0);
+            listView.addFooterView(loadingFooterView);
+        } else {
+            listView.removeFooterView(loadingFooterView);
+        }
+
+        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
+
+        return rootView;
+    }
+
+    private void buildListView(@NonNull LayoutInflater inflater, View rootView) {
         listView = rootView.findViewById(R.id.list_view_soundboard);
         loadingFooterView =
                 inflater.inflate(R.layout.fragment_soundboard_list_loading, listView, false);
         loadingProgressBar = loadingFooterView.findViewById(R.id.footerProgressBar);
 
-        Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
-        addNewSoundboard.setOnClickListener(e ->
-                startActivityForResult(
-                        SoundboardCreateActivity.newIntent(
-                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
         initSoundboardItemAdapter();
         registerForContextMenu(listView);
 
@@ -124,17 +136,14 @@ public class SoundboardListFragment extends Fragment
 
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
+    }
 
-        if (isFirstStart(getActivity())) {
-            setLoadingProgress(0);
-            listView.addFooterView(loadingFooterView);
-        } else {
-            listView.removeFooterView(loadingFooterView);
-        }
-
-        new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
-
-        return rootView;
+    private void buildAddButton(View rootView) {
+        Button addNewSoundboard = rootView.findViewById(R.id.new_soundboard);
+        addNewSoundboard.setOnClickListener(e ->
+                startActivityForResult(
+                        SoundboardCreateActivity.newIntent(
+                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
     }
 
     @Override
