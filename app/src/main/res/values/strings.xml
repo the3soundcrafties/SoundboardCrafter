@@ -98,5 +98,7 @@
         ]]></string>
     <string name="toolbar_menu_item_restart_tutorial">Restart Tutorial</string>
     <string name="yourSoundsPermissionRationaleTitle">Your Sounds</string>
-    <string name="yourSoundsPermissionRationaleMsg">If you give permission to access your local media, you can use your own sounds in the soundboards. (Android Preferences / Apps / Permissions)</string>
+    <string name="yourSoundsPermissionRationaleMsg">You can use your own sounds in the
+        soundboards, if you give permission to access your local media. (Permissions in
+        the Settings screen)</string>
 </resources>

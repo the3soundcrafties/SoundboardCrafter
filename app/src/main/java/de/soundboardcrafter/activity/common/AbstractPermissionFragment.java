@@ -1,7 +1,9 @@
 package de.soundboardcrafter.activity.common;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
@@ -48,10 +50,9 @@ public abstract class AbstractPermissionFragment extends Fragment {
 
         if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // if (shouldShowRequestPermissionRationale(Manifest.permission
-                // .READ_EXTERNAL_STORAGE)) {
+                PermissionUtil.setShouldShowStatus(requireActivity(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE);
                 showPermissionRationale();
-                //}
                 return;
             }
 
@@ -66,7 +67,20 @@ public abstract class AbstractPermissionFragment extends Fragment {
                 .setTitle(R.string.yourSoundsPermissionRationaleTitle)
                 .setMessage(R.string.yourSoundsPermissionRationaleMsg)
                 .setPositiveButton(android.R.string.ok,
-                        (dialog, which) -> requestReadExternalPermission())
+                        (dialog, which) -> {
+                            if (PermissionUtil
+                                    .androidDoesNotShowPermissionPopupsAnymore(requireActivity(),
+                                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                                Intent intent = new Intent();
+                                intent.setAction(
+                                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", "de.soundboardcrafter", null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                            } else {
+                                requestReadExternalPermission();
+                            }
+                        })
                 .setNegativeButton(android.R.string.cancel,
                         (dialog, which) -> onPermissionReadExternalStorageNotGrantedUserGivesUp())
                 .setIcon(android.R.drawable.ic_dialog_alert)
