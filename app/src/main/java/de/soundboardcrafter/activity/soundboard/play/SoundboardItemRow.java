@@ -22,7 +22,6 @@ import de.soundboardcrafter.model.Soundboard;
 class SoundboardItemRow extends RelativeLayout {
     @NonNull
     private final TextView soundItem;
-    private Sound sound;
 
     SoundboardItemRow(Context context) {
         super(context);
@@ -84,8 +83,7 @@ class SoundboardItemRow extends RelativeLayout {
             return;
         }
 
-        this.sound = sound;
-        soundItem.setText(this.sound.getName());
+        soundItem.setText(sound.getName());
 
         setImage(mediaPlayerServiceCallback.isActivelyPlaying(soundboard, sound) ?
                 R.drawable.ic_stop : R.drawable.ic_play);
@@ -94,10 +92,5 @@ class SoundboardItemRow extends RelativeLayout {
     @UiThread
     void setImage(int p) {
         soundItem.setCompoundDrawablesWithIntrinsicBounds(p, 0, 0, 0);
-    }
-
-    @NonNull
-    TextView getSoundItem() {
-        return soundItem;
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -28,6 +29,8 @@ import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
@@ -75,6 +78,11 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private static final String ARG_SOUNDBOARD = "Soundboard";
 
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
+
+    private static final int TAP_TARGET_RADIUS_DP = 62;
+
+    private static final int FIRST_ITEM_X_DP = 25;
+    private static final int FIRST_ITEM_Y_DP = 25;
 
     // See https://developer.android.com/guide/topics/ui/menus.html and
     // https://medium.com/over-engineering/using-androids-actionmode-e903181f2ee3 .
@@ -130,6 +138,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     private ActionMode actionMode;
 
+    //  private boolean tutorialHintsAllowed;
+
     @Nullable
     private HostingActivity hostingActivity;
 
@@ -153,10 +163,91 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         updateUI();
 
         Log.d(TAG, "MediaPlayerService is connected");
+    }
 
-        if (soundboardItemAdapter != null && getUserVisibleHint()) {
-            soundboardItemAdapter.markAsRightPlaceToShowTutorialHints();
+    @UiThread
+    private void showTutorialHintAsNecessary() {
+        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+        if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
+            showTutorialHint(
+                    R.string.tutorial_soundboard_play_start_sound_description,
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            super.onTargetClick(view); // dismiss view
+
+                            @Nullable View itemView = findFirstItemView();
+                            if (itemView != null) {
+                                itemView.performClick();
+                            }
+                        }
+
+                        @Override
+                        public void onTargetLongClick(TapTargetView view) {
+                            // Don't dismiss view and don't handle like a single click
+                        }
+                    });
+        } else if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
+            showTutorialHint(
+                    R.string.tutorial_soundboard_play_context_menu_description,
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            // Don't dismiss view
+                        }
+
+                        @Override
+                        public void onTargetLongClick(TapTargetView view) {
+                            super.onTargetClick(view); // dismiss view
+
+                            @Nullable View itemView = findFirstItemView();
+                            if (itemView != null) {
+                                // Simulate a long in the middle of the item
+                                itemView.performLongClick(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+                            }
+                        }
+                    });
         }
+    }
+
+    private View findFirstItemView() {
+        return recyclerView.findChildViewUnder(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+    }
+
+    @UiThread
+    private void showTutorialHint(
+            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+        @Nullable Activity activity = getActivity();
+
+        if (activity != null) {
+            TapTargetView.showFor(activity,
+                    TapTarget.forBounds(
+                            getTapTargetBounds(),
+                            activity.getResources().getString(descriptionId))
+                            .transparentTarget(true)
+                            .targetRadius(TAP_TARGET_RADIUS_DP),
+                    tapTargetViewListener);
+        }
+    }
+
+    @NonNull
+    private Rect getTapTargetBounds() {
+        final int[] location = getTapTargetLocation();
+
+        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
+
+        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
+                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
+    }
+
+    @NonNull
+    private int[] getTapTargetLocation() {
+        final int[] location = new int[2];
+        recyclerView.getLocationOnScreen(location);
+
+        location[0] += dp(70);
+        location[1] += dp(60);
+        return location;
     }
 
     @Override
@@ -203,6 +294,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     @UiThread
     public void onPause() {
         super.onPause();
+
         requireActivity().unbindService(this);
     }
 
@@ -387,6 +479,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private void updateUI() {
         if (soundboardItemAdapter != null) {
             soundboardItemAdapter.notifyDataSetChanged();
+
+            // if (tutorialHintsAllowed) {
+            // soundboardItemAdapter.setTutorialHintsAllowed(true);
+            // }
         }
     }
 
@@ -395,7 +491,13 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     // Called especially when the SoundboardPlaySoundEditActivity returns.
     public void onResume() {
         super.onResume();
+
         updateUI();
+
+        if (soundboardItemAdapter.getItemCount() > 0) {
+            showTutorialHintAsNecessary();
+        }
+
         bindService();
     }
 
@@ -434,7 +536,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         SoundboardSwipeAndDragCallback swipeAndDragCallback =
                 new SoundboardSwipeAndDragCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
-        soundboardItemAdapter.setTouchHelper(itemTouchHelper);
 
         recyclerView.setAdapter(soundboardItemAdapter);
         itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -559,6 +660,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     @Override
     @UiThread
     public void onDestroy() {
+        // tutorialHintsAllowed = false;
+
         // TODO: 17.03.2019 destroy service save state
 
         super.onDestroy();
@@ -571,6 +674,16 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
         return mediaPlayerService;
     }
+
+    /*
+    public void setTutorialHintsAllowed(boolean tutorialHintsAllowed) {
+        this.tutorialHintsAllowed = tutorialHintsAllowed;
+
+        if (soundboardItemAdapter != null && !tutorialHintsAllowed) {
+            soundboardItemAdapter.setTutorialHintsAllowed(false);
+        }
+    }
+     */
 
     // See https://therubberduckdev.wordpress
 // .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
