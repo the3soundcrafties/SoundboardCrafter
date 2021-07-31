@@ -10,6 +10,9 @@ import androidx.viewpager.widget.ViewPager;
  * A {@link ViewPager} in which the paging can be disabled.
  */
 public class DeactivatableViewPager extends ViewPager {
+    // TODO Replace with solution without subclassing (ViewPager2 will be final.)
+    // TODO Replace with ViewPager2
+
     private boolean pagingEnabled = true;
 
     public DeactivatableViewPager(Context context) {
