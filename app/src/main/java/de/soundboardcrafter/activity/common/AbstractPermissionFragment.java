@@ -34,7 +34,7 @@ public abstract class AbstractPermissionFragment extends Fragment {
                 REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
     }
 
-    // This works, because the fragment ist not nested. And we *have* to do this here,
+    // This works, because the fragment ist not nested. We *have* to do this here,
     // because our activity won't get the correct requestCode.
     // See https://stackoverflow.com/questions/36170324/receive-incorrect-resultcode-in-activitys
     // -onrequestpermissionsresult-when-reque/36186666 .
