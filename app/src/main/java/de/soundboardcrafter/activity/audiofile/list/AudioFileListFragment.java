@@ -3,22 +3,21 @@ package de.soundboardcrafter.activity.audiofile.list;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_USE_OWN_SOUNDS;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
+import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -98,6 +97,8 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                     .thenComparing(AudioFolder::getNumAudioFiles);
 
     private static final String TAG = AudioFileListFragment.class.getName();
+
+    private static final int TAP_TARGET_RADIUS_DP = 33;
 
     private static final String STATE_SORT_ORDER = "sortOrder";
     private static final String STATE_FOLDER_TYPE = "folderType";
@@ -322,28 +323,74 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
         byFolderMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_by_folder);
         updateByFolderMenuItem();
+    }
 
-        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+    private void showTutorialHintForEdit() {
+        showTutorialHint(
+                R.string.tutorial_audio_file_list_edit,
+                new TapTargetView.Listener() {
+                    @Override
+                    public void onTargetClick(TapTargetView view) {
+                        super.onTargetClick(view); // dismiss view
 
-        if (tutorialDao.areAllChecked(SOUNDBOARD_PLAY_START_SOUND, SOUNDBOARD_PLAY_CONTEXT_MENU,
-                AUDIO_FILE_LIST_EDIT, SOUNDBOARD_LIST_CONTEXT_MENU)
-                && !tutorialDao.isChecked(SOUNDBOARD_LIST_USE_OWN_SOUNDS)) {
-            folderLayout.post(() -> {
-                @Nullable final Context context = folderLayout.getContext();
-                if (context instanceof Activity) {
-                    Activity activity = (Activity) context;
-                    @Nullable final View view =
-                            activity.findViewById(R.id.toolbar_menu_audiofiles_by_folder);
-                    if (view != null) {
-                        showTutorialHintForClick(tutorialDao, activity, view);
+                        @Nullable View itemView =
+                                listView.getChildAt(listView.getFirstVisiblePosition());
+                        if (itemView != null) {
+                            TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
+                            itemView.performClick();
+                        }
                     }
-                }
-            }); // We don't care if return value where false - there is always next time.
+
+                    @Override
+                    public void onTargetLongClick(TapTargetView view) {
+                        // Don't dismiss view and don't handle like a single click
+                    }
+                });
+    }
+
+    @UiThread
+    private void showTutorialHint(
+            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+        @Nullable Activity activity = getActivity();
+
+        if (activity != null) {
+            TapTargetView.showFor(activity,
+                    TapTarget.forBounds(
+                            getTapTargetBounds(),
+                            activity.getResources().getString(descriptionId))
+                            .transparentTarget(true)
+                            .targetRadius(TAP_TARGET_RADIUS_DP),
+                    tapTargetViewListener);
         }
     }
 
-    private void showTutorialHintForClick(TutorialDao tutorialDao, Activity activity,
-                                          @NonNull View view) {
+    @NonNull
+    private Rect getTapTargetBounds() {
+        final int[] location = getTapTargetLocation();
+
+        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
+
+        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
+                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
+    }
+
+    @NonNull
+    private int[] getTapTargetLocation() {
+        final int[] location = new int[2];
+        listView.getLocationOnScreen(location);
+
+        location[0] = location[0] + listView.getWidth() - dp(20);
+        location[1] += dp(30);
+        return location;
+    }
+
+    private int dp(final int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                requireContext().getResources().getDisplayMetrics());
+    }
+
+    private void showTutorialHintForOwnSounds(TutorialDao tutorialDao, Activity activity,
+                                              @NonNull View view) {
         TapTargetView.showFor(activity,
                 TapTarget.forView(view, activity.getResources().getString(
                         R.string.tutorial_audio_file_list_local_audio))
@@ -353,7 +400,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                     public void onTargetClick(TapTargetView tapTargetView) {
                         super.onTargetClick(tapTargetView); // dismiss tapTargetView
 
-                        tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
+                        tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
                         view.performClick();
                     }
 
@@ -403,14 +450,14 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
 
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
+            tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = new FileSystemFolderAudioLocation("/");
         } else if (selection instanceof FileSystemFolderAudioLocation) {
             readExternalPermissionNecessary = false;
             newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
         } else {
-            tutorialDao.check(SOUNDBOARD_LIST_USE_OWN_SOUNDS);
+            tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         }
@@ -668,8 +715,12 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         stopPlaying();
         adapter.setAudioFolderEntries(audioFolderEntries);
 
-        if (getUserVisibleHint()) {
-            adapter.markAsRightPlaceToShowTutorialHints();
+        TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+        if (tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)
+                && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
+                && !adapter.isEmpty()
+                && (adapter.getItem(0) instanceof AudioModelAndSound)) {
+            showTutorialHintForEdit();
         }
     }
 
@@ -689,8 +740,29 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // updateUI();
+
+        showTutorialHintAsNecessary();
+
         bindService();
     }
+
+    private void showTutorialHintAsNecessary() {
+        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+        if (!tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)) {
+            folderLayout.post(() -> {
+                @Nullable final Activity activity = getActivity();
+                if (activity != null) {
+                    @Nullable final View view =
+                            activity.findViewById(R.id.toolbar_menu_audiofiles_by_folder);
+                    if (view != null) {
+                        showTutorialHintForOwnSounds(TutorialDao.getInstance(requireContext()),
+                                activity, view);
+                    }
+                }
+            }); // We don't care if return value were false - there is always next time.
+        }
+    }
+
 
     @UiThread
     private void startFindingAudioFilesOrAskForPermission() {
