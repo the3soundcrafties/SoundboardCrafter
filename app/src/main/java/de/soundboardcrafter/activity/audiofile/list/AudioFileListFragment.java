@@ -763,7 +763,6 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         }
     }
 
-
     @UiThread
     private void startFindingAudioFilesOrAskForPermission() {
         if (selection instanceof AssetFolderAudioLocation

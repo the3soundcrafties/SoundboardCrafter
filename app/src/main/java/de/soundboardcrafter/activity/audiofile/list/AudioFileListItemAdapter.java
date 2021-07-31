@@ -1,11 +1,8 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
-import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
-
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -15,8 +12,6 @@ import java.util.Collection;
 import java.util.List;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
-import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioFolder;
 import de.soundboardcrafter.model.audio.AudioModelAndSound;
@@ -24,7 +19,7 @@ import de.soundboardcrafter.model.audio.AudioModelAndSound;
 /**
  * Adapter for the list of audio files (and audio folders).
  */
-class AudioFileListItemAdapter extends AbstractTutorialListAdapter {
+class AudioFileListItemAdapter extends BaseAdapter {
     private final AudioFileRow.Callback callback;
     private final List<AbstractAudioFolderEntry> audioFolderEntries;
 
@@ -70,25 +65,11 @@ class AudioFileListItemAdapter extends AbstractTutorialListAdapter {
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
         AbstractAudioFolderEntry entry = audioFolderEntries.get(position);
         if (entry instanceof AudioModelAndSound) {
-            final AudioFileRow audioFileRow =
-                    getAudioFileRow((AudioModelAndSound) entry, isPlaying(position), convertView,
-                            parent);
-
-            TutorialDao tutorialDao = TutorialDao.getInstance(audioFileRow.getContext());
-
-            showTutorialHintIfNecessary(position, audioFileRow,
-                    () -> tutorialDao.areAllChecked(SOUNDBOARD_PLAY_START_SOUND,
-                            SOUNDBOARD_PLAY_CONTEXT_MENU)
-                            && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT),
-                    activity -> showTutorialHintForClick(activity,
-                            audioFileRow.getIconLinkSoundToSoundboards(),
-                            R.string.tutorial_audio_file_list_edit));
-
-            return audioFileRow;
+            return getAudioFileRow((AudioModelAndSound) entry, isPlaying(position), convertView,
+                    parent);
         }
 
-        return getAudioSubfolderRow((AudioFolder) entry,
-                convertView, parent);
+        return getAudioSubfolderRow((AudioFolder) entry, convertView, parent);
     }
 
     boolean isPlaying(int position) {

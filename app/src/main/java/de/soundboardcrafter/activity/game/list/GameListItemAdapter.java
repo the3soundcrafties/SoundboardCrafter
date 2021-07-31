@@ -1,28 +1,21 @@
 package de.soundboardcrafter.activity.game.list;
 
-import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
-import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
-import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
-
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import java.util.List;
 
-import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
  * Adapter for a GameItem.
  */
-class GameListItemAdapter extends AbstractTutorialListAdapter {
+class GameListItemAdapter extends BaseAdapter {
     private final List<GameWithSoundboards> gamesWithSoundboards;
 
     GameListItemAdapter(List<GameWithSoundboards> gamesWithSoundboards) {
@@ -55,17 +48,6 @@ class GameListItemAdapter extends AbstractTutorialListAdapter {
         TutorialDao tutorialDao = TutorialDao.getInstance(itemRow.getContext());
 
         itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
-
-        showTutorialHintIfNecessary(position, (View) itemRow,
-                () -> tutorialDao.areAllChecked(
-                        SOUNDBOARD_PLAY_START_SOUND,
-                        AUDIO_FILE_LIST_EDIT,
-                        SOUNDBOARD_LIST_CONTEXT_MENU,
-                        AUDIO_FILE_LIST_USE_OWN_SOUNDS)
-                        && !tutorialDao.isChecked(GAME_LIST_CONTEXT_MENU),
-                activity -> showTutorialHintForLongClick(activity, (View) itemRow,
-                        itemRow.getTvGameName(),
-                        R.string.tutorial_game_list_context_menu_description));
 
         return convertView;
     }
