@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +46,8 @@ import de.soundboardcrafter.model.GameWithSoundboards;
 public class GameListFragment extends Fragment
         implements SoundEventListener {
     private static final String TAG = GameListFragment.class.getName();
+
+    private static final int UNIQUE_TAB_ID = 1;
 
     /**
      * Request code used whenever the soundboard playing view
@@ -124,8 +125,15 @@ public class GameListFragment extends Fragment
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = requireActivity().getMenuInflater();
-        inflater.inflate(R.menu.fragment_game_list_context, menu);
+
+        menu.add(UNIQUE_TAB_ID,
+                1,
+                0,
+                R.string.context_menu_edit_game);
+        menu.add(UNIQUE_TAB_ID,
+                2,
+                1,
+                R.string.context_menu_remove_game);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
@@ -142,7 +150,7 @@ public class GameListFragment extends Fragment
     @Override
     @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
-        if (!getUserVisibleHint()) {
+        if (item.getGroupId() != UNIQUE_TAB_ID) {
             // The wrong fragment got the event.
             // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
             // -receives-oncontextitemselected-call
@@ -153,12 +161,12 @@ public class GameListFragment extends Fragment
         GameListItemRow itemRow = (GameListItemRow) menuInfo.targetView;
         GameWithSoundboards gameWithSoundboards = itemRow.getGameWithSoundboards();
         final int id = item.getItemId();
-        if (id == R.id.context_menu_edit_game) {
+        if (id == 1) {
             Intent intent = GameEditActivity
                     .newIntent(requireActivity(), gameWithSoundboards.getGame());
             startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
             return true;
-        } else if (id == R.id.context_menu_remove_game) {
+        } else if (id == 2) {
             new RemoveGameTask(requireActivity(), gameWithSoundboards).execute();
             adapter.remove(gameWithSoundboards);
             return true;

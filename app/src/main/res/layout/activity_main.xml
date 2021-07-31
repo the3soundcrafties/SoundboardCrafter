@@ -7,20 +7,18 @@
 
     <include layout="@layout/app_bar" />
 
-    <androidx.viewpager.widget.ViewPager
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutMain"
+        style="@style/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:minHeight="?actionBarSize"
+        app:tabGravity="fill"
+        app:tabMode="fixed" />
+
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerMain"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayoutMain"
-            style="@style/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:minHeight="?actionBarSize"
-            app:tabGravity="fill"
-            app:tabMode="fixed" />
-
-    </androidx.viewpager.widget.ViewPager>
+        android:layout_height="match_parent" />
 </LinearLayout>

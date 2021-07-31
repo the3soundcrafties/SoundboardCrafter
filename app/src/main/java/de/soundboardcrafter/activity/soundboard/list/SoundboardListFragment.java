@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,6 +64,8 @@ public class SoundboardListFragment extends Fragment
     }
 
     private static final String TAG = SoundboardListFragment.class.getName();
+
+    private static final int UNIQUE_TAB_ID = 2;
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
 
@@ -159,8 +160,15 @@ public class SoundboardListFragment extends Fragment
     public void onCreateContextMenu(@Nonnull ContextMenu menu, @Nonnull View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = requireActivity().getMenuInflater();
-        inflater.inflate(R.menu.fragment_soundboard_list_context, menu);
+
+        menu.add(UNIQUE_TAB_ID,
+                1,
+                0,
+                R.string.context_menu_edit_soundboard);
+        menu.add(UNIQUE_TAB_ID,
+                2,
+                1,
+                R.string.context_menu_remove_soundboard);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
@@ -177,7 +185,7 @@ public class SoundboardListFragment extends Fragment
     @Override
     @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
-        if (!getUserVisibleHint()) {
+        if (item.getGroupId() != UNIQUE_TAB_ID) {
             // The wrong fragment got the event.
             // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
             // -receives-oncontextitemselected-call
@@ -188,12 +196,12 @@ public class SoundboardListFragment extends Fragment
         SoundboardListItemRow itemRow = (SoundboardListItemRow) menuInfo.targetView;
         SoundboardWithSounds soundboardWithSounds = itemRow.getSoundboardWithSounds();
         final int id = item.getItemId();
-        if (id == R.id.context_menu_edit_soundboard) {
+        if (id == 1) {
             Intent intent = SoundboardEditActivity
                     .newIntent(getActivity(), soundboardWithSounds.getSoundboard());
             startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
             return true;
-        } else if (id == R.id.context_menu_remove_soundboard) {
+        } else if (id == 2) {
             new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
             adapter.remove(soundboardWithSounds);
             fireSomethingMightHaveChanged();

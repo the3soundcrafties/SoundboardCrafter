@@ -4,25 +4,21 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -39,9 +35,13 @@ import de.soundboardcrafter.dao.TutorialDao;
  */
 public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
+    private static final List<Page> pages =
+            Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
+
     private static final String KEY_SELECTED_PAGE = "selectedPage";
-    private ViewPager pager;
+    private ViewPager2 pager;
     private ScreenSlidePagerAdapter pagerAdapter;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private Page selectedPage;
 
     @Override
@@ -50,24 +50,34 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         pager = findViewById(R.id.viewPagerMain);
-        pager.clearOnPageChangeListeners();
-        TabLayout tabLayout = findViewById(R.id.tabLayoutMain);
-        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        pager.setAdapter(pagerAdapter);
-        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        pagerAdapter = new ScreenSlidePagerAdapter(this);
+
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                pagerAdapter.getAudioFileListFragment()
-                        .ifPresent(AudioFileListFragment::stopPlaying);
+                for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+                    if (fragment instanceof AudioFileListFragment) {
+                        ((AudioFileListFragment) fragment).stopPlaying();
+                    }
+                }
 
                 @Nullable Page tmp = pagerAdapter.getPage(position);
                 if (tmp != null) {
                     selectedPage = tmp;
                 }
-            }
-        });
 
-        tabLayout.setupWithViewPager(pager);
+                super.onPageSelected(position);
+            }
+        };
+        pager.registerOnPageChangeCallback(pageChangeCallback);
+
+        pager.setAdapter(pagerAdapter);
+
+        TabLayout tabLayout = findViewById(R.id.tabLayoutMain);
+        new TabLayoutMediator(tabLayout, pager,
+                (tab, position) -> tab.setText(getString(pages.get(position).title))
+        ).attach();
+
         if (savedInstanceState != null) {
             @Nullable String selectedPage = savedInstanceState.getString(KEY_SELECTED_PAGE);
             this.selectedPage = selectedPage != null ? Page.valueOf(selectedPage) : null;
@@ -146,7 +156,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void soundChanged(UUID soundId) {
-        for (Fragment fragment : pagerAdapter) {
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment instanceof SoundEventListener) {
                 ((SoundEventListener) fragment).soundChanged(soundId);
             }
@@ -154,81 +164,46 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onDestroy() {
+        if (pageChangeCallback != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
+        }
+
+        super.onDestroy();
+    }
+
+    @Override
     public void somethingMightHaveChanged() {
-        for (Fragment fragment : pagerAdapter) {
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment instanceof SoundEventListener) {
                 ((SoundEventListener) fragment).somethingMightHaveChanged();
             }
         }
     }
 
-    class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter
-            implements Iterable<Fragment> {
-        private final List<Page> pages =
-                Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
-
-        private final ArrayList<Fragment> registeredFragments =
-                Lists.newArrayList(null, null, null);
-
-        ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
-            super(fm);
+    static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
+        ScreenSlidePagerAdapter(FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
         }
 
         @Override
         public @NonNull
-        Fragment getItem(int position) {
+        Fragment createFragment(int position) {
             Page page = pages.get(position);
             return page.createNew.get();
-        }
-
-        @Override
-        public @NonNull
-        Object instantiateItem(@NonNull ViewGroup container, int position) {
-            Fragment fragment = (Fragment) super.instantiateItem(container, position);
-            registeredFragments.set(position, fragment);
-            return fragment;
         }
 
         Page getPage(int position) {
             return pages.get(position);
         }
 
-        @Nullable
         @Override
-        public CharSequence getPageTitle(int position) {
-            return getString(pages.get(position).title);
-        }
-
-        @Override
-        public int getCount() {
+        public int getItemCount() {
             return pages.size();
         }
 
         int getIndexOf(Page selectedPage) {
             return pages.indexOf(selectedPage);
-        }
-
-        @Override
-        public void destroyItem(@NonNull ViewGroup container, int position,
-                                @NonNull Object object) {
-            registeredFragments.set(position, null);
-            super.destroyItem(container, position, object);
-        }
-
-        @NonNull
-        Optional<AudioFileListFragment> getAudioFileListFragment() {
-            return registeredFragments.stream()
-                    .filter(f -> f instanceof AudioFileListFragment)
-                    .map(AudioFileListFragment.class::cast)
-                    .findAny();
-        }
-
-
-        @Override
-        public @NonNull
-        Iterator<Fragment> iterator() {
-            return registeredFragments.stream()
-                    .filter(Objects::nonNull).iterator();
         }
     }
 

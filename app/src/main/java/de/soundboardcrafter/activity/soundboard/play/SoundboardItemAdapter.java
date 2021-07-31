@@ -287,8 +287,7 @@ public class SoundboardItemAdapter
                 soundboard.getSoundboard(), sound, false);
 
         soundboard.removeSound(position);
-
-        notifyDataSetChanged();
+        notifyItemRemoved(position);
     }
 
     @Nullable

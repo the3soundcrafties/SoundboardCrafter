@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,11 +27,13 @@ import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.common.collect.ImmutableList;
 
 import java.lang.ref.WeakReference;
@@ -46,8 +50,6 @@ import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.dao.GameDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * The most important activity of the app - it shows all the soundboards so that the user
@@ -68,9 +70,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
     public static final String EXTRA_GAME_ID = "GameId";
 
     private MediaPlayerService mediaPlayerService;
-    private DeactivatableViewPager pager;
+    private ViewPager2 pager;
     private TabLayout tabLayout;
-
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private final View.OnTouchListener emptyOnTouchListener = (v, event) -> true;
 
     /**
@@ -81,7 +83,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     private @Nullable
     UUID selectedSoundboardId;
-    private boolean changingSoundboardEnabled = true;
+    private final boolean changingSoundboardEnabled = true;
 
     @Override
     @UiThread
@@ -128,21 +130,27 @@ public class SoundboardPlayActivity extends AppCompatActivity
         bindService();
 
         pager = findViewById(R.id.viewPager);
-        pager.clearOnPageChangeListeners();
-        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        pagerAdapter = new ScreenSlidePagerAdapter(this);
+
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 @Nullable UUID tmp = pagerAdapter.getSoundboardId(position);
                 if (tmp != null) {
                     selectedSoundboardId = tmp;
                 }
+
+                super.onPageSelected(position);
             }
-        });
+        };
+        pager.registerOnPageChangeCallback(pageChangeCallback);
+
+        pager.setAdapter(pagerAdapter);
 
         tabLayout = findViewById(R.id.tabLayout);
-        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        pager.setAdapter(pagerAdapter);
-        tabLayout.setupWithViewPager(pager);
+        new TabLayoutMediator(tabLayout, pager,
+                (tab, position) -> tab.setText(pagerAdapter.getPageTitle(position))
+        ).attach();
 
         if (savedInstanceState != null) {
             selectedSoundboardId = getUUID(savedInstanceState, KEY_SELECTED_SOUNDBOARD_ID);
@@ -175,9 +183,26 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     @Override
     public void setChangingSoundboardEnabled(final boolean enabled) {
-        changingSoundboardEnabled = enabled;
+        pager.setUserInputEnabled(enabled);
 
-        pager.setPagingEnabled(enabled);
+        // TODO https://stackoverflow.com/questions/9650265/how-do-disable-paging-by-swiping-with
+        //  -finger
+        //  -in-viewpager-but-still-be-able-to-s
+        /*
+        From old DeactivatableViewPager:
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return pagingEnabled && super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        return pagingEnabled && super.onInterceptTouchEvent(event);
+    }
+
+         */
+
 
         LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
 
@@ -277,17 +302,47 @@ public class SoundboardPlayActivity extends AppCompatActivity
         dialog.show(getSupportFragmentManager(), DIALOG_RESET_ALL);
     }
 
-    class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+    class ScreenSlidePagerAdapter extends FragmentStateAdapter {
         private final List<SoundboardWithSounds> soundboardList = new ArrayList<>();
 
-        ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {
-            super(fm);
+        ScreenSlidePagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
         }
 
         @Override
         public @NonNull
-        Fragment getItem(int position) {
+        Fragment createFragment(int position) {
             return SoundboardFragment.createFragment(soundboardList.get(position));
+        }
+
+        // https://developer.android.com/training/animation/vp2-migration :
+        // "If you are using ViewPager2 to page through a mutable collection, you must also
+        // override getItemId()"
+        @Override
+        public long getItemId(int position) {
+            if (position < 0 || position >= soundboardList.size()) {
+                return RecyclerView.NO_ID;
+            }
+
+            final SoundboardWithSounds soundboardWithSounds = soundboardList.get(position);
+            return getUniqueLongId(soundboardWithSounds);
+        }
+
+        // FragmentStateAdapter: "When overriding, also override containsItem(long)"
+        @Override
+        public boolean containsItem(long itemId) {
+            for (SoundboardWithSounds soundboardWithSounds : soundboardList) {
+                if (getUniqueLongId(soundboardWithSounds) == itemId) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private long getUniqueLongId(SoundboardWithSounds soundboardWithSounds) {
+            final UUID uuid = soundboardWithSounds.getId();
+            return uuid.getMostSignificantBits() & Long.MAX_VALUE;
         }
 
         /**
@@ -302,9 +357,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             setChangingSoundboardEnabled(changingSoundboardEnabled);
         }
 
-        @Nullable
-        @Override
-        public CharSequence getPageTitle(int position) {
+        CharSequence getPageTitle(int position) {
             return soundboardList.get(position).getName();
         }
 
@@ -314,7 +367,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          */
         @Nullable
         Integer getIndex(UUID soundboardId) {
-            for (int index = 0; index < getCount(); index++) {
+            for (int index = 0; index < getItemCount(); index++) {
                 if (soundboardList.get(index).getId().equals(soundboardId)) {
                     return index;
                 }
@@ -343,7 +396,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          */
         @Nullable
         private SoundboardWithSounds getSoundboard(int index) {
-            if (index >= getCount()) {
+            if (index >= getItemCount()) {
                 return null;
             }
 
@@ -351,15 +404,17 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         @Override
-        public int getCount() {
+        public int getItemCount() {
             return soundboardList.size();
         }
 
+        /* Old code before migrating to ViewPager2:
         @Override
         public int getItemPosition(@NonNull Object object) {
             // https://medium.com/inloopx/adventures-with-fragmentstatepageradapter-4f56a643f8e0
             return POSITION_NONE;
         }
+         */
 
         void clear(boolean stopPlayingAllSoundboards) {
             if (stopPlayingAllSoundboards) {
@@ -428,6 +483,11 @@ public class SoundboardPlayActivity extends AppCompatActivity
     protected void onDestroy() {
         savePreference(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId);
         savePreference(KEY_GAME_ID, gameId);
+
+        if (pageChangeCallback != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
+        }
+
         super.onDestroy();
     }
 

@@ -5,20 +5,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <de.soundboardcrafter.activity.soundboard.play.DeactivatableViewPager
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        style="@style/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:minHeight="?actionBarSize"
+        app:tabGravity="fill"
+        app:tabMode="scrollable" />
+
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            style="@style/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:minHeight="?actionBarSize"
-            app:tabGravity="fill"
-            app:tabMode="scrollable" />
-
-    </de.soundboardcrafter.activity.soundboard.play.DeactivatableViewPager>
+        android:layout_height="match_parent" />
 </LinearLayout>

@@ -465,8 +465,16 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     }
 
     private void onCreateSoundboardContextMenu(Sound sound, ContextMenu menu) {
-        MenuInflater inflater = requireActivity().getMenuInflater();
-        inflater.inflate(R.menu.fragment_soundboard_play_context, menu);
+        int soundboardId = getUniqueTabId();
+
+        menu.add(soundboardId,
+                1,
+                0,
+                R.string.context_menu_edit_sound);
+        menu.add(soundboardId,
+                2,
+                1,
+                R.string.context_menu_remove_sound);
 
         menu.setHeaderTitle(sound.getName());
 
@@ -483,7 +491,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             return false;
         }
 
-        if (!getUserVisibleHint()) {
+        if (item.getGroupId() != getUniqueTabId()) {
             // The wrong fragment got the event.
             // See https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager
             // -receives-oncontextitemselected-call
@@ -491,7 +499,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
 
         final int id = item.getItemId();
-        if (id == R.id.context_menu_edit_sound) {
+        if (id == 1) {
             @Nullable Sound sound = soundboardItemAdapter.getContextMenuItem();
             if (sound == null) {
                 return false;
@@ -502,7 +510,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             Intent intent = SoundboardPlaySoundEditActivity.newIntent(getActivity(), sound);
             startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
             return true;
-        } else if (id == R.id.context_menu_remove_sound) {
+        } else if (id == 2) {
             int position = soundboardItemAdapter.getContextMenuPosition();
             if (position < 0) {
                 return false;
@@ -515,6 +523,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         } else {
             return false;
         }
+    }
+
+    private int getUniqueTabId() {
+        return soundboard.getId().hashCode();
     }
 
     @SuppressWarnings("SwitchStatementWithTooFewBranches")

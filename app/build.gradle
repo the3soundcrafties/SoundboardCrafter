@@ -63,9 +63,10 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.4.0-alpha03'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
-    implementation 'androidx.media:media:1.4.0-rc01'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation 'androidx.media:media:1.4.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation "com.google.android.material:material:1.5.0-alpha01"
     implementation 'com.google.android.material:material:1.5.0-alpha01'
     implementation 'com.google.guava:guava:28.0-jre'
     implementation 'org.jetbrains:annotations:17.0.0'
