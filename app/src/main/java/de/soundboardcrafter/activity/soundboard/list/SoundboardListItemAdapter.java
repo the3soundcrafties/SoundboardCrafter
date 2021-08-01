@@ -1,11 +1,8 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
-import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND;
-
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -14,15 +11,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.AbstractTutorialListAdapter;
-import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
  * Adapter for a SoundBoardItem. Display a Button with text and icon.
  */
-class SoundboardListItemAdapter extends AbstractTutorialListAdapter {
+class SoundboardListItemAdapter extends BaseAdapter {
     private final List<SoundboardWithSounds> soundboards;
 
     SoundboardListItemAdapter() {
@@ -69,17 +63,7 @@ class SoundboardListItemAdapter extends AbstractTutorialListAdapter {
         }
         SoundboardListItemRow itemRow = (SoundboardListItemRow) convertView;
 
-        TutorialDao tutorialDao = TutorialDao.getInstance(itemRow.getContext());
-
         itemRow.setSoundboard(soundboards.get(position));
-
-        showTutorialHintIfNecessary(position, (View) itemRow,
-                () -> tutorialDao.areAllChecked(SOUNDBOARD_PLAY_START_SOUND,
-                        AUDIO_FILE_LIST_EDIT)
-                        && !tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU),
-                activity -> showTutorialHintForLongClick(activity, (View) itemRow,
-                        itemRow.getTvSoundboardName(),
-                        R.string.tutorial_soundboard_list_context_menu_description));
 
         return convertView;
     }

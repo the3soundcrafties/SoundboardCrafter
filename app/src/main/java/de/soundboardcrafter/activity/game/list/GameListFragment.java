@@ -109,7 +109,6 @@ public class GameListFragment extends Fragment
 
     @Override
     @UiThread
-    // Called especially when the edit activity returns.
     public void onResume() {
         super.onResume();
 

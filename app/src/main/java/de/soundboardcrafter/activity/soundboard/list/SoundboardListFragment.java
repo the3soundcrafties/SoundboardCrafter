@@ -1,14 +1,17 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
 import static android.content.Context.MODE_PRIVATE;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -25,6 +28,8 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -64,6 +69,11 @@ public class SoundboardListFragment extends Fragment
     }
 
     private static final String TAG = SoundboardListFragment.class.getName();
+
+    private static final int TAP_TARGET_RADIUS_DP = 44;
+
+    private static final int FIRST_ITEM_X_DP = 25;
+    private static final int FIRST_ITEM_Y_DP = 25;
 
     private static final int UNIQUE_TAB_ID = 2;
 
@@ -139,6 +149,87 @@ public class SoundboardListFragment extends Fragment
             startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
         });
     }
+
+    @Override
+    @UiThread
+    public void onResume() {
+        super.onResume();
+
+        showTutorialHintIfNecessary();
+    }
+
+    private void showTutorialHintIfNecessary() {
+        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
+        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU) && !adapter.isEmpty()) {
+            showTutorialHint();
+        }
+    }
+
+    private void showTutorialHint() {
+        showTutorialHint(
+                R.string.tutorial_soundboard_list_context_menu_description,
+                new TapTargetView.Listener() {
+                    @Override
+                    public void onTargetClick(TapTargetView view) {
+                        // Don't dismiss view
+                    }
+
+                    @Override
+                    public void onTargetLongClick(TapTargetView view) {
+                        super.onTargetClick(view); // dismiss view
+
+                        @Nullable View itemView =
+                                listView.getChildAt(listView.getFirstVisiblePosition());
+                        if (itemView != null) {
+                            TutorialDao.getInstance(requireContext())
+                                    .check(SOUNDBOARD_LIST_CONTEXT_MENU);
+                            itemView.performLongClick(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+                        }
+                    }
+                });
+    }
+
+    @UiThread
+    private void showTutorialHint(
+            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+        @Nullable Activity activity = getActivity();
+
+        if (activity != null) {
+            TapTargetView.showFor(activity,
+                    TapTarget.forBounds(
+                            getTapTargetBounds(),
+                            activity.getResources().getString(descriptionId))
+                            .transparentTarget(true)
+                            .targetRadius(TAP_TARGET_RADIUS_DP),
+                    tapTargetViewListener);
+        }
+    }
+
+    @NonNull
+    private Rect getTapTargetBounds() {
+        final int[] location = getTapTargetLocation();
+
+        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
+
+        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
+                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
+    }
+
+    @NonNull
+    private int[] getTapTargetLocation() {
+        final int[] location = new int[2];
+        listView.getLocationOnScreen(location);
+
+        location[0] += dp(50);
+        location[1] += dp(33);
+        return location;
+    }
+
+    private int dp(final int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                requireContext().getResources().getDisplayMetrics());
+    }
+
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -284,9 +375,6 @@ public class SoundboardListFragment extends Fragment
         List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
         list.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
         adapter.setSoundboards(list);
-        if (getUserVisibleHint()) {
-            adapter.markAsRightPlaceToShowTutorialHints();
-        }
     }
 
     @UiThread
