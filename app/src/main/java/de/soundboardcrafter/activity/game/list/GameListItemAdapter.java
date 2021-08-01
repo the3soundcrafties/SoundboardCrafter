@@ -9,7 +9,6 @@ import androidx.annotation.UiThread;
 
 import java.util.List;
 
-import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.GameWithSoundboards;
 
 /**
@@ -44,8 +43,6 @@ class GameListItemAdapter extends BaseAdapter {
             convertView = new GameListItemRow(parent.getContext());
         }
         GameListItemRow itemRow = (GameListItemRow) convertView;
-
-        TutorialDao tutorialDao = TutorialDao.getInstance(itemRow.getContext());
 
         itemRow.setGameWithSoundboards(gamesWithSoundboards.get(position));
 

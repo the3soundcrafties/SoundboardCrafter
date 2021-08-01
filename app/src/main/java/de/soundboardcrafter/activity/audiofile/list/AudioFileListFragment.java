@@ -755,8 +755,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                     @Nullable final View view =
                             activity.findViewById(R.id.toolbar_menu_audiofiles_by_folder);
                     if (view != null) {
-                        showTutorialHintForOwnSounds(TutorialDao.getInstance(requireContext()),
-                                activity, view);
+                        showTutorialHintForOwnSounds(tutorialDao, activity, view);
                     }
                 }
             }); // We don't care if return value were false - there is always next time.
