@@ -470,7 +470,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         };
     }
 
-
     /**
      * Starts reading the data for the UI (first time) or
      * simply ensure that the grid shows the latest information.
