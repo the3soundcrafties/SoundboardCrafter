@@ -59,6 +59,11 @@
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
         <activity
+            android:name=".activity.settings.SettingsActivity"
+            android:label="@string/settings_activity_title"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activity.settings.SettingsActivity" />
+        <activity
             android:name=".activity.about.AboutActivity"
             android:label="@string/about_activity_title"
             android:launchMode="singleTop"

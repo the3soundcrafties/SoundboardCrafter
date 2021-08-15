@@ -26,6 +26,7 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.about.AboutActivity;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
 import de.soundboardcrafter.activity.favorites.list.FavoritesListFragment;
+import de.soundboardcrafter.activity.settings.SettingsActivity;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 import de.soundboardcrafter.dao.TutorialDao;
@@ -114,11 +115,13 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.toolbar_menu_item_restart_tutorial) {
             TutorialDao.getInstance(this).uncheckAll();
             return true;
+        } else if (id == R.id.toolbar_menu_item_settings) {
+            startActivity(SettingsActivity.newIntent(this));
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
     }
-
 
     @Override
     protected void onResumeFragments() {
