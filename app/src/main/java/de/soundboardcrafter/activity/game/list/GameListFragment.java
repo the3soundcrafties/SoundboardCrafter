@@ -1,15 +1,15 @@
 package de.soundboardcrafter.activity.game.list;
 
+import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
+import static de.soundboardcrafter.activity.common.TutorialUtil.getTapTargetBounds;
 import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -139,7 +139,8 @@ public class GameListFragment extends Fragment
                                 listView.getChildAt(listView.getFirstVisiblePosition());
                         if (itemView != null) {
                             TutorialDao.getInstance(requireContext()).check(GAME_LIST_CONTEXT_MENU);
-                            itemView.performLongClick(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+                            itemView.performLongClick(dp(requireContext(), FIRST_ITEM_X_DP),
+                                    dp(requireContext(), FIRST_ITEM_Y_DP));
                         }
                     }
                 });
@@ -153,37 +154,14 @@ public class GameListFragment extends Fragment
         if (activity != null) {
             TapTargetView.showFor(activity,
                     TapTarget.forBounds(
-                            getTapTargetBounds(),
+                            getTapTargetBounds(listView, dp(requireContext(), 50),
+                                    dp(requireContext(), 33), TAP_TARGET_RADIUS_DP
+                            ),
                             activity.getResources().getString(descriptionId))
                             .transparentTarget(true)
                             .targetRadius(TAP_TARGET_RADIUS_DP),
                     tapTargetViewListener);
         }
-    }
-
-    @NonNull
-    private Rect getTapTargetBounds() {
-        final int[] location = getTapTargetLocation();
-
-        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
-
-        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
-                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
-    }
-
-    @NonNull
-    private int[] getTapTargetLocation() {
-        final int[] location = new int[2];
-        listView.getLocationOnScreen(location);
-
-        location[0] += dp(50);
-        location[1] += dp(33);
-        return location;
-    }
-
-    private int dp(final int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                requireContext().getResources().getDisplayMetrics());
     }
 
     private void onClickGame(GameWithSoundboards gameWithSoundboards) {

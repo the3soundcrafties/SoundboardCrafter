@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
 import static android.content.Context.MODE_PRIVATE;
+import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
@@ -11,7 +12,6 @@ import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -43,6 +43,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
@@ -183,7 +184,8 @@ public class SoundboardListFragment extends Fragment
                         if (itemView != null) {
                             TutorialDao.getInstance(requireContext())
                                     .check(SOUNDBOARD_LIST_CONTEXT_MENU);
-                            itemView.performLongClick(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+                            itemView.performLongClick(dp(requireContext(), FIRST_ITEM_X_DP),
+                                    dp(requireContext(), FIRST_ITEM_Y_DP));
                         }
                     }
                 });
@@ -207,29 +209,14 @@ public class SoundboardListFragment extends Fragment
 
     @NonNull
     private Rect getTapTargetBounds() {
-        final int[] location = getTapTargetLocation();
+        final int[] location = TutorialUtil
+                .getLocation(listView, dp(requireContext(), 50), dp(requireContext(), 33));
 
-        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
+        final int tapTargetRadius = dp(requireContext(), TAP_TARGET_RADIUS_DP);
 
         return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
                 location[0] + tapTargetRadius, location[1] + tapTargetRadius);
     }
-
-    @NonNull
-    private int[] getTapTargetLocation() {
-        final int[] location = new int[2];
-        listView.getLocationOnScreen(location);
-
-        location[0] += dp(50);
-        location[1] += dp(33);
-        return location;
-    }
-
-    private int dp(final int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                requireContext().getResources().getDisplayMetrics());
-    }
-
 
     @Override
     public void onAttach(@NonNull Context context) {

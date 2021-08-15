@@ -47,6 +47,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
+import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
@@ -232,22 +233,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     @NonNull
     private Rect getTapTargetBounds() {
-        final int[] location = getTapTargetLocation();
-
-        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
-
-        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
-                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
-    }
-
-    @NonNull
-    private int[] getTapTargetLocation() {
-        final int[] location = new int[2];
-        recyclerView.getLocationOnScreen(location);
-
-        location[0] += dp(70);
-        location[1] += dp(60);
-        return location;
+        return TutorialUtil.getTapTargetBounds(recyclerView, dp(70), dp(60), TAP_TARGET_RADIUS_DP);
     }
 
     @Override

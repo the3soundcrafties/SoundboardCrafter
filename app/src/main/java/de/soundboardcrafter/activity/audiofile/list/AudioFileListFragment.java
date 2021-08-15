@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
+import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
 
@@ -17,7 +18,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,6 +50,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
+import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -366,27 +367,13 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
     @NonNull
     private Rect getTapTargetBounds() {
-        final int[] location = getTapTargetLocation();
+        final int[] location = TutorialUtil.getLocation(listView, dp(requireContext(), 20),
+                dp(requireContext(), 30), true);
 
-        final int tapTargetRadius = dp(TAP_TARGET_RADIUS_DP);
+        final int tapTargetRadius = dp(requireContext(), TAP_TARGET_RADIUS_DP);
 
         return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
                 location[0] + tapTargetRadius, location[1] + tapTargetRadius);
-    }
-
-    @NonNull
-    private int[] getTapTargetLocation() {
-        final int[] location = new int[2];
-        listView.getLocationOnScreen(location);
-
-        location[0] = location[0] + listView.getWidth() - dp(20);
-        location[1] += dp(30);
-        return location;
-    }
-
-    private int dp(final int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                requireContext().getResources().getDisplayMetrics());
     }
 
     private void showTutorialHintForOwnSounds(TutorialDao tutorialDao, Activity activity,
