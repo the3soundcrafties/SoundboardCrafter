@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="useFavorites"
+        app:title="@string/setting_use_favorites_title"
+        app:summary="@string/setting_use_favorites_summary"/>
+
+</PreferenceScreen>

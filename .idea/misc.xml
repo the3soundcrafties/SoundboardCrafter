@@ -3,13 +3,17 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/activity_about.xml" value="0.2735562310030395" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/activity_settings.xml" value="0.2735562310030395" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/favorites_list_item.xml" value="0.33697916666666666" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_audiofile_list.xml" value="0.12" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_favorites_edit.xml" value="0.33697916666666666" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_favorites_list.xml" value="0.33697916666666666" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_game_list.xml" value="0.34375" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_list_item.xml" value="0.1" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/menu/activity_main.xml" value="0.34375" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/menu/fragment_soundboard_play_context.xml" value="0.334375" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/xml/preferences.xml" value="0.2735562310030395" />
       </map>
     </option>
   </component>
