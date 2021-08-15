@@ -108,5 +108,5 @@
     <string name="toolbar_menu_item_settings">Einstellungen</string>
     <string name="settings_activity_title">Einstellungen</string>
     <string name="setting_use_favorites_title">Favoriten verwenden</string>
-    <string name="setting_use_favorites_summary">Du kannst jeweils einige Soundboards zu Favoriten zusammenfassen. Wenn du den Soundboard Crafter für verschiedene Spiele verwendest, kannst du für jedes Spiel eigene Favoriten anlegen. Wählst du einen Favoriten aus, werden dir nur diese Soundboards angezeigt, so dass du schnell zwischen den Soundboards wechseln kannst.</string>
+    <string name="setting_use_favorites_summary">Du kannst jeweils einige Soundboards zu Favoriten zusammenfassen. Wenn du den Soundboard Crafter für verschiedene Spiele verwendest, kannst du für jedes Spiel eigene Favoriten anlegen. Wählst du Favoriten aus, werden dir nur diese Soundboards angezeigt, so dass du schnell zwischen den Soundboards wechseln kannst.</string>
 </resources>
