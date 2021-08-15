@@ -1,7 +1,7 @@
 package de.soundboardcrafter.activity.game.list;
 
-import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
-import static de.soundboardcrafter.activity.common.TutorialUtil.getTapTargetBounds;
+import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
+import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
@@ -25,7 +25,6 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -38,6 +37,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.game.edit.GameCreateActivity;
 import de.soundboardcrafter.activity.game.edit.GameEditActivity;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
@@ -125,25 +125,17 @@ public class GameListFragment extends Fragment
     private void showTutorialHint() {
         showTutorialHint(
                 R.string.tutorial_game_list_context_menu_description,
-                new TapTargetView.Listener() {
-                    @Override
-                    public void onTargetClick(TapTargetView view) {
-                        // Don't dismiss view
-                    }
-
-                    @Override
-                    public void onTargetLongClick(TapTargetView view) {
-                        super.onTargetClick(view); // dismiss view
-
-                        @Nullable View itemView =
-                                listView.getChildAt(listView.getFirstVisiblePosition());
-                        if (itemView != null) {
-                            TutorialDao.getInstance(requireContext()).check(GAME_LIST_CONTEXT_MENU);
-                            itemView.performLongClick(dp(requireContext(), FIRST_ITEM_X_DP),
-                                    dp(requireContext(), FIRST_ITEM_Y_DP));
-                        }
-                    }
-                });
+                createLongClickTutorialListener(
+                        () -> {
+                            @Nullable View itemView =
+                                    listView.getChildAt(listView.getFirstVisiblePosition());
+                            if (itemView != null) {
+                                TutorialDao.getInstance(requireContext())
+                                        .check(GAME_LIST_CONTEXT_MENU);
+                                itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
+                                        dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+                            }
+                        }));
     }
 
     @UiThread
@@ -152,14 +144,8 @@ public class GameListFragment extends Fragment
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
-            TapTargetView.showFor(activity,
-                    TapTarget.forBounds(
-                            getTapTargetBounds(listView, dp(requireContext(), 50),
-                                    dp(requireContext(), 33), TAP_TARGET_RADIUS_DP
-                            ),
-                            activity.getResources().getString(descriptionId))
-                            .transparentTarget(true)
-                            .targetRadius(TAP_TARGET_RADIUS_DP),
+            TutorialUtil.showTutorialHint(activity, listView, 50, 33,
+                    TAP_TARGET_RADIUS_DP, false, descriptionId,
                     tapTargetViewListener);
         }
     }

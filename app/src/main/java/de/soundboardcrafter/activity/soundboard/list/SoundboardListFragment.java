@@ -1,14 +1,14 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
 import static android.content.Context.MODE_PRIVATE;
-import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
+import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
+import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +28,6 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -169,26 +168,17 @@ public class SoundboardListFragment extends Fragment
     private void showTutorialHint() {
         showTutorialHint(
                 R.string.tutorial_soundboard_list_context_menu_description,
-                new TapTargetView.Listener() {
-                    @Override
-                    public void onTargetClick(TapTargetView view) {
-                        // Don't dismiss view
-                    }
-
-                    @Override
-                    public void onTargetLongClick(TapTargetView view) {
-                        super.onTargetClick(view); // dismiss view
-
-                        @Nullable View itemView =
-                                listView.getChildAt(listView.getFirstVisiblePosition());
-                        if (itemView != null) {
-                            TutorialDao.getInstance(requireContext())
-                                    .check(SOUNDBOARD_LIST_CONTEXT_MENU);
-                            itemView.performLongClick(dp(requireContext(), FIRST_ITEM_X_DP),
-                                    dp(requireContext(), FIRST_ITEM_Y_DP));
-                        }
-                    }
-                });
+                createLongClickTutorialListener(
+                        () -> {
+                            @Nullable View itemView =
+                                    listView.getChildAt(listView.getFirstVisiblePosition());
+                            if (itemView != null) {
+                                TutorialDao.getInstance(requireContext())
+                                        .check(SOUNDBOARD_LIST_CONTEXT_MENU);
+                                itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
+                                        dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+                            }
+                        }));
     }
 
     @UiThread
@@ -197,25 +187,11 @@ public class SoundboardListFragment extends Fragment
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
-            TapTargetView.showFor(activity,
-                    TapTarget.forBounds(
-                            getTapTargetBounds(),
-                            activity.getResources().getString(descriptionId))
-                            .transparentTarget(true)
-                            .targetRadius(TAP_TARGET_RADIUS_DP),
+            TutorialUtil.showTutorialHint(activity,
+                    listView, 50, 33, TAP_TARGET_RADIUS_DP,
+                    false, descriptionId,
                     tapTargetViewListener);
         }
-    }
-
-    @NonNull
-    private Rect getTapTargetBounds() {
-        final int[] location = TutorialUtil
-                .getLocation(listView, dp(requireContext(), 50), dp(requireContext(), 33));
-
-        final int tapTargetRadius = dp(requireContext(), TAP_TARGET_RADIUS_DP);
-
-        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
-                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
     }
 
     @Override

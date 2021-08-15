@@ -2,7 +2,7 @@ package de.soundboardcrafter.activity.audiofile.list;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
-import static de.soundboardcrafter.activity.common.TutorialUtil.dp;
+import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
 
@@ -11,7 +11,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -329,24 +328,14 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     private void showTutorialHintForEdit() {
         showTutorialHint(
                 R.string.tutorial_audio_file_list_edit,
-                new TapTargetView.Listener() {
-                    @Override
-                    public void onTargetClick(TapTargetView view) {
-                        super.onTargetClick(view); // dismiss view
-
-                        @Nullable View itemView =
-                                listView.getChildAt(listView.getFirstVisiblePosition());
-                        if (itemView != null) {
-                            TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
-                            itemView.performClick();
-                        }
+                createClickTutorialListener(() -> {
+                    @Nullable View itemView =
+                            listView.getChildAt(listView.getFirstVisiblePosition());
+                    if (itemView != null) {
+                        TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
+                        itemView.performClick();
                     }
-
-                    @Override
-                    public void onTargetLongClick(TapTargetView view) {
-                        // Don't dismiss view and don't handle like a single click
-                    }
-                });
+                }));
     }
 
     @UiThread
@@ -355,25 +344,10 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
-            TapTargetView.showFor(activity,
-                    TapTarget.forBounds(
-                            getTapTargetBounds(),
-                            activity.getResources().getString(descriptionId))
-                            .transparentTarget(true)
-                            .targetRadius(TAP_TARGET_RADIUS_DP),
-                    tapTargetViewListener);
+            TutorialUtil.showTutorialHint(activity, listView, 20,
+                    30, TAP_TARGET_RADIUS_DP, true,
+                    descriptionId, tapTargetViewListener);
         }
-    }
-
-    @NonNull
-    private Rect getTapTargetBounds() {
-        final int[] location = TutorialUtil.getLocation(listView, dp(requireContext(), 20),
-                dp(requireContext(), 30), true);
-
-        final int tapTargetRadius = dp(requireContext(), TAP_TARGET_RADIUS_DP);
-
-        return new Rect(location[0] - tapTargetRadius, location[1] - tapTargetRadius,
-                location[0] + tapTargetRadius, location[1] + tapTargetRadius);
     }
 
     private void showTutorialHintForOwnSounds(TutorialDao tutorialDao, Activity activity,

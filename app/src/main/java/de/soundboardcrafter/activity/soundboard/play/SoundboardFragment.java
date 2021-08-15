@@ -1,17 +1,19 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
+import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
+import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,7 +31,6 @@ import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -172,47 +173,31 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
             showTutorialHint(
                     R.string.tutorial_soundboard_play_start_sound_description,
-                    new TapTargetView.Listener() {
-                        @Override
-                        public void onTargetClick(TapTargetView view) {
-                            super.onTargetClick(view); // dismiss view
-
-                            @Nullable View itemView = findFirstItemView();
-                            if (itemView != null) {
-                                itemView.performClick();
-                            }
+                    createClickTutorialListener(() -> {
+                        @Nullable View itemView = findFirstItemView();
+                        if (itemView != null) {
+                            itemView.performClick();
                         }
-
-                        @Override
-                        public void onTargetLongClick(TapTargetView view) {
-                            // Don't dismiss view and don't handle like a single click
-                        }
-                    });
+                    }));
         } else if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
             showTutorialHint(
                     R.string.tutorial_soundboard_play_context_menu_description,
-                    new TapTargetView.Listener() {
-                        @Override
-                        public void onTargetClick(TapTargetView view) {
-                            // Don't dismiss view
-                        }
-
-                        @Override
-                        public void onTargetLongClick(TapTargetView view) {
-                            super.onTargetClick(view); // dismiss view
-
-                            @Nullable View itemView = findFirstItemView();
-                            if (itemView != null) {
-                                // Simulate a long in the middle of the item
-                                itemView.performLongClick(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
-                            }
-                        }
-                    });
+                    createLongClickTutorialListener(
+                            () -> {
+                                @Nullable View itemView = findFirstItemView();
+                                if (itemView != null) {
+                                    // Simulate a long in the middle of the item
+                                    itemView.performLongClick(
+                                            dpToPx(requireContext(), FIRST_ITEM_X_DP),
+                                            dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+                                }
+                            }));
         }
     }
 
     private View findFirstItemView() {
-        return recyclerView.findChildViewUnder(dp(FIRST_ITEM_X_DP), dp(FIRST_ITEM_Y_DP));
+        return recyclerView.findChildViewUnder(dpToPx(requireContext(), FIRST_ITEM_X_DP),
+                dpToPx(requireContext(), FIRST_ITEM_Y_DP));
     }
 
     @UiThread
@@ -221,19 +206,11 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
-            TapTargetView.showFor(activity,
-                    TapTarget.forBounds(
-                            getTapTargetBounds(),
-                            activity.getResources().getString(descriptionId))
-                            .transparentTarget(true)
-                            .targetRadius(TAP_TARGET_RADIUS_DP),
+            TutorialUtil.showTutorialHint(activity, recyclerView, 70, 60,
+                    TAP_TARGET_RADIUS_DP,
+                    false, descriptionId,
                     tapTargetViewListener);
         }
-    }
-
-    @NonNull
-    private Rect getTapTargetBounds() {
-        return TutorialUtil.getTapTargetBounds(recyclerView, dp(70), dp(60), TAP_TARGET_RADIUS_DP);
     }
 
     @Override
@@ -305,13 +282,14 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         // Changes in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
 
-        int horizontalSpacing = dp(10);
+        int horizontalSpacing = dpToPx(requireContext(), 10);
         recyclerView.addItemDecoration(
-                new SoundboardItemDecoration(dp(24), horizontalSpacing, true));
+                new SoundboardItemDecoration(dpToPx(requireContext(), 24), horizontalSpacing,
+                        true));
 
         GridAutofitLayoutManager layoutManager =
                 new GridAutofitLayoutManager(requireContext().getApplicationContext(),
-                        dp(100), horizontalSpacing);
+                        dpToPx(requireContext(), 100), horizontalSpacing);
 
         recyclerView.setLayoutManager(layoutManager);
 
@@ -319,11 +297,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         registerForContextMenu(recyclerView);
 
         return rootView;
-    }
-
-    private int dp(final int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                requireContext().getResources().getDisplayMetrics());
     }
 
     @UiThread
