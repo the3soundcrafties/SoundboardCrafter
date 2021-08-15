@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.game.edit;
+package de.soundboardcrafter.activity.favorites.edit;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,14 +11,14 @@ import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 
 /**
- * Abstract super class for activities for editing a single Game
+ * Abstract super class for activities for editing favorites
  */
-public class GameCreateActivity extends SingleFragmentActivity {
+public class FavoritesCreateActivity extends SingleFragmentActivity {
     /**
      * Builds  an {@link Intent}, suitable for starting this activity.
      */
     public static Intent newIntent(Context packageContext) {
-        return new Intent(packageContext, GameCreateActivity.class);
+        return new Intent(packageContext, FavoritesCreateActivity.class);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class GameCreateActivity extends SingleFragmentActivity {
     @Override
     @UiThread
     protected Fragment createFragment() {
-        return GameEditFragment.newInstance();
+        return FavoritesEditFragment.newInstance();
     }
 
 }

@@ -6,9 +6,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.dao.DBSchema.GameTable;
+import de.soundboardcrafter.dao.DBSchema.FavoritesTable;
+import de.soundboardcrafter.dao.DBSchema.GamesTable;
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
-import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
+import de.soundboardcrafter.dao.DBSchema.SoundboardFavoritesTable;
+import de.soundboardcrafter.dao.DBSchema.SoundboardGamesTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 
@@ -19,16 +21,22 @@ class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version
      */
-    private static final int VERSION = 14;
+    private static final int VERSION = 15;
 
-    private static final String CREATE_TABLE_GAME = //
-            "CREATE TABLE " + GameTable.NAME + " (" + //
-                    GameTable.Cols.ID + " TEXT NOT NULL, " + //
-                    GameTable.Cols.NAME + " TEXT NOT NULL, " + //
-                    "PRIMARY KEY (" + GameTable.Cols.ID + "));";
+    private static final String DROP_TABLE_GAMES = //
+            "DROP TABLE IF EXISTS " + GamesTable.NAME + ";";
 
-    private static final String DROP_TABLE_GAME = //
-            "DROP TABLE " + GameTable.NAME + ";";
+    private static final String DROP_TABLE_SOUNDBOARD_GAMES = //
+            "DROP TABLE IF EXISTS " + SoundboardGamesTable.NAME + ";";
+
+    private static final String CREATE_TABLE_FAVORITES = //
+            "CREATE TABLE " + FavoritesTable.NAME + " (" + //
+                    FavoritesTable.Cols.ID + " TEXT NOT NULL, " + //
+                    FavoritesTable.Cols.NAME + " TEXT NOT NULL, " + //
+                    "PRIMARY KEY (" + FavoritesTable.Cols.ID + "));";
+
+    private static final String DROP_TABLE_FAVORITES = //
+            "DROP TABLE IF EXISTS " + FavoritesTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUNDBOARD = //
             "CREATE TABLE " + SoundboardTable.NAME + " (" + //
@@ -39,15 +47,15 @@ class DBHelper extends SQLiteOpenHelper {
     private static final String DROP_TABLE_SOUNDBOARD = //
             "DROP TABLE " + SoundboardTable.NAME + ";";
 
-    private static final String CREATE_TABLE_SOUNDBOARD_GAME = //
-            "CREATE TABLE " + SoundboardGameTable.NAME + " (" + //
-                    SoundboardGameTable.Cols.SOUNDBOARD_ID + " TEXT NOT NULL, " + //
-                    SoundboardGameTable.Cols.GAME_ID + " TEXT NOT NULL, " + //
-                    "PRIMARY KEY (" + SoundboardGameTable.Cols.SOUNDBOARD_ID + ", " + //
-                    SoundboardGameTable.Cols.GAME_ID + "));";
+    private static final String CREATE_TABLE_SOUNDBOARD_FAVORITES = //
+            "CREATE TABLE " + SoundboardFavoritesTable.NAME + " (" + //
+                    SoundboardFavoritesTable.Cols.SOUNDBOARD_ID + " TEXT NOT NULL, " + //
+                    SoundboardFavoritesTable.Cols.FAVORITES_ID + " TEXT NOT NULL, " + //
+                    "PRIMARY KEY (" + SoundboardFavoritesTable.Cols.SOUNDBOARD_ID + ", " + //
+                    SoundboardFavoritesTable.Cols.FAVORITES_ID + "));";
 
-    private static final String DROP_TABLE_SOUNDBOARD_GAME = //
-            "DROP TABLE " + SoundboardGameTable.NAME + ";";
+    private static final String DROP_TABLE_SOUNDBOARD_FAVORITES = //
+            "DROP TABLE IF EXISTS " + SoundboardFavoritesTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUND = //
             "CREATE TABLE " + SoundTable.NAME + " (" + //
@@ -59,16 +67,6 @@ class DBHelper extends SQLiteOpenHelper {
                     // Boolean. 0 == false, 1 == true
                     SoundTable.Cols.LOOP + " INTEGER NOT NULL, " + //
                     "PRIMARY KEY (" + SoundTable.Cols.ID + "));";
-
-    private static final String ALTER_TABLE_SOUND_ADD_COLUMN_LOCATION_TYPE = //
-            "ALTER TABLE " + SoundTable.NAME + //
-                    " ADD COLUMN " + SoundTable.Cols.LOCATION_TYPE + " TEXT NOT NULL " +
-                    "DEFAULT " + SoundTable.LocationType.FILE + ";";
-
-
-    private static final String UPDATE_VOLUMES_RESET = //
-            "UPDATE " + SoundTable.NAME + " " + //
-                    " SET " + SoundTable.Cols.VOLUME_PERCENTAGE + " = 100;";
 
     private static final String DROP_TABLE_SOUND = //
             "DROP TABLE " + SoundTable.NAME + ";";
@@ -102,7 +100,7 @@ class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "Creating database...");
 
-        createTables(db);
+        createInitialTables(db);
 
         Log.d(TAG, "Database created.");
     }
@@ -112,42 +110,42 @@ class DBHelper extends SQLiteOpenHelper {
         Log.e(TAG,
                 "Upgrading database from version " + oldVersion + " to version " + newVersion);
 
-        if (oldVersion < 12) {
+        if (oldVersion < 14) {
             dropTables(db);
-            createTables(db);
+            createInitialTables(db);
         }
 
-        if (oldVersion >= 12 && oldVersion < 13) {
-            resetVolumes(db);
-        }
-
-        if (oldVersion >= 12 && oldVersion < 14) {
-            alterTableSoundAddColumnLocationType(db);
+        if (oldVersion < 15) {
+            dropGameTables(db);
+            createFavoriteTables(db);
         }
     }
 
-    private void alterTableSoundAddColumnLocationType(SQLiteDatabase db) {
-        db.execSQL(ALTER_TABLE_SOUND_ADD_COLUMN_LOCATION_TYPE);
+    private void dropGameTables(SQLiteDatabase db) {
+        db.execSQL(DROP_TABLE_GAMES);
+        db.execSQL(DROP_TABLE_SOUNDBOARD_GAMES);
     }
 
-    private void createTables(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_GAME);
+    private void createFavoriteTables(SQLiteDatabase db) {
+        db.execSQL(CREATE_TABLE_FAVORITES);
+        db.execSQL(CREATE_TABLE_SOUNDBOARD_FAVORITES);
+    }
+
+    private void createInitialTables(SQLiteDatabase db) {
+        // Games are no longer used
         db.execSQL(CREATE_TABLE_SOUNDBOARD);
-        db.execSQL(CREATE_TABLE_SOUNDBOARD_GAME);
         db.execSQL(CREATE_TABLE_SOUND);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_SOUND);
 
         // TODO extra index on primary keys necessary / useful?
     }
 
-    private void resetVolumes(SQLiteDatabase db) {
-        db.execSQL(UPDATE_VOLUMES_RESET);
-    }
-
     private void dropTables(SQLiteDatabase db) {
-        db.execSQL(DROP_TABLE_GAME);
+        db.execSQL(DROP_TABLE_GAMES);
+        db.execSQL(DROP_TABLE_FAVORITES);
         db.execSQL(DROP_TABLE_SOUNDBOARD);
-        db.execSQL(DROP_TABLE_SOUNDBOARD_GAME);
+        db.execSQL(DROP_TABLE_SOUNDBOARD_GAMES);
+        db.execSQL(DROP_TABLE_SOUNDBOARD_FAVORITES);
         db.execSQL(DROP_TABLE_SOUND);
         db.execSQL(DROP_TABLE_SOUNDBOARD_SOUND);
     }

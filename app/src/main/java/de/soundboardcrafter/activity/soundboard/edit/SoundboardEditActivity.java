@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.edit;
 
+import static de.soundboardcrafter.activity.common.ActivityConstants.BASE_PACKAGE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,10 +15,8 @@ import java.util.UUID;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 import de.soundboardcrafter.model.Soundboard;
 
-import static de.soundboardcrafter.activity.common.ActivityConstants.BASE_PACKAGE;
-
 /**
- * Abstract super class for activities for editing a single Game
+ * Abstract super class for activities for editing favorites
  */
 public class SoundboardEditActivity extends SingleFragmentActivity {
     private static final String EXTRA_SOUNDBOARD_ID = BASE_PACKAGE + ".soundboardId";

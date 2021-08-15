@@ -14,6 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.util.List;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.soundboard.selectable;
 import de.soundboardcrafter.model.SelectableSoundboard;
 
 /**
@@ -122,7 +123,8 @@ public class SoundEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        SelectableSoundboardListItemAdapter adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        selectable.SelectableSoundboardListItemAdapter
+                adapter = new selectable.SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -182,7 +184,8 @@ public class SoundEditView extends ConstraintLayout {
         // seekBar 0 => volume 0
         // seekBar 100 => volumePercentage 100
         // exponentially in between
-        int res = Math.toIntExact(Math.round(Math.log(volumePercentage * (Math.E - 1.0) / maxVolumePercentage + 1.0) * 100.0));
+        int res = Math.toIntExact(Math.round(
+                Math.log(volumePercentage * (Math.E - 1.0) / maxVolumePercentage + 1.0) * 100.0));
 
         if (res > 100) {
             return 100;
@@ -199,7 +202,8 @@ public class SoundEditView extends ConstraintLayout {
         // seekBar 0 => volume 0
         // seekBar 100 => volumePercentage 100
         // exponentially in between
-        int res = Math.toIntExact(Math.round((Math.pow(Math.E, seekBar / 100.0) - 1.0) / (Math.E - 1.0) * maxVolumePercentage));
+        int res = Math.toIntExact(Math.round(
+                (Math.pow(Math.E, seekBar / 100.0) - 1.0) / (Math.E - 1.0) * maxVolumePercentage));
 
         if (res < 0) {
             return 0;

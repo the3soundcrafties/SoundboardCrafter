@@ -21,7 +21,7 @@ public class TutorialDao {
         AUDIO_FILE_LIST_EDIT,
         SOUNDBOARD_LIST_CONTEXT_MENU,
         AUDIO_FILE_LIST_USE_OWN_SOUNDS,
-        GAME_LIST_CONTEXT_MENU
+        FAVORITES_LIST_CONTEXT_MENU
     }
 
     // Will not be included in backup! See backup_descriptor.

@@ -25,18 +25,18 @@ import java.util.function.Supplier;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.about.AboutActivity;
 import de.soundboardcrafter.activity.audiofile.list.AudioFileListFragment;
-import de.soundboardcrafter.activity.game.list.GameListFragment;
+import de.soundboardcrafter.activity.favorites.list.FavoritesListFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 import de.soundboardcrafter.dao.TutorialDao;
 
 /**
- * The activity with which the app is started, showing games, soundboards, and sounds.
+ * The activity with which the app is started, showing favorites, soundboards, and sounds.
  */
 public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
     private static final List<Page> pages =
-            Lists.newArrayList(Page.GAMES, Page.SOUNDBOARDS, Page.SOUNDS);
+            Lists.newArrayList(Page.FAVORITES, Page.SOUNDBOARDS, Page.SOUNDS);
 
     private static final String KEY_SELECTED_PAGE = "selectedPage";
     private ViewPager2 pager;
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public enum Page {
-        GAMES(R.string.games_tab_title, GameListFragment::new),
+        FAVORITES(R.string.favorites_tab_title, FavoritesListFragment::new),
         SOUNDBOARDS(R.string.soundboards_tab_title, MainActivity::createSoundboardListFragment),
         SOUNDS(R.string.sounds_tab_title, MainActivity::createAudioFileListFragment);
 

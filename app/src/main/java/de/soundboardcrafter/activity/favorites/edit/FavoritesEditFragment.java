@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.game.edit;
+package de.soundboardcrafter.activity.favorites.edit;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,37 +27,37 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
-import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
-import de.soundboardcrafter.model.GameWithSoundboards;
+import de.soundboardcrafter.model.FavoritesWithSoundboards;
 import de.soundboardcrafter.model.SelectableSoundboard;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
- * Activity for editing a single gameWithSoundboards (name, volume etc.).
+ * Activity for editing favorites.
  */
-public class GameEditFragment extends Fragment {
-    private static final String ARG_GAME_ID = "gameId";
+public class FavoritesEditFragment extends Fragment {
+    private static final String ARG_FAVORITES_ID = "favoritesId";
 
-    private static final String EXTRA_GAME_ID = "gameId";
-    private static final String EXTRA_EDIT_FRAGMENT = "gameEditFragment";
+    private static final String EXTRA_FAVORITES_ID = "favoritesId";
+    private static final String EXTRA_EDIT_FRAGMENT = "favoritesEditFragment";
 
-    private GameEditView gameEditView;
-    private GameWithSoundboards gameWithSoundboards;
+    private FavoritesEditView favoritesEditView;
+    private FavoritesWithSoundboards favoritesWithSoundboards;
     private boolean isNew;
 
 
-    static GameEditFragment newInstance(UUID gameId) {
+    static FavoritesEditFragment newInstance(UUID favoritesId) {
         Bundle args = new Bundle();
-        args.putString(ARG_GAME_ID, gameId.toString());
+        args.putString(ARG_FAVORITES_ID, favoritesId.toString());
 
-        GameEditFragment fragment = new GameEditFragment();
+        FavoritesEditFragment fragment = new FavoritesEditFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    static GameEditFragment newInstance() {
-        return new GameEditFragment();
+    static FavoritesEditFragment newInstance() {
+        return new FavoritesEditFragment();
     }
 
 
@@ -66,16 +66,17 @@ public class GameEditFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // The result will be the game id, so that the calling
-        // activity can update its GUI for this gameWithSoundboards.
+        // The result will be the id of the favorites, so that the calling
+        // activity can update its GUI for this favoritesWithSoundboards.
 
         if (getArguments() != null) {
-            String gameIdArg = getArguments().getString(ARG_GAME_ID);
-            UUID gameId = UUID.fromString(gameIdArg);
-            new FindGameTask(requireActivity(), gameId).execute();
+            String favoritesIdArg = getArguments().getString(ARG_FAVORITES_ID);
+            UUID favoritesId = UUID.fromString(favoritesIdArg);
+            new FindFavoritesTask(requireActivity(), favoritesId).execute();
         } else {
             isNew = true;
-            gameWithSoundboards = new GameWithSoundboards(getString(R.string.new_game_name));
+            favoritesWithSoundboards =
+                    new FavoritesWithSoundboards(getString(R.string.new_favorites_name));
             new FindAllSoundboardsTask(requireContext()).execute();
         }
 
@@ -104,29 +105,31 @@ public class GameEditFragment extends Fragment {
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_game_edit,
+        View rootView = inflater.inflate(R.layout.fragment_favorites_edit,
                 container, false);
 
-        gameEditView = rootView.findViewById(R.id.edit_view);
+        favoritesEditView = rootView.findViewById(R.id.edit_view);
         if (isNew) {
-            gameEditView.setName(gameWithSoundboards.getGame().getName());
-            gameEditView.setOnClickListenerSave(
+            favoritesEditView.setName(favoritesWithSoundboards.getFavorites().getName());
+            favoritesEditView.setOnClickListenerSave(
                     () -> {
-                        saveNewGame();
+                        saveNewFavorites();
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
-                        intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
-                        intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                        intent.putExtra(EXTRA_FAVORITES_ID,
+                                favoritesWithSoundboards.getFavorites().getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, FavoritesEditFragment.class.getName());
                         requireActivity().setResult(
                                 Activity.RESULT_OK,
                                 intent);
                         requireActivity().finish();
                     }
             );
-            gameEditView.setOnClickListenerCancel(
+            favoritesEditView.setOnClickListenerCancel(
                     () -> {
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
-                        intent.putExtra(EXTRA_GAME_ID, gameWithSoundboards.getGame().getId().toString());
-                        intent.putExtra(EXTRA_EDIT_FRAGMENT, GameEditFragment.class.getName());
+                        intent.putExtra(EXTRA_FAVORITES_ID,
+                                favoritesWithSoundboards.getFavorites().getId().toString());
+                        intent.putExtra(EXTRA_EDIT_FRAGMENT, FavoritesEditFragment.class.getName());
                         requireActivity().setResult(
                                 Activity.RESULT_CANCELED,
                                 intent);
@@ -134,7 +137,7 @@ public class GameEditFragment extends Fragment {
                     }
             );
         } else {
-            gameEditView.setButtonsInvisible();
+            favoritesEditView.setButtonsInvisible();
         }
 
 
@@ -143,30 +146,31 @@ public class GameEditFragment extends Fragment {
 
 
     @UiThread
-    private void updateUIGameInfo(GameWithSoundboards gameWithSoundboards) {
-        this.gameWithSoundboards = gameWithSoundboards;
-        gameEditView.setName(gameWithSoundboards.getGame().getName());
+    private void updateUIFavoritesInfo(FavoritesWithSoundboards favoritesWithSoundboards) {
+        this.favoritesWithSoundboards = favoritesWithSoundboards;
+        favoritesEditView.setName(favoritesWithSoundboards.getFavorites().getName());
     }
 
     @UiThread
     private void updateUISoundboards(List<Soundboard> soundboards) {
         List<SelectableSoundboard> selectableSoundboards = new ArrayList<>();
-        ImmutableList<Soundboard> soundboardsInGame = gameWithSoundboards.getSoundboards();
+        ImmutableList<Soundboard> soundboardsInFavorites =
+                favoritesWithSoundboards.getSoundboards();
         for (Soundboard soundboard : soundboards) {
-            if (soundboardsInGame.contains(soundboard)) {
+            if (soundboardsInFavorites.contains(soundboard)) {
                 selectableSoundboards.add(new SelectableSoundboard(soundboard, true));
             } else {
                 selectableSoundboards.add(new SelectableSoundboard(soundboard, false));
             }
         }
-        gameEditView.setSoundboards(selectableSoundboards);
+        favoritesEditView.setSoundboards(selectableSoundboards);
 
 
     }
 
-    private void saveNewGame() {
-        updateGameWithSoundboards();
-        new SaveNewGameTask(requireActivity(), gameWithSoundboards).execute();
+    private void saveNewFavorites() {
+        updateFavoritesWithSoundboards();
+        new SaveNewFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
     }
 
     @Override
@@ -175,21 +179,21 @@ public class GameEditFragment extends Fragment {
     public void onPause() {
         super.onPause();
         if (!isNew) {
-            updateGameWithSoundboards();
-            new UpdateGameTask(requireActivity(), gameWithSoundboards).execute();
+            updateFavoritesWithSoundboards();
+            new UpdateFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
         }
     }
 
-    private void updateGameWithSoundboards() {
-        String nameEntered = gameEditView.getName();
+    private void updateFavoritesWithSoundboards() {
+        String nameEntered = favoritesEditView.getName();
         if (!nameEntered.isEmpty()) {
-            gameWithSoundboards.getGame().setName(nameEntered);
+            favoritesWithSoundboards.getFavorites().setName(nameEntered);
         }
-        List<SelectableSoundboard> soundboards = gameEditView.getSelectableSoundboards();
-        gameWithSoundboards.clearSoundboards();
+        List<SelectableSoundboard> soundboards = favoritesEditView.getSelectableSoundboards();
+        favoritesWithSoundboards.clearSoundboards();
         for (SelectableSoundboard soundboard : soundboards) {
             if (soundboard.isSelected()) {
-                gameWithSoundboards.addSoundboard(soundboard.getSoundboard());
+                favoritesWithSoundboards.addSoundboard(soundboard.getSoundboard());
             }
         }
     }
@@ -221,7 +225,7 @@ public class GameEditFragment extends Fragment {
             List<Soundboard> res =
                     SoundboardDao.getInstance(appContext).findAll();
 
-            Log.d(TAG, "Game loaded.");
+            Log.d(TAG, "Favorites loaded.");
 
             return res;
         }
@@ -248,34 +252,34 @@ public class GameEditFragment extends Fragment {
 
 
     /**
-     * A background task, used to load the gameWithSoundboards from the database.
+     * A background task, used to load the favoritesWithSoundboards from the database.
      */
-    class FindGameTask extends AsyncTask<Void, Void, GameWithSoundboards> {
-        private final String TAG = FindGameTask.class.getName();
+    class FindFavoritesTask extends AsyncTask<Void, Void, FavoritesWithSoundboards> {
+        private final String TAG = FindFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final UUID gameId;
+        private final UUID favoritesId;
 
-        FindGameTask(Context context, UUID gameId) {
+        FindFavoritesTask(Context context, UUID favoritesId) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.gameId = gameId;
+            this.favoritesId = favoritesId;
         }
 
         @Override
         @WorkerThread
-        protected GameWithSoundboards doInBackground(Void... voids) {
+        protected FavoritesWithSoundboards doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
-            Log.d(TAG, "Loading gameWithSoundboards....");
+            Log.d(TAG, "Loading favoritesWithSoundboards....");
 
-            GameWithSoundboards res =
-                    GameDao.getInstance(appContext).findGameWithSoundboards(gameId);
+            FavoritesWithSoundboards res =
+                    FavoritesDao.getInstance(appContext).findFavoritesWithSoundboards(favoritesId);
 
-            Log.d(TAG, "Game loaded.");
+            Log.d(TAG, "Favorites loaded.");
 
             return res;
         }
@@ -283,7 +287,7 @@ public class GameEditFragment extends Fragment {
 
         @Override
         @UiThread
-        protected void onPostExecute(GameWithSoundboards gameWithSoundboards) {
+        protected void onPostExecute(FavoritesWithSoundboards favoritesWithSoundboards) {
             if (!isAdded()) {
                 // fragment is no longer linked to an activity
                 return;
@@ -296,24 +300,24 @@ public class GameEditFragment extends Fragment {
                 return;
             }
 
-            updateUIGameInfo(gameWithSoundboards);
+            updateUIFavoritesInfo(favoritesWithSoundboards);
             new FindAllSoundboardsTask(requireContext()).execute();
         }
     }
 
     /**
-     * A background task, used to save the gameWithSoundboards
+     * A background task, used to save the favoritesWithSoundboards
      */
-    class SaveNewGameTask extends AsyncTask<Void, Void, Void> {
-        private final String TAG = SaveNewGameTask.class.getName();
+    class SaveNewFavoritesTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = SaveNewFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final GameWithSoundboards gameWithSoundboards;
+        private final FavoritesWithSoundboards favoritesWithSoundboards;
 
-        SaveNewGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
+        SaveNewFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.gameWithSoundboards = gameWithSoundboards;
+            this.favoritesWithSoundboards = favoritesWithSoundboards;
         }
 
         @Override
@@ -325,26 +329,26 @@ public class GameEditFragment extends Fragment {
                 return null;
             }
 
-            Log.d(TAG, "Saving gameWithSoundboards " + gameWithSoundboards);
-            GameDao.getInstance(appContext).insertWithSoundboards(gameWithSoundboards);
+            Log.d(TAG, "Saving favoritesWithSoundboards " + favoritesWithSoundboards);
+            FavoritesDao.getInstance(appContext).insertWithSoundboards(favoritesWithSoundboards);
 
             return null;
         }
     }
 
     /**
-     * A background task, used to save the gameWithSoundboards
+     * A background task, used to save the favoritesWithSoundboards
      */
-    class UpdateGameTask extends AsyncTask<Void, Void, Void> {
-        private final String TAG = UpdateGameTask.class.getName();
+    class UpdateFavoritesTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = UpdateFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
-        private final GameWithSoundboards gameWithSoundboards;
+        private final FavoritesWithSoundboards favoritesWithSoundboards;
 
-        UpdateGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
+        UpdateFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.gameWithSoundboards = gameWithSoundboards;
+            this.favoritesWithSoundboards = favoritesWithSoundboards;
         }
 
         @Override
@@ -356,8 +360,8 @@ public class GameEditFragment extends Fragment {
                 return null;
             }
 
-            Log.d(TAG, "Saving gameWithSoundboards " + gameWithSoundboards);
-            GameDao.getInstance(appContext).updateWithSoundboards(gameWithSoundboards);
+            Log.d(TAG, "Saving favoritesWithSoundboards " + favoritesWithSoundboards);
+            FavoritesDao.getInstance(appContext).updateWithSoundboards(favoritesWithSoundboards);
 
             return null;
         }

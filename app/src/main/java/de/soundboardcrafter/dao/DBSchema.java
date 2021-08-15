@@ -18,10 +18,17 @@ class DBSchema {
     }
 
     /**
-     * The games
+     * The games - no longer used
      */
-    static final class GameTable {
-        static final String NAME = "game";
+    static final class GamesTable {
+        static final String NAME = "games";
+    }
+
+    /**
+     * The favorites
+     */
+    static final class FavoritesTable {
+        static final String NAME = "favorites";
 
         static final class Cols {
             static final String ID = "_id";
@@ -42,14 +49,21 @@ class DBSchema {
     }
 
     /**
-     * Which soundboard belongs to which game(s)
+     * Which soundboard belongs to which game? - No longer used.
      */
-    static final class SoundboardGameTable {
-        static final String NAME = "soundboard_game";
+    static final class SoundboardGamesTable {
+        static final String NAME = "soundboard_games";
+    }
+
+    /**
+     * Which soundboard is part of which favorites?
+     */
+    static final class SoundboardFavoritesTable {
+        static final String NAME = "soundboard_favorites";
 
         static final class Cols {
             static final String SOUNDBOARD_ID = "soundboard_id";
-            static final String GAME_ID = "game_id";
+            static final String FAVORITES_ID = "favorites_id";
         }
     }
 

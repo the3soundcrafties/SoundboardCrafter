@@ -21,12 +21,12 @@
     <string name="soundboards_play_sort_manually_title">Halten und ziehen zum Sortieren</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
     <string name="context_menu_remove_sound">Entfernen</string>
-    <string name="context_menu_edit_game">Bearbeiten</string>
-    <string name="context_menu_remove_game">Löschen</string>
+    <string name="context_menu_edit_favorites">Bearbeiten</string>
+    <string name="context_menu_remove_favorites">Löschen</string>
     <string name="context_menu_edit_soundboard">Umbenennen</string>
     <string name="context_menu_remove_soundboard">Löschen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
-    <string name="reset_all_message">Alle Spiele, Soundboards und Sound-Einstellungen werden
+    <string name="reset_all_message">Alle Favoriten, Soundboards und Sound-Einstellungen werden
         gelöscht. Lautstärkeeinstellungen etc. gehen verloren. Sound-Dateien bleiben erhalten.</string>
     <string name="reset_all_title_cancel">Abbrechen</string>
     <string name="reset_all_title_ok">OK</string>
@@ -42,14 +42,14 @@
         <item quantity="one">1 Sound</item>
         <item quantity="other">%,d Sounds</item>
     </plurals>
-    <string name="games_tab_title">Spiele</string>
-    <string name="new_game">Neues Spiel hinzufügen</string>
+    <string name="favorites_tab_title">Favoriten</string>
+    <string name="new_favorites">Neue Favoriten zusammenstellen</string>
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
     <string name="new_soundboard">Neues Soundboard hinzufügen</string>
     <string name="soundboard_list_preparing">Soundboards werden angelegt…</string>
     <string name="new_soundboard_name">NEU</string>
-    <string name="new_game_name">NEU</string>
+    <string name="new_favorites_name">NEUE FAVORITEN</string>
     <string name="sound_name">Name des Sounds</string>
     <string name="sound_add">Zum Soundboard hinzufügen</string>
     <string name="folder_name">Ordnername</string>
@@ -74,7 +74,7 @@
     <string name="tutorial_audio_file_list_local_audio">Hier klicken, um eigene Sounds zu verwenden</string>
     <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
         Umbenennen oder Löschen</string>
-    <string name="tutorial_game_list_context_menu_description">Lang klicken zum
+    <string name="tutorial_favorites_list_context_menu_description">Lang klicken zum
         Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>
     <string name="about_activity_title">Über den Soundboard Crafter</string>

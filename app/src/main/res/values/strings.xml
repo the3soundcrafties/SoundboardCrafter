@@ -14,8 +14,8 @@
     <string name="toolbar_menu_audiofiles_sort">Sort</string>
     <string name="context_menu_edit_sound">Edit</string>
     <string name="context_menu_remove_sound">Remove</string>
-    <string name="context_menu_edit_game">Edit</string>
-    <string name="context_menu_remove_game">Delete</string>
+    <string name="context_menu_edit_favorites">Edit</string>
+    <string name="context_menu_remove_favorites">Delete</string>
     <string name="context_menu_edit_soundboard">Rename</string>
     <string name="context_menu_remove_soundboard">Delete</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
@@ -26,7 +26,7 @@
     <string name="toolbar_menu_audiofiles_folders_single">By Folder</string>
     <string name="soundboards_play_sort_manually_title">Hold and drag to sort</string>
     <string name="reset_all_title">Delete all data?</string>
-    <string name="reset_all_message">All games, soundboards and sound data will be deleted
+    <string name="reset_all_message">All favorites, soundboards and sound data will be deleted
         from the app. Settings like the volume will be lost. Sound files won\'t be touched.</string>
     <string name="reset_all_title_cancel">Cancel</string>
     <string name="reset_all_title_ok">OK</string>
@@ -42,14 +42,14 @@
         <item quantity="one">1 sound</item>
         <item quantity="other">%,d sounds</item>
     </plurals>
-    <string name="games_tab_title">Games</string>
-    <string name="new_game">Add new Game</string>
+    <string name="favorites_tab_title">Favorites</string>
+    <string name="new_favorites">Add new Favorites</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="new_soundboard">Add new soundboard</string>
     <string name="new_soundboard_name">NEW</string>
     <string name="soundboard_list_preparing">Preparing soundboards…</string>
-    <string name="new_game_name">NEW</string>
+    <string name="new_favorites_name">NEW FAVORITES</string>
     <string name="sound_name">Sound name</string>
     <string name="sound_add">Add to soundboard</string>
     <string name="subfolder_icon">Subfolder</string>
@@ -73,7 +73,7 @@
     <string name="tutorial_audio_file_list_local_audio">Click here to use your own sounds</string>
     <string name="tutorial_soundboard_list_context_menu_description">Long-click to rename
         or delete</string>
-    <string name="tutorial_game_list_context_menu_description">Long-click to edit</string>
+    <string name="tutorial_favorites_list_context_menu_description">Long-click to edit</string>
     <string name="toolbar_menu_item_about">About</string>
     <string name="about_activity_title">About</string>
     <string name="about_text_html">

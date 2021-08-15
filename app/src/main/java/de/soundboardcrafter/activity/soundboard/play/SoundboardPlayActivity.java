@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
-import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -60,14 +60,14 @@ public class SoundboardPlayActivity extends AppCompatActivity
         SoundboardFragment.HostingActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
-    private static final String KEY_GAME_ID = "gameId";
+    private static final String KEY_FAVORITES_ID = "favoritesId";
     private static final String SHARED_PREFERENCES =
             SoundboardPlayActivity.class.getName() + "_Prefs";
     private static final String DIALOG_RESET_ALL = "DialogResetAll";
     private ScreenSlidePagerAdapter pagerAdapter;
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
-    public static final String EXTRA_GAME_ID = "GameId";
+    public static final String EXTRA_FAVORITES_ID = "FavoritesId";
 
     private MediaPlayerService mediaPlayerService;
     private ViewPager2 pager;
@@ -76,10 +76,10 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private final View.OnTouchListener emptyOnTouchListener = (v, event) -> true;
 
     /**
-     * ID of the chose game - or <code>null</code>, if all soundboards shall be displayed.
+     * ID of the chosen favorites - or <code>null</code>, if all soundboards shall be displayed.
      */
     private @Nullable
-    UUID gameId;
+    UUID favoritesId;
 
     private @Nullable
     UUID selectedSoundboardId;
@@ -154,7 +154,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
         if (savedInstanceState != null) {
             selectedSoundboardId = getUUID(savedInstanceState, KEY_SELECTED_SOUNDBOARD_ID);
-            gameId = getUUID(savedInstanceState, KEY_GAME_ID);
+            favoritesId = getUUID(savedInstanceState, KEY_FAVORITES_ID);
         }
         if (selectedSoundboardId == null && getIntent() != null) {
             selectedSoundboardId = getUUIDExtra(getIntent(), EXTRA_SOUNDBOARD_ID);
@@ -162,11 +162,11 @@ public class SoundboardPlayActivity extends AppCompatActivity
         if (selectedSoundboardId == null) {
             selectedSoundboardId = getUUIDPreference(KEY_SELECTED_SOUNDBOARD_ID);
         }
-        if (gameId == null) {
+        if (favoritesId == null) {
             if (getIntent() != null) {
-                gameId = getUUIDExtra(getIntent(), EXTRA_GAME_ID);
+                favoritesId = getUUIDExtra(getIntent(), EXTRA_FAVORITES_ID);
             } else {
-                gameId = getUUIDPreference(KEY_GAME_ID);
+                favoritesId = getUUIDPreference(KEY_FAVORITES_ID);
             }
         }
 
@@ -249,13 +249,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
         super.onStart();
 
         pagerAdapter.clear(false);
-        new FindSoundboardsTask(this, gameId).execute();
+        new FindSoundboardsTask(this, favoritesId).execute();
     }
 
     @Override
     public void soundsDeleted() {
         pagerAdapter.clear(false);
-        new FindSoundboardsTask(this, gameId).execute();
+        new FindSoundboardsTask(this, favoritesId).execute();
     }
 
     @Override
@@ -276,7 +276,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             // This button is only visible for the debug build type.
             // We have a separate bools.xml in the debug folder.
                 !getResources().getBoolean(R.bool.reset_all) //
-                        || gameId != null) {
+                        || favoritesId != null) {
             MenuItem item = menu.findItem(R.id.toolbar_menu_reset_all);
             item.setVisible(false);
             item.setEnabled(false);
@@ -442,16 +442,16 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
     }
 
-    private void setToolbarTitle(@Nullable String gameName) {
+    private void setToolbarTitle(@Nullable String favoritesName) {
         @Nullable ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar == null) {
             return;
         }
 
-        if (isNullOrEmpty(gameName)) {
+        if (isNullOrEmpty(favoritesName)) {
             supportActionBar.setTitle(R.string.soundboards_default_toolbar);
         } else {
-            supportActionBar.setTitle(gameName);
+            supportActionBar.setTitle(favoritesName);
         }
     }
 
@@ -482,7 +482,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         savePreference(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId);
-        savePreference(KEY_GAME_ID, gameId);
+        savePreference(KEY_FAVORITES_ID, favoritesId);
 
         if (pageChangeCallback != null) {
             pager.unregisterOnPageChangeCallback(pageChangeCallback);
@@ -505,7 +505,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         int selectedTab = pager.getCurrentItem();
         @Nullable UUID selectedSoundboardId = pagerAdapter.getSoundboardId(selectedTab);
         putUUID(outState, KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId);
-        putUUID(outState, KEY_GAME_ID, gameId);
+        putUUID(outState, KEY_FAVORITES_ID, favoritesId);
     }
 
     private void putUUID(@NonNull Bundle outState, String key, UUID id) {
@@ -515,7 +515,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     /**
-     * A background task, used to retrieve soundboards (and game name, if a game is chose) from
+     * A background task, used to retrieve soundboards (and name of favorites, if favorites are
+     * chosen) from
      * the database.
      */
     class FindSoundboardsTask extends AsyncTask<Void, Void, SoundboardPlayData> {
@@ -524,12 +525,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
         private final WeakReference<Context> appContextRef;
 
         @Nullable
-        private final UUID gameId;
+        private final UUID favoritesId;
 
-        FindSoundboardsTask(Context context, @Nullable UUID gameId) {
+        FindSoundboardsTask(Context context, @Nullable UUID favoritesId) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            this.gameId = gameId;
+            this.favoritesId = favoritesId;
         }
 
         @Override
@@ -541,22 +542,22 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 return null;
             }
 
-            GameDao gameDao = GameDao.getInstance(appContext);
+            FavoritesDao favoritesDao = FavoritesDao.getInstance(appContext);
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
 
-            @Nullable String gameName = null;
-            if (gameId != null) {
-                Log.d(TAG, "Loading game name");
-                gameName = gameDao.findGameName(gameId);
+            @Nullable String favoritesName = null;
+            if (favoritesId != null) {
+                Log.d(TAG, "Loading favorites name");
+                favoritesName = favoritesDao.findFavoritesName(favoritesId);
             }
 
             Log.d(TAG, "Loading soundboards...");
 
-            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(gameId);
+            ImmutableList<SoundboardWithSounds> res = soundboardDao.findAllWithSounds(favoritesId);
 
             Log.d(TAG, "Soundboards loaded.");
 
-            return new SoundboardPlayData(gameName, res);
+            return new SoundboardPlayData(favoritesName, res);
         }
 
         @Override
@@ -569,7 +570,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 // will be of no use to anyone
                 return;
             }
-            setToolbarTitle(data.getGameName());
+            setToolbarTitle(data.getFavoritesName());
 
             pagerAdapter.addSoundboards(data.getSoundboards());
 
@@ -583,7 +584,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     /**
-     * A background task, used to reset games, soundboards and sounds.
+     * A background task, used to reset favorites, soundboards and sounds.
      */
     class ResetAllTask extends AsyncTask<Void, Void, ImmutableList<SoundboardWithSounds>> {
         private final String TAG = ResetAllTask.class.getName();
@@ -614,7 +615,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             Log.d(TAG, "Loading soundboards...");
 
             final ImmutableList<SoundboardWithSounds> res =
-                    // Resetting if only enabled when no game is selected
+                    // Resetting is only enabled when no favorites are selected
                     soundboardDao.findAllWithSounds(null);
 
             Log.d(TAG, "Soundboards loaded.");

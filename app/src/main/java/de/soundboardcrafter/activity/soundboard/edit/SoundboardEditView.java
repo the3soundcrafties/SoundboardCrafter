@@ -12,7 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import de.soundboardcrafter.R;
 
 /**
- * Custom view for editing a game (name, soundboards etc.).
+ * Custom view for editing a soundboard.
  */
 public class SoundboardEditView extends ConstraintLayout {
     private TextView nameTextView;

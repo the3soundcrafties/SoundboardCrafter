@@ -1,8 +1,8 @@
-package de.soundboardcrafter.activity.game.list;
+package de.soundboardcrafter.activity.favorites.list;
 
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
-import static de.soundboardcrafter.dao.TutorialDao.Key.GAME_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.FAVORITES_LIST_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,20 +38,20 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.TutorialUtil;
-import de.soundboardcrafter.activity.game.edit.GameCreateActivity;
-import de.soundboardcrafter.activity.game.edit.GameEditActivity;
+import de.soundboardcrafter.activity.favorites.edit.FavoritesCreateActivity;
+import de.soundboardcrafter.activity.favorites.edit.FavoritesEditActivity;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
-import de.soundboardcrafter.dao.GameDao;
+import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.TutorialDao;
-import de.soundboardcrafter.model.GameWithSoundboards;
+import de.soundboardcrafter.model.FavoritesWithSoundboards;
 
 /**
- * Shows Games in a Grid
+ * Shows favorites in a Grid
  */
-public class GameListFragment extends Fragment
+public class FavoritesListFragment extends Fragment
         implements SoundEventListener {
-    private static final String TAG = GameListFragment.class.getName();
+    private static final String TAG = FavoritesListFragment.class.getName();
 
     private static final int TAP_TARGET_RADIUS_DP = 44;
 
@@ -67,40 +67,40 @@ public class GameListFragment extends Fragment
     private static final int SOUNDBOARD_PLAY_REQUEST_CODE = 1;
 
     private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 27;
-    private static final int EDIT_GAME_REQUEST_CODE = 26;
+    private static final int EDIT_FAVORITES_REQUEST_CODE = 26;
 
     private @Nullable
     SoundEventListener soundEventListenerActivity;
 
     private ListView listView;
-    private GameListItemAdapter adapter;
+    private FavoritesListItemAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new GameListFragment.FindGamesTask(requireContext()).execute();
+        new FindFavoritesTask(requireContext()).execute();
     }
 
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_game_list,
+        View rootView = inflater.inflate(R.layout.fragment_favorites_list,
                 container, false);
-        listView = rootView.findViewById(R.id.list_view_games);
+        listView = rootView.findViewById(R.id.list_view_favorites);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             if (adapter == null) {
                 return;
             }
 
-            onClickGame(adapter.getItem(position));
+            onClickFavorites(adapter.getItem(position));
         });
 
-        Button addNewGame = rootView.findViewById(R.id.new_game);
-        addNewGame.setOnClickListener(e ->
+        Button addNewFavorites = rootView.findViewById(R.id.new_favorites);
+        addNewFavorites.setOnClickListener(e ->
                 startActivityForResult(
-                        GameCreateActivity.newIntent(getContext()),
+                        FavoritesCreateActivity.newIntent(getContext()),
                         CREATE_SOUNDBOARD_REQUEST_CODE));
         registerForContextMenu(listView);
 
@@ -117,21 +117,21 @@ public class GameListFragment extends Fragment
 
     private void showTutorialHintIfNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(GAME_LIST_CONTEXT_MENU) && !adapter.isEmpty()) {
+        if (!tutorialDao.isChecked(FAVORITES_LIST_CONTEXT_MENU) && !adapter.isEmpty()) {
             showTutorialHint();
         }
     }
 
     private void showTutorialHint() {
         showTutorialHint(
-                R.string.tutorial_game_list_context_menu_description,
+                R.string.tutorial_favorites_list_context_menu_description,
                 createLongClickTutorialListener(
                         () -> {
                             @Nullable View itemView =
                                     listView.getChildAt(listView.getFirstVisiblePosition());
                             if (itemView != null) {
                                 TutorialDao.getInstance(requireContext())
-                                        .check(GAME_LIST_CONTEXT_MENU);
+                                        .check(FAVORITES_LIST_CONTEXT_MENU);
                                 itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
                                         dpToPx(requireContext(), FIRST_ITEM_Y_DP));
                             }
@@ -150,11 +150,11 @@ public class GameListFragment extends Fragment
         }
     }
 
-    private void onClickGame(GameWithSoundboards gameWithSoundboards) {
+    private void onClickFavorites(FavoritesWithSoundboards favoritesWithSoundboards) {
         Intent intent = new Intent(getContext(), SoundboardPlayActivity.class);
         intent.putExtra(
-                SoundboardPlayActivity.EXTRA_GAME_ID,
-                gameWithSoundboards.getGame().getId().toString());
+                SoundboardPlayActivity.EXTRA_FAVORITES_ID,
+                favoritesWithSoundboards.getFavorites().getId().toString());
 
         startActivityForResult(intent, SOUNDBOARD_PLAY_REQUEST_CODE);
     }
@@ -183,21 +183,21 @@ public class GameListFragment extends Fragment
         menu.add(UNIQUE_TAB_ID,
                 1,
                 0,
-                R.string.context_menu_edit_game);
+                R.string.context_menu_edit_favorites);
         menu.add(UNIQUE_TAB_ID,
                 2,
                 1,
-                R.string.context_menu_remove_game);
+                R.string.context_menu_remove_favorites);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
-        GameListItemRow itemRow = (GameListItemRow) adapterContextMenuInfo.targetView;
+        FavoritesListItemRow itemRow = (FavoritesListItemRow) adapterContextMenuInfo.targetView;
 
-        menu.setHeaderTitle(itemRow.getGameWithSoundboards().getGame().getName());
+        menu.setHeaderTitle(itemRow.getFavoritesWithSoundboards().getFavorites().getName());
 
         @Nullable final Context context = getContext();
         if (context != null) {
-            TutorialDao.getInstance(context).check(TutorialDao.Key.GAME_LIST_CONTEXT_MENU);
+            TutorialDao.getInstance(context).check(TutorialDao.Key.FAVORITES_LIST_CONTEXT_MENU);
         }
     }
 
@@ -212,17 +212,17 @@ public class GameListFragment extends Fragment
         }
         AdapterView.AdapterContextMenuInfo menuInfo =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        GameListItemRow itemRow = (GameListItemRow) menuInfo.targetView;
-        GameWithSoundboards gameWithSoundboards = itemRow.getGameWithSoundboards();
+        FavoritesListItemRow itemRow = (FavoritesListItemRow) menuInfo.targetView;
+        FavoritesWithSoundboards favoritesWithSoundboards = itemRow.getFavoritesWithSoundboards();
         final int id = item.getItemId();
         if (id == 1) {
-            Intent intent = GameEditActivity
-                    .newIntent(requireActivity(), gameWithSoundboards.getGame());
-            startActivityForResult(intent, EDIT_GAME_REQUEST_CODE);
+            Intent intent = FavoritesEditActivity
+                    .newIntent(requireActivity(), favoritesWithSoundboards.getFavorites());
+            startActivityForResult(intent, EDIT_FAVORITES_REQUEST_CODE);
             return true;
         } else if (id == 2) {
-            new RemoveGameTask(requireActivity(), gameWithSoundboards).execute();
-            adapter.remove(gameWithSoundboards);
+            new RemoveFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
+            adapter.remove(favoritesWithSoundboards);
             return true;
         } else {
             return false;
@@ -241,12 +241,13 @@ public class GameListFragment extends Fragment
                 fireSomethingMightHaveChanged();
                 break;
             case CREATE_SOUNDBOARD_REQUEST_CODE:
-                Log.d(TAG, "created new game " + this);
-                new FindGamesTask(requireContext()).execute();
+                Log.d(TAG, "created new favorites " + this);
+                new FindFavoritesTask(requireContext()).execute();
                 break;
-            case EDIT_GAME_REQUEST_CODE:
-                Log.d(TAG, "Editing game " + this + ": Returned from game edit fragment with OK");
-                new FindGamesTask(requireContext()).execute();
+            case EDIT_FAVORITES_REQUEST_CODE:
+                Log.d(TAG, "Editing favorites " + this
+                        + ": Returned from favorites edit fragment with OK");
+                new FindFavoritesTask(requireContext()).execute();
                 break;
         }
     }
@@ -264,19 +265,19 @@ public class GameListFragment extends Fragment
             return;
         }
 
-        new GameListFragment.FindGamesTask(context).execute();
+        new FindFavoritesTask(context).execute();
     }
 
     @Override
     public void soundChanged(UUID soundId) {
-        // This does not make a difference for the list of games
+        // This does not make a difference for the favorites
     }
 
     @UiThread
-    private void initGameItemAdapter(ImmutableList<GameWithSoundboards> games) {
-        List<GameWithSoundboards> list = Lists.newArrayList(games);
-        list.sort(Comparator.comparing(g -> g.getGame().getCollationKey()));
-        adapter = new GameListItemAdapter(list);
+    private void initFavoritesItemAdapter(ImmutableList<FavoritesWithSoundboards> favorites) {
+        List<FavoritesWithSoundboards> list = Lists.newArrayList(favorites);
+        list.sort(Comparator.comparing(g -> g.getFavorites().getCollationKey()));
+        adapter = new FavoritesListItemAdapter(list);
         listView.setAdapter(adapter);
         updateUI();
     }
@@ -291,14 +292,14 @@ public class GameListFragment extends Fragment
     /**
      * A background task, used to remove soundboard with the given indexes from the soundboard
      */
-    static class RemoveGameTask extends AsyncTask<Integer, Void, Void> {
+    static class RemoveFavoritesTask extends AsyncTask<Integer, Void, Void> {
         private final WeakReference<Context> appContextRef;
-        private final UUID gameId;
+        private final UUID favoritesId;
 
-        RemoveGameTask(Context context, GameWithSoundboards gameWithSoundboards) {
+        RemoveFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
-            gameId = gameWithSoundboards.getGame().getId();
+            favoritesId = favoritesWithSoundboards.getFavorites().getId();
         }
 
         @Override
@@ -310,8 +311,8 @@ public class GameListFragment extends Fragment
                 return null;
             }
 
-            GameDao gameDao = GameDao.getInstance(appContext);
-            gameDao.remove(gameId);
+            FavoritesDao favoritesDao = FavoritesDao.getInstance(appContext);
+            favoritesDao.remove(favoritesId);
             return null;
         }
 
@@ -319,41 +320,43 @@ public class GameListFragment extends Fragment
 
 
     /**
-     * A background task, used to retrieve games from the database.
+     * A background task, used to retrieve favorites from the database.
      */
-    class FindGamesTask extends AsyncTask<Void, Void, ImmutableList<GameWithSoundboards>> {
-        private final String TAG = GameListFragment.FindGamesTask.class.getName();
+    class FindFavoritesTask extends AsyncTask<Void, Void, ImmutableList<FavoritesWithSoundboards>> {
+        private final String TAG = FindFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
 
-        FindGamesTask(Context context) {
+        FindFavoritesTask(Context context) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
         }
 
         @Override
         @WorkerThread
-        protected ImmutableList<GameWithSoundboards> doInBackground(Void... voids) {
+        protected ImmutableList<FavoritesWithSoundboards> doInBackground(Void... voids) {
             Context appContext = appContextRef.get();
             if (appContext == null) {
                 cancel(true);
                 return null;
             }
 
-            GameDao gameDao = GameDao.getInstance(appContext);
+            FavoritesDao favoritesDao = FavoritesDao.getInstance(appContext);
 
-            Log.d(TAG, "Loading games...");
+            Log.d(TAG, "Loading favorites...");
 
-            ImmutableList<GameWithSoundboards> res = gameDao.findAllGamesWithSoundboards();
+            ImmutableList<FavoritesWithSoundboards> res =
+                    favoritesDao.findAllFavoritesWithSoundboards();
 
-            Log.d(TAG, "Games loaded.");
+            Log.d(TAG, "Favorites loaded.");
 
             return res;
         }
 
         @Override
         @UiThread
-        protected void onPostExecute(ImmutableList<GameWithSoundboards> gameWithSoundboards) {
+        protected void onPostExecute(
+                ImmutableList<FavoritesWithSoundboards> favoritesWithSoundboards) {
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -361,7 +364,7 @@ public class GameListFragment extends Fragment
                 // will be of no use to anyone
                 return;
             }
-            initGameItemAdapter(gameWithSoundboards);
+            initFavoritesItemAdapter(favoritesWithSoundboards);
         }
     }
 }

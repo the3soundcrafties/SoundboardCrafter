@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
@@ -8,15 +10,13 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
- * A game to which a soundboard might be linked.
+ * A single favorites instance to which a soundboard might be linked.
  * <p></p>
- * <code>Games</code>s are not thread-safe. So it might be necessary to use
+ * <code>Favorites</code> are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
-public class Game extends AbstractEntity {
+public class Favorites extends AbstractEntity {
     private static final ThreadSafeCollator nameCollator =
             ThreadSafeCollator.getInstance();
 
@@ -27,12 +27,12 @@ public class Game extends AbstractEntity {
     @NonNull
     private transient CollationKey collationKey;
 
-    Game(@NonNull String name) {
+    Favorites(@NonNull String name) {
         this(UUID.randomUUID(), name);
     }
 
 
-    public Game(@Nonnull UUID id, String name) {
+    public Favorites(@Nonnull UUID id, String name) {
         super(id);
         setName(checkNotNull(name, "name is null"));
     }
@@ -67,7 +67,8 @@ public class Game extends AbstractEntity {
         out.defaultWriteObject();
     }
 
-    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(final java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         setCollationKey();
     }
@@ -76,11 +77,9 @@ public class Game extends AbstractEntity {
     @Override
     public @Nonnull
     String toString() {
-        return "Game{" +
+        return "Favorites{" +
                 "id=" + getId() +
                 ", name='" + name + '\'' +
                 '}';
     }
-
-
 }

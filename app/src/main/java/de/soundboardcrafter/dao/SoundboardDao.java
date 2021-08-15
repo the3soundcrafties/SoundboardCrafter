@@ -1,5 +1,7 @@
 package de.soundboardcrafter.dao;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -27,15 +29,13 @@ import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Database Access Object for accessing Soundboards in the database
  */
 @WorkerThread
 public class SoundboardDao extends AbstractDao {
     private SoundDao soundDao;
-    private GameDao gameDao;
+    private FavoritesDao favoritesDao;
 
     private static SoundboardDao instance;
 
@@ -54,13 +54,13 @@ public class SoundboardDao extends AbstractDao {
 
     private void init(@Nonnull Context context) {
         soundDao = SoundDao.getInstance(context);
-        gameDao = GameDao.getInstance(context);
+        favoritesDao = FavoritesDao.getInstance(context);
     }
 
     public void clearDatabase() {
         unlinkAllSounds();
-        gameDao.unlinkAllGames();
-        gameDao.deleteAllGames();
+        favoritesDao.unlinkAllFavorites();
+        favoritesDao.deleteAllFavorites();
         soundDao.deleteAllSounds();
         deleteAllSoundboards();
     }
@@ -72,16 +72,16 @@ public class SoundboardDao extends AbstractDao {
         return !findAll().isEmpty();
     }
 
-    public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID gameId) {
+    public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID favoritesId) {
         Object[] params;
-        if (gameId != null) {
-            params = new Object[]{gameId};
+        if (favoritesId != null) {
+            params = new Object[]{favoritesId};
         } else {
             params = new Object[0];
         }
 
         Cursor rawCursor = rawQueryOrThrow(
-                FullJoinSoundboardCursorWrapper.queryString(gameId), params);
+                FullJoinSoundboardCursorWrapper.queryString(favoritesId), params);
         return find(rawCursor);
     }
 

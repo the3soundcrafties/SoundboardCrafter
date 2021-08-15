@@ -34,7 +34,7 @@ public class AudioModelAndSound extends AbstractAudioFolderEntry {
     public CollationKey getCollationKey() {
         // This only works because AudioModel and Sound internally use
         // the same Collator object.
-        // (I am assuming, that the user does not fiddle with his
+        // (I assume, that the user does not fiddle with his
         // location settings while using the app.)
 
         if (sound == null) {

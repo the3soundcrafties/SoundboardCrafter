@@ -12,7 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="6dp"
-        android:src="@drawable/ic_game_list_item" />
+        android:src="@drawable/ic_favorites_list_item" />
 
     <TextView
         android:id="@+id/soundboard_count"
@@ -27,7 +27,7 @@
         tools:text="15 soundboards" />
 
     <TextView
-        android:id="@+id/game_name"
+        android:id="@+id/favorites_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/soundboard_count"
@@ -38,5 +38,5 @@
         android:gravity="center_vertical"
         android:singleLine="true"
         android:textSize="16sp"
-        tools:text="Game name" />
+        tools:text="Name of Favorites" />
 </RelativeLayout>

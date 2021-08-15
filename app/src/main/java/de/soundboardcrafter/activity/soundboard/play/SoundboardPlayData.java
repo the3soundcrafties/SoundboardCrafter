@@ -13,18 +13,19 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  */
 class SoundboardPlayData {
     @Nullable
-    private final String gameName;
+    private final String favoritesName;
 
     private final ImmutableList<SoundboardWithSounds> soundboards;
 
-    public SoundboardPlayData(@Nullable String gameName, ImmutableList<SoundboardWithSounds> soundboards) {
-        this.gameName = gameName;
+    public SoundboardPlayData(@Nullable String favoritesName,
+                              ImmutableList<SoundboardWithSounds> soundboards) {
+        this.favoritesName = favoritesName;
         this.soundboards = soundboards;
     }
 
     @Nullable
-    public String getGameName() {
-        return gameName;
+    public String getFavoritesName() {
+        return favoritesName;
     }
 
     public ImmutableList<SoundboardWithSounds> getSoundboards() {
@@ -40,19 +41,19 @@ class SoundboardPlayData {
             return false;
         }
         SoundboardPlayData that = (SoundboardPlayData) o;
-        return Objects.equals(gameName, that.gameName) &&
+        return Objects.equals(favoritesName, that.favoritesName) &&
                 soundboards.equals(that.soundboards);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gameName, soundboards);
+        return Objects.hash(favoritesName, soundboards);
     }
 
     @Override
     public String toString() {
         return "SoundboardPlayData{" +
-                "gameName='" + gameName + '\'' +
+                "favoritesName='" + favoritesName + '\'' +
                 ", " + soundboards.size() + " soundboard(s)}";
     }
 }

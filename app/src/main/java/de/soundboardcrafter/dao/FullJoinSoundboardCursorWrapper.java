@@ -1,5 +1,7 @@
 package de.soundboardcrafter.dao;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
@@ -10,21 +12,19 @@ import androidx.annotation.WorkerThread;
 import java.util.UUID;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
-import de.soundboardcrafter.dao.DBSchema.SoundboardGameTable;
+import de.soundboardcrafter.dao.DBSchema.SoundboardFavoritesTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Essentially a cursor over a soundboard that's joined with all its sounds.
  */
 @WorkerThread
 class FullJoinSoundboardCursorWrapper extends CursorWrapper {
-    static String queryString(@Nullable UUID gameId) {
+    static String queryString(@Nullable UUID favoritesId) {
         String res = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
                 + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX
@@ -36,12 +36,12 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
                 + ", s." + SoundTable.Cols.LOOP
                 + " " //
                 + "FROM " + SoundboardTable.NAME + " sb ";
-        if (gameId != null) {
+        if (favoritesId != null) {
             res = res
-                    + "JOIN " + SoundboardGameTable.NAME + " sg "
-                    + "ON sg." + SoundboardGameTable.Cols.SOUNDBOARD_ID + " = sb."
+                    + "JOIN " + SoundboardFavoritesTable.NAME + " sg "
+                    + "ON sg." + SoundboardFavoritesTable.Cols.SOUNDBOARD_ID + " = sb."
                     + SoundboardTable.Cols.ID + " " //
-                    + "AND sg." + SoundboardGameTable.Cols.GAME_ID + " = ? ";
+                    + "AND sg." + SoundboardFavoritesTable.Cols.FAVORITES_ID + " = ? ";
         }
 
         res = res

@@ -112,6 +112,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
      */
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
+    @Nullable
     private MenuItem byFolderMenuItem;
     private ListView listView;
     private ConstraintLayout folderLayout;
@@ -132,6 +133,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     /**
      * Creates an <code>AudioFileListFragment</code>.
      */
+    @NonNull
     public static AudioFileListFragment createFragment() {
         return new AudioFileListFragment();
     }
@@ -175,7 +177,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     }
 
     private void bindService() {
-        Intent intent = new Intent(getActivity(), MediaPlayerService.class);
+        Intent intent = new Intent(requireActivity(), MediaPlayerService.class);
         requireActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
@@ -191,7 +193,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_audiofile_list,
                 container, false);
 
@@ -264,7 +266,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         throw new IllegalStateException("Unexpected folder type: " + selection.getClass());
     }
 
-    private void changeFolder(String newFolder) {
+    private void changeFolder(@NonNull String newFolder) {
         checkNotNull(selection, "newFolder");
 
         if (selection instanceof FileSystemFolderAudioLocation) {
@@ -277,7 +279,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         }
     }
 
-    private IAudioFileSelection getFolder(Bundle savedInstanceState) {
+    private IAudioFileSelection getFolder(@NonNull Bundle savedInstanceState) {
         @Nullable String type = savedInstanceState.getString(STATE_FOLDER_TYPE);
         @Nullable String path = savedInstanceState.getString(STATE_FOLDER_PATH);
         if (type == null || path == null) {
@@ -340,7 +342,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
     @UiThread
     private void showTutorialHint(
-            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+            int descriptionId, @NonNull TapTargetView.Listener tapTargetViewListener) {
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
@@ -350,7 +352,8 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         }
     }
 
-    private void showTutorialHintForOwnSounds(TutorialDao tutorialDao, Activity activity,
+    private void showTutorialHintForOwnSounds(@NonNull TutorialDao tutorialDao,
+                                              @NonNull Activity activity,
                                               @NonNull View view) {
         TapTargetView.showFor(activity,
                 TapTarget.forView(view, activity.getResources().getString(
@@ -458,10 +461,12 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         throw new IllegalStateException("Unexpected type of folder: " + selection.getClass());
     }
 
+    @NonNull
     private static String calcFolderDisplayPath(@NonNull FileSystemFolderAudioLocation folder) {
         return folder.getPath();
     }
 
+    @NonNull
     private static String calcFolderDisplayPath(@NonNull AssetFolderAudioLocation folder) {
         if (isRootFolder(folder)) {
             return "/";
@@ -506,7 +511,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         startFindingAudioFilesOrAskForPermission();
     }
 
-    private void onClickAudioSubfolder(AudioSubfolderRow audioSubfolderRow) {
+    private void onClickAudioSubfolder(@NonNull AudioSubfolderRow audioSubfolderRow) {
         @Nullable String subfolderPath = audioSubfolderRow.getPath();
         if (subfolderPath == null) {
             return;
@@ -528,7 +533,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         } // Otherwise, the fragment will receive an event later.
     }
 
-    private void onClickAudioFile(AudioFileRow audioFileItemRow,
+    private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow,
                                   int position) {
         MediaPlayerService service = getService();
         if (service == null) {
@@ -596,7 +601,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
     @Override
     @UiThread
-    public void onEditAudioFile(AudioModelAndSound audioModelAndSound) {
+    public void onEditAudioFile(@NonNull AudioModelAndSound audioModelAndSound) {
         final Sound sound;
         if (audioModelAndSound.getSound() == null) {
             // Create and save new sound
@@ -611,7 +616,10 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         Log.d(TAG, "Editing sound for audio file " +
                 audioModelAndSound.getAudioModel().getAudioLocation());
 
-        TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
+        @Nullable final Context context = getContext();
+        if (context != null) {
+            TutorialDao.getInstance(context).check(AUDIO_FILE_LIST_EDIT);
+        }
 
         Intent intent = AudiofileListSoundEditActivity.newIntent(requireContext(), sound);
         startActivityForResult(intent, EDIT_SOUND_REQUEST_CODE);
@@ -629,7 +637,8 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             case EDIT_SOUND_REQUEST_CODE:
                 if (soundEventListenerActivity != null) {
                     @Nullable String soundIdString =
-                            data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID);
+                            data != null ?
+                                    data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID) : null;
                     if (soundIdString != null) {
                         final UUID soundId = UUID.fromString(soundIdString);
                         soundEventListenerActivity.soundChanged(soundId);
@@ -676,12 +685,16 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         stopPlaying();
         adapter.setAudioFolderEntries(audioFolderEntries);
 
-        TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)
-                && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
-                && !adapter.isEmpty()
-                && (adapter.getItem(0) instanceof AudioModelAndSound)) {
-            showTutorialHintForEdit();
+        @Nullable final Context context = getContext();
+
+        if (context != null) {
+            TutorialDao tutorialDao = TutorialDao.getInstance(context);
+            if (tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)
+                    && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
+                    && !adapter.isEmpty()
+                    && (adapter.getItem(0) instanceof AudioModelAndSound)) {
+                showTutorialHintForEdit();
+            }
         }
     }
 
@@ -782,6 +795,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             ImmutableList<? extends AbstractAudioFolderEntry>> {
         private final String TAG = FindAudioFilesTask.class.getName();
 
+        @NonNull
         private final WeakReference<Context> appContextRef;
 
         private final IAudioFileSelection selection;
@@ -812,9 +826,10 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                                 .compare((AudioModelAndSound) one, (AudioModelAndSound) other);
                     }
                 };
+        @NonNull
         private final SortOrder sortOrder;
 
-        FindAudioFilesTask(Context context, IAudioFileSelection selection,
+        FindAudioFilesTask(@NonNull Context context, IAudioFileSelection selection,
                            @NonNull SortOrder sortOrder) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
@@ -822,6 +837,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             this.sortOrder = sortOrder;
         }
 
+        @Nullable
         @Override
         @WorkerThread
         protected ImmutableList<? extends AbstractAudioFolderEntry> doInBackground(Void... voids) {
@@ -893,15 +909,17 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     static class SaveNewSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveNewSoundTask.class.getName();
 
+        @NonNull
         private final WeakReference<Context> appContextRef;
         private final Sound sound;
 
-        SaveNewSoundTask(Context context, Sound sound) {
+        SaveNewSoundTask(@NonNull Context context, Sound sound) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.sound = sound;
         }
 
+        @Nullable
         @Override
         @WorkerThread
         protected Void doInBackground(Void... voids) {
@@ -927,15 +945,17 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = DeleteSoundTask.class.getName();
 
+        @NonNull
         private final WeakReference<Context> appContextRef;
         private final UUID soundId;
 
-        DeleteSoundTask(Context context, UUID soundId) {
+        DeleteSoundTask(@NonNull Context context, UUID soundId) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.soundId = soundId;
         }
 
+        @Nullable
         @Override
         @WorkerThread
         protected Void doInBackground(Void... voids) {

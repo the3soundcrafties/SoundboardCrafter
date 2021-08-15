@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.game.edit;
+package de.soundboardcrafter.activity.favorites.edit;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -15,37 +15,37 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.sound.edit.common.SelectableSoundboardListItemAdapter;
+import de.soundboardcrafter.activity.soundboard.selectable;
 import de.soundboardcrafter.model.SelectableSoundboard;
 
 /**
- * Custom view for editing a game (name, soundboards etc.).
+ * Custom view for editing favorites (name, soundboards etc.).
  */
-public class GameEditView extends ConstraintLayout {
+public class FavoritesEditView extends ConstraintLayout {
     private TextView nameTextView;
     private ListView soundboardsListView;
-    private SelectableSoundboardListItemAdapter adapter;
+    private selectable.SelectableSoundboardListItemAdapter adapter;
     private Button cancel;
     private Button save;
 
 
-    public GameEditView(Context context) {
+    public FavoritesEditView(Context context) {
         super(context);
         init();
     }
 
-    public GameEditView(Context context, AttributeSet attrs) {
+    public FavoritesEditView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public GameEditView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public FavoritesEditView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
     private void init() {
-        inflate(getContext(), R.layout.view_game_edit, this);
+        inflate(getContext(), R.layout.view_favorites_edit, this);
         nameTextView = findViewById(R.id.nameText);
         soundboardsListView = findViewById(R.id.soundboardsList);
         cancel = findViewById(R.id.cancel);
@@ -71,7 +71,7 @@ public class GameEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        adapter = new selectable.SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

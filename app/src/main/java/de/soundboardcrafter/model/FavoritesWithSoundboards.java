@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
 import com.google.common.collect.ImmutableList;
@@ -10,47 +12,47 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
- * A game to which a soundboard might be linked.
+ * Favorites with their soundboards.
  * <p></p>
- * <code>Games</code>s are not thread-safe. So it might be necessary to use
+ * <code>Favorites</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
-public class GameWithSoundboards implements Serializable {
+public class FavoritesWithSoundboards implements Serializable {
     @NonNull
-    private final Game game;
+    private final Favorites favorites;
     /**
-     * The soundboards the game belonging to
+     * The soundboards that make up these favorites.
      */
     private final ArrayList<Soundboard> soundboards;
 
 
-    public GameWithSoundboards(@NonNull String name) {
-        this(new Game(name));
+    public FavoritesWithSoundboards(@NonNull String name) {
+        this(new Favorites(name));
     }
 
-    public GameWithSoundboards(@Nonnull Game game) {
-        this(game, new ArrayList<>());
+    public FavoritesWithSoundboards(@Nonnull Favorites favorites) {
+        this(favorites, new ArrayList<>());
     }
 
-    private GameWithSoundboards(@Nonnull Game game, @Nonnull ArrayList<Soundboard> soundboards) {
-        this.game = game;
+    private FavoritesWithSoundboards(@Nonnull Favorites favorites,
+                                     @Nonnull ArrayList<Soundboard> soundboards) {
+        this.favorites = favorites;
         this.soundboards = checkNotNull(soundboards, "soundboards is null");
     }
 
     public void addSoundboard(Soundboard soundboard) {
         Optional<Soundboard> foundSoundboard =
-                soundboards.stream().filter(sd -> sd.getId().equals(soundboard.getId())).findFirst();
+                soundboards.stream().filter(sd -> sd.getId().equals(soundboard.getId()))
+                        .findFirst();
         if (!foundSoundboard.isPresent()) {
             soundboards.add(soundboard);
         }
     }
 
     public @Nonnull
-    Game getGame() {
-        return game;
+    Favorites getFavorites() {
+        return favorites;
     }
 
 
@@ -65,8 +67,8 @@ public class GameWithSoundboards implements Serializable {
     @Override
     public @NonNull
     String toString() {
-        return "GameWithSoundboards{" +
-                "game=" + game +
+        return "FavoritesWithSoundboards{" +
+                "favorites=" + favorites +
                 ", soundboards=" + soundboards +
                 '}';
     }
