@@ -3,20 +3,7 @@ apply plugin: 'com.android.application'
 android {
     //noinspection SpellCheckingInspection
     signingConfigs {
-        // See https://medium.com/@chauyan/how-to-use-properties-file-to-do-android-sign-action-in-gradle-45d51e31a98c
-        config {
-            Properties localProps = new Properties()
-            localProps.load(new FileInputStream(file('../local.properties')))
-            Properties keyProps = new Properties()
-            assert localProps['keystore.props.file']
-
-            keyProps.load(new FileInputStream(file(localProps['keystore.props.file'])))
-
-            storeFile file(keyProps["RELEASE_STORE_FILE"])
-            keyAlias keyProps["RELEASE_KEY_ALIAS"]
-            storePassword keyProps["RELEASE_STORE_PASSWORD"]
-            keyPassword keyProps["RELEASE_KEY_PASSWORD"]
-        }
+        config
     }
     compileSdkVersion 30
     defaultConfig {
@@ -74,4 +61,26 @@ dependencies {
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'
+}
+
+// See https://medium.com/@chauyan/how-to-use-properties-file-to-do-android-sign-action-in-gradle-45d51e31a98c
+// and https://gist.github.com/SleeplessByte/89c90f702c0f2fdc2b12
+
+File localPropsFile = file('../local.properties')
+if (localPropsFile.exists()) {
+    // On local android
+    Properties localProps = new Properties()
+    localProps.load(new FileInputStream(localPropsFile))
+    assert localProps['keystore.props.file']
+
+    Properties keyProps = new Properties()
+    keyProps.load(new FileInputStream(file(localProps['keystore.props.file'])))
+
+    android.signingConfigs.config.storeFile = file(keyProps["RELEASE_STORE_FILE"])
+    android.signingConfigs.config.storePassword = keyProps["RELEASE_STORE_PASSWORD"]
+    android.signingConfigs.config.keyAlias = keyProps["RELEASE_KEY_ALIAS"]
+    android.signingConfigs.config.keyPassword = keyProps["RELEASE_KEY_PASSWORD"]
+} else {
+    // Within the Github workflow, e.g.
+    android.buildTypes.release.signingConfig = null
 }
