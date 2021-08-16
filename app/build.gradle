@@ -83,4 +83,6 @@ if (localPropsFile.exists()) {
 } else {
     // Within the Github workflow, e.g.
     android.buildTypes.release.signingConfig = null
+    android.buildTypes.debug.signingConfig = null
+    android.buildTypes.staging.signingConfig = null
 }
