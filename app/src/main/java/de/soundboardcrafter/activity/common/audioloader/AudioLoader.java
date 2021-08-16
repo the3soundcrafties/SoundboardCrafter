@@ -1,5 +1,8 @@
 package de.soundboardcrafter.activity.common.audioloader;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.emptyToNull;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -36,9 +39,6 @@ import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.audio.AudioFolder;
 import de.soundboardcrafter.model.audio.BasicAudioModel;
 import de.soundboardcrafter.model.audio.FullAudioModel;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.emptyToNull;
 
 /**
  * Loader for audio files. Can load audio files from the assets as well as from the device.
@@ -338,22 +338,21 @@ public class AudioLoader {
                                                          String assetPath,
                                                          String filename)
             throws IOException {
-        AssetFileDescriptor fileDescriptor = assets.openFd(assetPath);
+        try (AssetFileDescriptor fileDescriptor = assets.openFd(assetPath)) {
+            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+            metadataRetriever.setDataSource(fileDescriptor.getFileDescriptor(),
+                    fileDescriptor.getStartOffset(),
+                    fileDescriptor.getLength());
 
-        MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
-        metadataRetriever.setDataSource(fileDescriptor.getFileDescriptor(),
-                fileDescriptor.getStartOffset(),
-                fileDescriptor.getLength());
-
-        @Nonnull String name = skipExtension(filename);
-        long durationSecs = extractDurationSecs(metadataRetriever);
-        @Nullable String artist = extractArtist(metadataRetriever);
-
-        return new FullAudioModel(
-                new AssetFolderAudioLocation(assetPath),
-                name,
-                artist,
-                durationSecs);
+            @Nonnull String name = skipExtension(filename);
+            long durationSecs = extractDurationSecs(metadataRetriever);
+            @Nullable String artist = extractArtist(metadataRetriever);
+            return new FullAudioModel(
+                    new AssetFolderAudioLocation(assetPath),
+                    name,
+                    artist,
+                    durationSecs);
+        }
     }
 
     private BasicAudioModel createBasicAudioModelFromAsset(String assetPath,
