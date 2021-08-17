@@ -137,7 +137,7 @@ public class SoundboardListFragment extends Fragment
         registerForContextMenu(listView);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            if (adapter.isEmpty()) {
+            if (adapter == null || adapter.isEmpty()) {
                 return;
             }
 
@@ -160,7 +160,8 @@ public class SoundboardListFragment extends Fragment
 
     private void showTutorialHintIfNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU) && !adapter.isEmpty()) {
+        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU)
+                && adapter != null && !adapter.isEmpty()) {
             showTutorialHint();
         }
     }

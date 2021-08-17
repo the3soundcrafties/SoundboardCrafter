@@ -117,7 +117,8 @@ public class FavoritesListFragment extends Fragment
 
     private void showTutorialHintIfNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(FAVORITES_LIST_CONTEXT_MENU) && !adapter.isEmpty()) {
+        if (!tutorialDao.isChecked(FAVORITES_LIST_CONTEXT_MENU)
+                && adapter != null && !adapter.isEmpty()) {
             showTutorialHint();
         }
     }
