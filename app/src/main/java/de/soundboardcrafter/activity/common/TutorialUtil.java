@@ -67,6 +67,10 @@ public class TutorialUtil {
             boolean fromTheRight,
             int descriptionId,
             TapTargetView.Listener tapTargetViewListener) {
+        if (view.getWidth() == 0 || view.getHeight() == 0) {
+            return;
+        }
+
         TapTargetView.showFor(activity,
                 tapTargetForBounds(view, xOffsetDp, yOffsetDp, tapTargetRadiusDp,
                         fromTheRight, descriptionId),

@@ -693,6 +693,8 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                     && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
                     && !adapter.isEmpty()
                     && (adapter.getItem(0) instanceof AudioModelAndSound)) {
+                // TODO Can this happen several multiple times at once? Or can it happen when
+                //  the fragment is not visible?
                 showTutorialHintForEdit();
             }
         }

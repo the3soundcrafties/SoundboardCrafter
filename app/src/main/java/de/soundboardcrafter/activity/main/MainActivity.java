@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.main;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,12 +12,14 @@ import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,10 +39,10 @@ import de.soundboardcrafter.dao.TutorialDao;
  */
 public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
-    private static final List<Page> pages =
-            Lists.newArrayList(Page.FAVORITES, Page.SOUNDBOARDS, Page.SOUNDS);
+    private List<Page> pages;
 
     private static final String KEY_SELECTED_PAGE = "selectedPage";
+
     private ViewPager2 pager;
     private ScreenSlidePagerAdapter pagerAdapter;
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
@@ -49,6 +52,8 @@ public class MainActivity extends AppCompatActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        pages = calcPages();
 
         pager = findViewById(R.id.viewPagerMain);
         pagerAdapter = new ScreenSlidePagerAdapter(this);
@@ -94,6 +99,35 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+
+        final ImmutableList<Page> necessaryPages = calcPages();
+        if (!pages.equals(necessaryPages)) {
+            pages = necessaryPages;
+            pagerAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @NonNull
+    private ImmutableList<Page> calcPages() {
+        ImmutableList.Builder<Page> res = ImmutableList.builder();
+
+        if (useFavorites()) {
+            res.add(Page.FAVORITES);
+        }
+
+        res.add(Page.SOUNDBOARDS, Page.SOUNDS);
+
+        return res.build();
+    }
+
+    private boolean useFavorites() {
+        SharedPreferences sharedPreferences = getSharedPreferences();
+        return sharedPreferences.getBoolean("useFavorites", false);
+        // Defined in preferences.xml.
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -136,16 +170,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     public enum Page {
-        FAVORITES(R.string.favorites_tab_title, FavoritesListFragment::new),
-        SOUNDBOARDS(R.string.soundboards_tab_title, MainActivity::createSoundboardListFragment),
-        SOUNDS(R.string.sounds_tab_title, MainActivity::createAudioFileListFragment);
+        FAVORITES(1, R.string.favorites_tab_title, FavoritesListFragment::new),
+        SOUNDBOARDS(2, R.string.soundboards_tab_title, MainActivity::createSoundboardListFragment),
+        SOUNDS(3, R.string.sounds_tab_title, MainActivity::createAudioFileListFragment);
 
+        final int id;
         final int title;
         final Supplier<Fragment> createNew;
 
-        Page(int title, Supplier<Fragment> createNew) {
+        Page(int id, int title, Supplier<Fragment> createNew) {
+            this.id = id;
             this.title = title;
             this.createNew = createNew;
+        }
+
+        public long getId() {
+            return id;
         }
     }
 
@@ -184,7 +224,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
+    class ScreenSlidePagerAdapter extends FragmentStateAdapter {
         ScreenSlidePagerAdapter(FragmentActivity fragmentActivity) {
             super(fragmentActivity);
         }
@@ -194,6 +234,30 @@ public class MainActivity extends AppCompatActivity
         Fragment createFragment(int position) {
             Page page = pages.get(position);
             return page.createNew.get();
+        }
+
+        // https://developer.android.com/training/animation/vp2-migration :
+        // "If you are using ViewPager2 to page through a mutable collection, you must also
+        // override getItemId()"
+        @Override
+        public long getItemId(int position) {
+            if (position < 0 || position >= getItemCount()) {
+                return RecyclerView.NO_ID;
+            }
+
+            return getPage(position).getId();
+        }
+
+        // FragmentStateAdapter: "When overriding, also override containsItem(long)"
+        @Override
+        public boolean containsItem(long itemId) {
+            for (Page page : pages) {
+                if (page.getId() == itemId) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         Page getPage(int position) {
