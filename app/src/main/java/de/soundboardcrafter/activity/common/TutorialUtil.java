@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import com.getkeepsafe.taptargetview.TapTarget;
@@ -67,14 +68,18 @@ public class TutorialUtil {
             boolean fromTheRight,
             int descriptionId,
             TapTargetView.Listener tapTargetViewListener) {
-        if (view.getWidth() == 0 || view.getHeight() == 0) {
+        if (view.getWidth() == 0 && view.getHeight() == 0) {
             return;
         }
 
-        TapTargetView.showFor(activity,
+        @Nullable final TapTarget tapTargetForBounds =
                 tapTargetForBounds(view, xOffsetDp, yOffsetDp, tapTargetRadiusDp,
-                        fromTheRight, descriptionId),
-                tapTargetViewListener);
+                        fromTheRight, descriptionId);
+        if (tapTargetForBounds == null) {
+            return;
+        }
+
+        TapTargetView.showFor(activity, tapTargetForBounds, tapTargetViewListener);
     }
 
     /**
@@ -85,16 +90,22 @@ public class TutorialUtil {
      *                     (instead of adding it to the left side)
      */
     @UiThread
-    @NonNull
+    @Nullable
     private static TapTarget tapTargetForBounds(
             final View view, final int xOffsetDp,
             final int yOffsetDp,
             final int tapTargetRadiusDp,
             boolean fromTheRight,
             int descriptionId) {
+        @Nullable final Rect tapTargetBounds =
+                getTapTargetBounds(view, xOffsetDp, yOffsetDp, tapTargetRadiusDp, fromTheRight);
+
+        if (tapTargetBounds == null) {
+            return null;
+        }
+
         return TapTarget.forBounds(
-                getTapTargetBounds(view, xOffsetDp, yOffsetDp, tapTargetRadiusDp,
-                        fromTheRight),
+                tapTargetBounds,
                 view.getResources().getString(descriptionId))
                 .transparentTarget(true)
                 .targetRadius(tapTargetRadiusDp);
@@ -107,13 +118,16 @@ public class TutorialUtil {
      * @param fromTheRight Whether the offset shall be subtracted from the right side
      *                     (instead of adding it to the left side)
      */
-    @NonNull
+    @Nullable
     @UiThread
     private static Rect getTapTargetBounds(final View view, final int xOffsetDp,
                                            final int yOffsetDp,
                                            final int tapTargetRadiusDp,
                                            boolean fromTheRight) {
-        final int[] location = getLocation(view, xOffsetDp, yOffsetDp, fromTheRight);
+        @Nullable final int[] location = getLocation(view, xOffsetDp, yOffsetDp, fromTheRight);
+        if (location == null) {
+            return null;
+        }
 
         final int tapTargetRadius = dpToPx(view.getContext(), tapTargetRadiusDp);
 
@@ -127,12 +141,16 @@ public class TutorialUtil {
      * @param fromTheRight whether the offset shall be subtracted from the right side
      *                     (instead of adding it to the left side)
      */
-    @NonNull
+    @Nullable
     @UiThread
     private static int[] getLocation(final View view, int xOffsetDp, int yOffsetDp,
                                      boolean fromTheRight) {
         final int[] location = new int[2];
         view.getLocationOnScreen(location);
+
+        if (location[0] <= 0 && location[1] <= 0) {
+            return null;
+        }
 
         final int xOffset = dpToPx(view.getContext(), xOffsetDp);
         location[0] = fromTheRight ?
