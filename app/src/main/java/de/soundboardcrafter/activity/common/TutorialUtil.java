@@ -13,6 +13,8 @@ import androidx.annotation.UiThread;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 
+import java.lang.ref.WeakReference;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -20,6 +22,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public class TutorialUtil {
+    /**
+     * Stores the last shown {@link TapTargetView}.
+     */
+    @Nullable
+    private static WeakReference<TapTargetView> lastTapTargetViewRef;
+
     private TutorialUtil() {
     }
 
@@ -79,7 +87,20 @@ public class TutorialUtil {
             return;
         }
 
-        TapTargetView.showFor(activity, tapTargetForBounds, tapTargetViewListener);
+        dismissLastTargetView();
+        lastTapTargetViewRef = new WeakReference<>(
+                TapTargetView.showFor(activity, tapTargetForBounds, tapTargetViewListener));
+    }
+
+    private static void dismissLastTargetView() {
+        if (lastTapTargetViewRef != null) {
+            @Nullable
+            TapTargetView lastTapTargetView = lastTapTargetViewRef.get();
+            if (lastTapTargetView != null) {
+                lastTapTargetView.dismiss(false);
+            }
+            lastTapTargetViewRef = null;
+        }
     }
 
     /**
@@ -148,7 +169,7 @@ public class TutorialUtil {
         final int[] location = new int[2];
         view.getLocationOnScreen(location);
 
-        if (location[0] <= 0 && location[1] <= 0) {
+        if (location[0] < 0 || location[1] < 0) {
             return null;
         }
 

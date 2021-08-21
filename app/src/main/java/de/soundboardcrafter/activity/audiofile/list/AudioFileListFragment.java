@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
-import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
 
 import android.Manifest;
 import android.app.Activity;
@@ -37,7 +36,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableList;
@@ -355,29 +353,6 @@ public class AudioFileListFragment extends Fragment implements
         }
     }
 
-    private void showTutorialHintForOwnSounds(@NonNull TutorialDao tutorialDao,
-                                              @NonNull Activity activity,
-                                              @NonNull View view) {
-        TapTargetView.showFor(activity,
-                TapTarget.forView(view, activity.getResources().getString(
-                        R.string.tutorial_audio_file_list_local_audio))
-                        .targetRadius(33),
-                new TapTargetView.Listener() {
-                    @Override
-                    public void onTargetClick(TapTargetView tapTargetView) {
-                        super.onTargetClick(tapTargetView); // dismiss tapTargetView
-
-                        tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
-                        view.performClick();
-                    }
-
-                    @Override
-                    public void onTargetLongClick(TapTargetView view) {
-                        // Don't dismiss view and don't handle like a single click
-                    }
-                });
-    }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -414,17 +389,13 @@ public class AudioFileListFragment extends Fragment implements
         final boolean readExternalPermissionNecessary;
         final IAudioFileSelection newSelection;
 
-        TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = new FileSystemFolderAudioLocation("/");
         } else if (selection instanceof FileSystemFolderAudioLocation) {
             readExternalPermissionNecessary = false;
             newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
         } else {
-            tutorialDao.check(AUDIO_FILE_LIST_USE_OWN_SOUNDS);
             readExternalPermissionNecessary = true;
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         }
@@ -696,12 +667,9 @@ public class AudioFileListFragment extends Fragment implements
 
         if (context != null) {
             TutorialDao tutorialDao = TutorialDao.getInstance(context);
-            if (tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)
-                    && !tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
+            if (!tutorialDao.isChecked(AUDIO_FILE_LIST_EDIT)
                     && !adapter.isEmpty()
                     && (adapter.getItem(0) instanceof AudioModelAndSound)) {
-                // TODO Can this happen several multiple times at once? Or can it happen when
-                //  the fragment is not visible?
                 showTutorialHintForEdit();
             }
         }
@@ -724,25 +692,7 @@ public class AudioFileListFragment extends Fragment implements
 
         // updateUI();
 
-        showTutorialHintAsNecessary();
-
         bindService();
-    }
-
-    private void showTutorialHintAsNecessary() {
-        final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(AUDIO_FILE_LIST_USE_OWN_SOUNDS)) {
-            folderLayout.post(() -> {
-                @Nullable final Activity activity = getActivity();
-                if (activity != null) {
-                    @Nullable final View view =
-                            activity.findViewById(R.id.toolbar_menu_audiofiles_by_folder);
-                    if (view != null) {
-                        showTutorialHintForOwnSounds(tutorialDao, activity, view);
-                    }
-                }
-            }); // We don't care if return value were false - there is always next time.
-        }
     }
 
     @UiThread
