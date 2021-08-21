@@ -6,11 +6,13 @@ import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutor
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_USE_OWN_SOUNDS;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,6 +34,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
@@ -48,7 +52,6 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
@@ -72,7 +75,7 @@ import de.soundboardcrafter.model.audio.FullAudioModel;
 /**
  * Shows Soundboard in a Grid
  */
-public class AudioFileListFragment extends AbstractPermissionFragment implements
+public class AudioFileListFragment extends Fragment implements
         ServiceConnection,
         AudioFileRow.Callback,
         SoundEventListener {
@@ -244,7 +247,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                         onClickAudioSubfolder(audioSubfolderRow);
                     }
                 });
-        startFindingAudioFilesOrAskForPermission();
+        startFindingAudioFilesIfPermitted();
 
         return rootView;
     }
@@ -426,10 +429,9 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         }
 
-        if (!readExternalPermissionNecessary
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+        if (!readExternalPermissionNecessary || permissionReadExternalStorageIsGranted()) {
             setSelection(newSelection);
-            new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
+            loadAudioFiles().execute();
             setAudioFolderEntries(ImmutableList.of());
         } // Otherwise, the fragment will receive an event later.
     }
@@ -508,7 +510,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     private void sort(SortOrder sortOrder) {
         this.sortOrder = sortOrder;
 
-        startFindingAudioFilesOrAskForPermission();
+        startFindingAudioFilesIfPermitted();
     }
 
     private void onClickAudioSubfolder(@NonNull AudioSubfolderRow audioSubfolderRow) {
@@ -527,10 +529,15 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
 
     private void changeFolder(@NonNull IAudioLocation newFolder) {
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                || permissionReadExternalStorageIsGranted()) {
             setSelection(newFolder);
-            new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
+            loadAudioFiles().execute();
         } // Otherwise, the fragment will receive an event later.
+    }
+
+    @NonNull
+    public FindAudioFilesTask loadAudioFiles() {
+        return new FindAudioFilesTask(requireContext(), selection, sortOrder);
     }
 
     private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow,
@@ -549,7 +556,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
                     audioModelAndSound.getAudioModel().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                    || permissionReadExternalStorageIsGranted()) {
                 adapter.setPositionPlaying(position);
 
                 audioFileItemRow.setImage(R.drawable.ic_stop);
@@ -658,7 +665,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
             return;
         }
 
-        startFindingAudioFilesOrAskForPermission();
+        startFindingAudioFilesIfPermitted();
     }
 
     @Override
@@ -669,7 +676,7 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
         }
 
         // The sound NAME may have been changed.
-        startFindingAudioFilesOrAskForPermission();
+        startFindingAudioFilesIfPermitted();
     }
 
     @UiThread
@@ -739,30 +746,17 @@ public class AudioFileListFragment extends AbstractPermissionFragment implements
     }
 
     @UiThread
-    private void startFindingAudioFilesOrAskForPermission() {
+    private void startFindingAudioFilesIfPermitted() {
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
-            new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
+                || permissionReadExternalStorageIsGranted()) {
+            loadAudioFiles().execute();
         } // Otherwise, the fragment will receive an event later.
     }
 
-    @Override
-    protected void onPermissionReadExternalStorageGranted() {
-        // We don't need any other permissions, so start reading data.
-        somethingMightHaveChanged();
-    }
-
-    @Override
-    protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
-        fallbackSelection();
-    }
-
-    private void fallbackSelection() {
-        if (!(selection instanceof AssetFolderAudioLocation)) {
-            setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
-            new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
-            setAudioFolderEntries(ImmutableList.of());
-        }
+    private boolean permissionReadExternalStorageIsGranted() {
+        return ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
