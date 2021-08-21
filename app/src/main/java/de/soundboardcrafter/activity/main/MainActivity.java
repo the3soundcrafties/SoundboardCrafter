@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showPermissionRationale() {
-        PermissionUtil.showYourSoundsPermissionDialog(this, this::onSoundPermissionsGranted,
+        PermissionUtil.showYourSoundsPermissionDialog(this, this::onSoundPermissionsRationaleOk,
                 this::onPermissionReadExternalStorageNotGrantedUserGivesUp);
     }
 
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void onSoundPermissionsGranted() {
+    private void onSoundPermissionsRationaleOk() {
         if (PermissionUtil.androidDoesNotShowPermissionPopupsAnymore(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)) {
             startActivity(PermissionUtil.buildAppSettingsIntent());

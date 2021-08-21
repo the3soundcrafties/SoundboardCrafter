@@ -208,7 +208,7 @@ public class AudioFileListFragment extends Fragment implements
             setSelection(getFolder(savedInstanceState));
         } else {
             sortOrder = SortOrder.BY_NAME;
-            setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+            setSelection(new FileSystemFolderAudioLocation("/"));
         }
 
         byFolderMenuItem = null;
@@ -402,7 +402,7 @@ public class AudioFileListFragment extends Fragment implements
 
         if (!readExternalPermissionNecessary || permissionReadExternalStorageIsGranted()) {
             setSelection(newSelection);
-            loadAudioFiles().execute();
+            loadAudioFiles();
             setAudioFolderEntries(ImmutableList.of());
         } // Otherwise, the fragment will receive an event later.
     }
@@ -502,13 +502,12 @@ public class AudioFileListFragment extends Fragment implements
         if (selection instanceof AssetFolderAudioLocation
                 || permissionReadExternalStorageIsGranted()) {
             setSelection(newFolder);
-            loadAudioFiles().execute();
+            loadAudioFiles();
         } // Otherwise, the fragment will receive an event later.
     }
 
-    @NonNull
-    public FindAudioFilesTask loadAudioFiles() {
-        return new FindAudioFilesTask(requireContext(), selection, sortOrder);
+    public void loadAudioFiles() {
+        new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
     }
 
     private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow,
@@ -699,7 +698,7 @@ public class AudioFileListFragment extends Fragment implements
     private void startFindingAudioFilesIfPermitted() {
         if (selection instanceof AssetFolderAudioLocation
                 || permissionReadExternalStorageIsGranted()) {
-            loadAudioFiles().execute();
+            loadAudioFiles();
         } // Otherwise, the fragment will receive an event later.
     }
 
