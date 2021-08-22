@@ -66,7 +66,7 @@ public class SoundboardEditFragment extends Fragment {
             new FindSoundboardTask(requireActivity(), soundboardId).execute();
         } else {
             isNew = true;
-            soundboard = new Soundboard(getString(R.string.new_soundboard_name));
+            soundboard = new Soundboard(getString(R.string.new_soundboard_name), false);
         }
         if (isNew) {
             Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
@@ -152,7 +152,7 @@ public class SoundboardEditFragment extends Fragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
-        if (!isNew) {
+        if (!isNew && soundboard != null) {
             String nameEntered = soundboardEditView.getName();
             if (!nameEntered.isEmpty()) {
                 soundboard.setName(nameEntered);

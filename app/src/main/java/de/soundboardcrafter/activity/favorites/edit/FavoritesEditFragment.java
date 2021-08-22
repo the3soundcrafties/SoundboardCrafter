@@ -178,7 +178,7 @@ public class FavoritesEditFragment extends Fragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
-        if (!isNew) {
+        if (!isNew && favoritesWithSoundboards != null) {
             updateFavoritesWithSoundboards();
             new UpdateFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
         }

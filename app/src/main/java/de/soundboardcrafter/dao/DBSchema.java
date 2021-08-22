@@ -45,6 +45,11 @@ class DBSchema {
         static final class Cols {
             static final String ID = "_id";
             static final String NAME = "name";
+            /**
+             * Whether the soundboard has been built automatically from provided sounds.
+             * A <i>provided</i> soundboard cannot be deleted.
+             */
+            static final String PROVIDED = "provided";
         }
     }
 

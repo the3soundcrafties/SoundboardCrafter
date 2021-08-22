@@ -30,21 +30,22 @@ class FavoritesCursorWrapper extends CursorWrapper {
     static String queryString(@Nullable UUID favoritesId) {
         String query = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
-                + ", g." + FavoritesTable.Cols.ID
-                + ", g." + FavoritesTable.Cols.NAME
+                + ", sb." + SoundboardTable.Cols.PROVIDED
+                + ", f." + FavoritesTable.Cols.ID
+                + ", f." + FavoritesTable.Cols.NAME
                 + " " //
-                + "FROM " + FavoritesTable.NAME + " g "
-                + "LEFT JOIN " + SoundboardFavoritesTable.NAME + " sbg "
-                + "ON sbg." + SoundboardFavoritesTable.Cols.FAVORITES_ID + " = g."
+                + "FROM " + FavoritesTable.NAME + " f "
+                + "LEFT JOIN " + SoundboardFavoritesTable.NAME + " sbf "
+                + "ON sbf." + SoundboardFavoritesTable.Cols.FAVORITES_ID + " = f."
                 + FavoritesTable.Cols.ID
                 + " "
                 + "LEFT JOIN " + SoundboardTable.NAME + " sb "
-                + "ON sb." + SoundboardTable.Cols.ID + " = sbg."
+                + "ON sb." + SoundboardTable.Cols.ID + " = sbf."
                 + SoundboardFavoritesTable.Cols.SOUNDBOARD_ID + " ";
         if (favoritesId != null) {
-            query += "WHERE g." + FavoritesTable.Cols.ID + "= ?";
+            query += "WHERE f." + FavoritesTable.Cols.ID + "= ?";
         }
-        query += "ORDER BY g." + FavoritesTable.Cols.ID;
+        query += "ORDER BY f." + FavoritesTable.Cols.ID;
         return query;
     }
 
@@ -58,8 +59,8 @@ class FavoritesCursorWrapper extends CursorWrapper {
     @NonNull
     private Favorites getFavorites() {
         UUID favoritesId =
-                UUID.fromString(getString(2));
-        String favoritesName = getString(3);
+                UUID.fromString(getString(3));
+        String favoritesName = getString(4);
 
         return new Favorites(favoritesId, favoritesName);
     }
@@ -71,10 +72,10 @@ class FavoritesCursorWrapper extends CursorWrapper {
         }
 
         UUID soundboardId = UUID.fromString(getString(0));
-
         String soundboardName = getString(1);
+        boolean provided = getInt(2) == 0 ? false : true;
 
-        return new Soundboard(soundboardId, soundboardName);
+        return new Soundboard(soundboardId, soundboardName, provided);
     }
 
     /**

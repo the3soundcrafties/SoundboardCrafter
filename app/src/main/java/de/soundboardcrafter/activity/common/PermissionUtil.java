@@ -33,6 +33,7 @@ public class PermissionUtil {
                 .setMessage(R.string.yourSoundsPermissionRationaleMsg)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> onOk.run())
                 .setNegativeButton(android.R.string.cancel, (dialog, which) -> onCancel.run())
+                .setOnDismissListener(dialog -> onCancel.run())
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }

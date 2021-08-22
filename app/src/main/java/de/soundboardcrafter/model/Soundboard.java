@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
@@ -7,8 +9,6 @@ import java.text.CollationKey;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A soundboard, that is a keyboard you can play sounds with.
@@ -24,18 +24,24 @@ public class Soundboard extends AbstractEntity {
     @NonNull
     private String name;
 
+    /**
+     * Whether the soundboard has been built automatically from provided sounds.
+     * A <i>provided</i> soundboard cannot be deleted.
+     */
+    private final boolean provided;
+
     // CollationKeys may not be serializable
     @NonNull
     private transient CollationKey collationKey;
 
-    public Soundboard(@NonNull String name) {
-        this(UUID.randomUUID(), name);
-
+    public Soundboard(@NonNull String name, boolean provided) {
+        this(UUID.randomUUID(), name, provided);
     }
 
-    public Soundboard(UUID id, @NonNull String name) {
+    public Soundboard(UUID id, @NonNull String name, boolean provided) {
         super(id);
         setName(checkNotNull(name, "name is null"));
+        this.provided = provided;
     }
 
     @NonNull
@@ -64,11 +70,16 @@ public class Soundboard extends AbstractEntity {
         collationKey = nameCollator.getCollationKey(getName());
     }
 
+    public boolean isProvided() {
+        return provided;
+    }
+
     private void writeObject(final java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
     }
 
-    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(final java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         setCollationKey();
     }
@@ -78,7 +89,8 @@ public class Soundboard extends AbstractEntity {
     String toString() {
         return "Soundboard{" +
                 "id=" + getId() +
-                ", name='" + name + '\'' +
+                ", name='" + name +
+                (provided ? " (provided)" : "") +
                 '}';
     }
 }

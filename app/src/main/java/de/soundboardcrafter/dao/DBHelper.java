@@ -21,7 +21,7 @@ class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version
      */
-    private static final int VERSION = 15;
+    private static final int VERSION = 19;
 
     private static final String DROP_TABLE_GAMES = //
             "DROP TABLE IF EXISTS " + GamesTable.NAME + ";";
@@ -42,10 +42,12 @@ class DBHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + SoundboardTable.NAME + " (" + //
                     SoundboardTable.Cols.ID + " TEXT NOT NULL, " + //
                     SoundboardTable.Cols.NAME + " TEXT NOT NULL, " + //
+                    SoundboardTable.Cols.PROVIDED + " INTEGER NOT NULL " //
+                    + "CHECK (" + SoundboardTable.Cols.PROVIDED + " IN (0, 1)), " + //
                     "PRIMARY KEY (" + SoundboardTable.Cols.ID + "));";
 
     private static final String DROP_TABLE_SOUNDBOARD = //
-            "DROP TABLE " + SoundboardTable.NAME + ";";
+            "DROP TABLE IF EXISTS " + SoundboardTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUNDBOARD_FAVORITES = //
             "CREATE TABLE " + SoundboardFavoritesTable.NAME + " (" + //
@@ -69,7 +71,7 @@ class DBHelper extends SQLiteOpenHelper {
                     "PRIMARY KEY (" + SoundTable.Cols.ID + "));";
 
     private static final String DROP_TABLE_SOUND = //
-            "DROP TABLE " + SoundTable.NAME + ";";
+            "DROP TABLE IF EXISTS " + SoundTable.NAME + ";";
 
     private static final String CREATE_TABLE_SOUNDBOARD_SOUND = //
             "CREATE TABLE " + SoundboardSoundTable.NAME + " (" + //
@@ -80,7 +82,7 @@ class DBHelper extends SQLiteOpenHelper {
                     SoundboardSoundTable.Cols.SOUND_ID + "));";
 
     private static final String DROP_TABLE_SOUNDBOARD_SOUND = //
-            "DROP TABLE " + SoundboardSoundTable.NAME + ";";
+            "DROP TABLE IF EXISTS " + SoundboardSoundTable.NAME + ";";
 
     private static final String TAG = DBHelper.class.getName();
 
@@ -90,7 +92,7 @@ class DBHelper extends SQLiteOpenHelper {
                 // The database is chosen by the BUILD TYPE.
                 // There are three build types available:
                 // debug, staging and release.
-                // debug has its special database, staging an release use the same.
+                // debug has its special database, staging a release use the same.
                 context.getResources().getString(R.string.database_name),
                 null,
                 VERSION);
@@ -100,7 +102,8 @@ class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "Creating database...");
 
-        createInitialTables(db);
+        // This will create all tables.
+        onUpgrade(db, 0, VERSION);
 
         Log.d(TAG, "Database created.");
     }
@@ -110,44 +113,34 @@ class DBHelper extends SQLiteOpenHelper {
         Log.e(TAG,
                 "Upgrading database from version " + oldVersion + " to version " + newVersion);
 
-        if (oldVersion < 14) {
+        if (oldVersion < VERSION) {
             dropTables(db);
             createInitialTables(db);
         }
-
-        if (oldVersion < 15) {
-            dropGameTables(db);
-            createFavoriteTables(db);
-        }
-    }
-
-    private void dropGameTables(SQLiteDatabase db) {
-        db.execSQL(DROP_TABLE_GAMES);
-        db.execSQL(DROP_TABLE_SOUNDBOARD_GAMES);
-    }
-
-    private void createFavoriteTables(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_FAVORITES);
-        db.execSQL(CREATE_TABLE_SOUNDBOARD_FAVORITES);
     }
 
     private void createInitialTables(SQLiteDatabase db) {
-        // Games are no longer used
         db.execSQL(CREATE_TABLE_SOUNDBOARD);
+
         db.execSQL(CREATE_TABLE_SOUND);
         db.execSQL(CREATE_TABLE_SOUNDBOARD_SOUND);
+
+        db.execSQL(CREATE_TABLE_FAVORITES);
+        db.execSQL(CREATE_TABLE_SOUNDBOARD_FAVORITES);
 
         // TODO extra index on primary keys necessary / useful?
     }
 
     private void dropTables(SQLiteDatabase db) {
         db.execSQL(DROP_TABLE_GAMES);
+
         db.execSQL(DROP_TABLE_FAVORITES);
+
         db.execSQL(DROP_TABLE_SOUNDBOARD);
         db.execSQL(DROP_TABLE_SOUNDBOARD_GAMES);
         db.execSQL(DROP_TABLE_SOUNDBOARD_FAVORITES);
+
         db.execSQL(DROP_TABLE_SOUND);
         db.execSQL(DROP_TABLE_SOUNDBOARD_SOUND);
     }
-
 }

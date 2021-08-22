@@ -27,6 +27,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
     static String queryString(@Nullable UUID favoritesId) {
         String res = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
+                + ", sb." + SoundboardTable.Cols.PROVIDED
                 + ", sbs." + SoundboardSoundTable.Cols.POS_INDEX
                 + ", s." + SoundTable.Cols.ID
                 + ", s." + SoundTable.Cols.NAME
@@ -77,7 +78,8 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
     private Soundboard getSoundboard() {
         UUID soundboardId = UUID.fromString(getString(0));
         String soundboardName = getString(1);
-        return new Soundboard(soundboardId, soundboardName);
+        boolean provided = getInt(2) == 0 ? false : true;
+        return new Soundboard(soundboardId, soundboardName, provided);
     }
 
     /**
@@ -85,23 +87,23 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
      */
     @Nullable
     private IndexedSound getIndexedSound() {
-        if (isNull(2)) {
+        if (isNull(3)) {
             return null;
         }
-        int index = getInt(2);
+        int index = getInt(3);
 
-        UUID soundId = UUID.fromString(getString(3));
-        String soundName = getString(4);
+        UUID soundId = UUID.fromString(getString(4));
+        String soundName = getString(5);
 
         SoundTable.LocationType soundLocationType =
-                SoundTable.LocationType.valueOf(getString(5));
-        String soundPath = getString(6);
+                SoundTable.LocationType.valueOf(getString(6));
+        String soundPath = getString(7);
 
         final IAudioLocation soundLocation =
                 SoundTable.toAudioLocation(soundLocationType, soundPath);
 
-        int soundVolumePercentage = getInt(7);
-        boolean soundLoop = getInt(8) != 0;
+        int soundVolumePercentage = getInt(8);
+        boolean soundLoop = getInt(9) != 0;
         Sound sound = new Sound(soundId, soundLocation, soundName,
                 soundVolumePercentage, soundLoop);
 

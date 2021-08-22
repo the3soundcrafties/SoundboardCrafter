@@ -17,6 +17,7 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
     static String queryString() {
         return "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
+                + ", sb." + SoundboardTable.Cols.PROVIDED
                 + ", sbs." + SoundboardSoundTable.Cols.SOUND_ID
                 + " " //
                 + "FROM " + SoundboardTable.NAME + " sb "
@@ -39,13 +40,12 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
     SelectableSoundboard getSelectableSoundboard() {
         UUID id = UUID.fromString(getString(getColumnIndex(SoundboardTable.Cols.ID)));
         String name = getString(getColumnIndex(SoundboardTable.Cols.NAME));
-
-        // UUID soundId = UUID.fromString(getString(2));
-
+        boolean provided =
+                getInt(getColumnIndex(SoundboardTable.Cols.PROVIDED)) == 0 ? false : true;
 
         boolean selected = !isNull(2);
 
-        Soundboard soundboard = new Soundboard(id, name);
+        Soundboard soundboard = new Soundboard(id, name, provided);
         return new SelectableSoundboard(soundboard, selected);
     }
 }

@@ -149,18 +149,15 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
-    private Sound putAdditionalSound(Map<UUID, Sound> sounds, int lastIndex,
-                                     Soundboard soundboard,
-                                     @NonNull
-                                             FullJoinSoundboardCursorWrapper.IndexedSound indexedSound) {
+    @Nonnull
+    private Sound putAdditionalSound(
+            Map<UUID, Sound> sounds, int lastIndex,
+            Soundboard soundboard,
+            @NonNull FullJoinSoundboardCursorWrapper.IndexedSound indexedSound) {
         checkNotNull(indexedSound, "indexedSound was null");
 
         UUID soundId = indexedSound.getSound().getId();
-        @Nullable Sound sound = sounds.get(soundId);
-        if (sound == null) {
-            sound = indexedSound.getSound();
-            sounds.put(soundId, sound);
-        }
+        Sound sound = sounds.computeIfAbsent(soundId, k -> indexedSound.getSound());
 
         if (indexedSound.getIndex() != lastIndex + 1) {
             throw new IllegalStateException("Gap in indexes of soundboard " +
@@ -183,8 +180,8 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
     private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
-        try (SelectableSoundboardCursorWrapper cursor = new SelectableSoundboardCursorWrapper(
-                rawCursor)) {
+        try (SelectableSoundboardCursorWrapper cursor =
+                     new SelectableSoundboardCursorWrapper(rawCursor)) {
             final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
 
             while (cursor.moveToNext()) {
@@ -545,6 +542,7 @@ public class SoundboardDao extends AbstractDao {
         ContentValues values = new ContentValues();
         values.put(DBSchema.SoundboardTable.Cols.ID, soundboard.getId().toString());
         values.put(DBSchema.SoundboardTable.Cols.NAME, soundboard.getName());
+        values.put(SoundboardTable.Cols.PROVIDED, soundboard.isProvided() ? 1 : 0);
 
         return values;
     }

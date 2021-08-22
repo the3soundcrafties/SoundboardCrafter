@@ -425,13 +425,13 @@ public class SoundboardListFragment extends Fragment
 
         private void generateSoundboardsOnFirstStartIfAppropriate(Context appContext) {
             if (shallGenerateSoundboards(appContext)) {
-                generateSoundboards(appContext);
+                generateProvidedSoundboards(appContext);
             }
 
             setFirstStartDone(appContext);
         }
 
-        private void generateSoundboards(Context appContext) {
+        private void generateProvidedSoundboards(Context appContext) {
             Log.d(TAG, "Generating soundboards from included audio files...");
             publishProgress(10);
 
@@ -450,7 +450,7 @@ public class SoundboardListFragment extends Fragment
 
             for (Map.Entry<String, List<BasicAudioModel>> entry :
                     audioModelsByTopFolder.entrySet()) {
-                generateSoundboard(appContext, entry.getKey(), entry.getValue());
+                generateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
                 publishProgress(20 + 70 * i / numSoundboards);
 
                 i++;
@@ -460,9 +460,9 @@ public class SoundboardListFragment extends Fragment
             Log.d(TAG, "Soundboards generated.");
         }
 
-        private void generateSoundboard(Context appContext, String name,
-                                        List<BasicAudioModel> audioModels) {
-            Soundboard soundboard = new Soundboard(name);
+        private void generateProvidedSoundboard(Context appContext, String name,
+                                                List<BasicAudioModel> audioModels) {
+            Soundboard soundboard = new Soundboard(name, true);
 
             ArrayList<Sound> sounds = new ArrayList<>(audioModels.size());
             for (BasicAudioModel audioModel : audioModels) {
