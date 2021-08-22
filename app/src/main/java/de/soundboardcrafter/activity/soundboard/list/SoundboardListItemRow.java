@@ -8,9 +8,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
+import java.util.Optional;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
@@ -33,6 +37,13 @@ class SoundboardListItemRow extends RelativeLayout {
         soundCount = findViewById(R.id.sound_count);
     }
 
+    @Nullable
+    Soundboard getSoundboard() {
+        return Optional.ofNullable(getSoundboardWithSounds())
+                .map(SoundboardWithSounds::getSoundboard).orElse(null);
+    }
+
+    @Nullable
     SoundboardWithSounds getSoundboardWithSounds() {
         return soundboard;
     }
@@ -52,10 +63,5 @@ class SoundboardListItemRow extends RelativeLayout {
         return getResources().getQuantityString(
                 R.plurals.sound_count_text,
                 count, count);
-    }
-
-    @NonNull
-    TextView getTvSoundboardName() {
-        return soundboardName;
     }
 }

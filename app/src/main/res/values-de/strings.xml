@@ -73,7 +73,7 @@
         hinzuzufügen</string>
     <string name="tutorial_audio_file_list_local_audio">Hier klicken, um eigene Sounds zu verwenden</string>
     <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
-        Umbenennen oder Löschen</string>
+        Umbenennen oder Löschen (nur eigene Soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Lang klicken zum
         Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>

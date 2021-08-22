@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
+import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
@@ -207,20 +208,25 @@ public class SoundboardListFragment extends Fragment
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        menu.add(UNIQUE_TAB_ID,
-                1,
-                0,
-                R.string.context_menu_edit_soundboard);
-        menu.add(UNIQUE_TAB_ID,
-                2,
-                1,
-                R.string.context_menu_remove_soundboard);
-
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
         SoundboardListItemRow itemRow = (SoundboardListItemRow) adapterContextMenuInfo.targetView;
 
-        menu.setHeaderTitle(itemRow.getSoundboardWithSounds().getName());
+        final Soundboard soundboard = requireNonNull(itemRow.getSoundboard());
+
+        if (!soundboard.isProvided()) {
+            menu.add(UNIQUE_TAB_ID,
+                    1,
+                    0,
+                    R.string.context_menu_edit_soundboard);
+
+            menu.add(UNIQUE_TAB_ID,
+                    2,
+                    1,
+                    R.string.context_menu_remove_soundboard);
+        }
+
+        menu.setHeaderTitle(soundboard.getName());
 
         @Nullable final Context context = getContext();
         if (context != null) {
