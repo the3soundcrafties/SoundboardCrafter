@@ -3,7 +3,7 @@ package de.soundboardcrafter.activity.soundboard.list;
 import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
-import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
@@ -152,8 +152,9 @@ public class SoundboardListFragment extends Fragment
 
     private void showTutorialHintIfNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CONTEXT_MENU)
-                && adapter != null && !adapter.isEmpty()) {
+        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU)
+                && adapter != null && !adapter.isEmpty()
+                && !adapter.areAllSoundboardsProvided()) {
             showTutorialHint();
         }
     }
@@ -167,7 +168,7 @@ public class SoundboardListFragment extends Fragment
                                     listView.getChildAt(listView.getFirstVisiblePosition());
                             if (itemView != null) {
                                 TutorialDao.getInstance(requireContext())
-                                        .check(SOUNDBOARD_LIST_CONTEXT_MENU);
+                                        .check(SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
                                 itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
                                         dpToPx(requireContext(), FIRST_ITEM_Y_DP));
                             }
@@ -230,7 +231,8 @@ public class SoundboardListFragment extends Fragment
 
         @Nullable final Context context = getContext();
         if (context != null) {
-            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU);
+            TutorialDao.getInstance(context)
+                    .check(TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
         }
     }
 
