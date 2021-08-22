@@ -179,19 +179,26 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                             itemView.performClick();
                         }
                     }));
-        } else if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU)) {
+        } else if (soundboard.isProvided()
+                && !tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_EDIT_SOUND)) {
             showTutorialHint(
-                    R.string.tutorial_soundboard_play_context_menu_description,
-                    createLongClickTutorialListener(
-                            () -> {
-                                @Nullable View itemView = findFirstItemView();
-                                if (itemView != null) {
-                                    // Simulate a long in the middle of the item
-                                    itemView.performLongClick(
-                                            dpToPx(requireContext(), FIRST_ITEM_X_DP),
-                                            dpToPx(requireContext(), FIRST_ITEM_Y_DP));
-                                }
-                            }));
+                    R.string.tutorial_soundboard_play_edit_sound_description,
+                    createLongClickTutorialListener(this::performContextClickOnFirstItem));
+        } else if (!soundboard.isProvided()
+                && !tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_REMOVE_SOUND)) {
+            showTutorialHint(
+                    R.string.tutorial_soundboard_play_remove_sound_description,
+                    createLongClickTutorialListener(this::performContextClickOnFirstItem));
+        }
+    }
+
+    private void performContextClickOnFirstItem() {
+        @Nullable View itemView = findFirstItemView();
+        if (itemView != null) {
+            // Simulate a long in the middle of the item
+            itemView.performLongClick(
+                    dpToPx(requireContext(), FIRST_ITEM_X_DP),
+                    dpToPx(requireContext(), FIRST_ITEM_Y_DP));
         }
     }
 
@@ -542,7 +549,13 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         @Nullable final Context context = getContext();
         if (context != null) {
-            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_PLAY_CONTEXT_MENU);
+            if (soundboard.isProvided()) {
+                TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_PLAY_EDIT_SOUND);
+            } else {
+                // custom soundboard
+                TutorialDao.getInstance(context)
+                        .check(TutorialDao.Key.SOUNDBOARD_PLAY_REMOVE_SOUND);
+            }
         }
     }
 

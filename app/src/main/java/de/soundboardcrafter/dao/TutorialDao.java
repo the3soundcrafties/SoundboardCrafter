@@ -17,7 +17,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class TutorialDao {
     public enum Key {
         SOUNDBOARD_PLAY_START_SOUND,
-        SOUNDBOARD_PLAY_CONTEXT_MENU,
+        SOUNDBOARD_PLAY_EDIT_SOUND,
+        SOUNDBOARD_PLAY_REMOVE_SOUND,
         AUDIO_FILE_LIST_EDIT,
         SOUNDBOARD_LIST_CONTEXT_MENU,
         FAVORITES_LIST_CONTEXT_MENU
