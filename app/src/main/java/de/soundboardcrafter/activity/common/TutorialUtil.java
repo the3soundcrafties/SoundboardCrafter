@@ -170,8 +170,32 @@ public class TutorialUtil {
         view.getLocationOnScreen(location);
 
         if (location[0] < 0 || location[1] < 0) {
+            // outside the screen
             return null;
         }
+
+        if (location[0] == 0 && location[1] == 0) {
+            // probably outside the screen
+            return null;
+        }
+
+        /*
+        @Nullable
+        WindowManager windowManager =
+                (WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE);
+        if (windowManager != null) {
+            Display display = windowManager.getDefaultDisplay();
+            Point displaySize = new Point();
+            display.getSize(displaySize);
+            if (displaySize.x <= 0 || displaySize.y <= 0) {
+                return null;
+            }
+            if (location[0] >= displaySize.x && location[1] >= displaySize.y) {
+                // outside the screen
+                return null;
+            }
+        }
+        */
 
         final int xOffset = dpToPx(view.getContext(), xOffsetDp);
         location[0] = fromTheRight ?
