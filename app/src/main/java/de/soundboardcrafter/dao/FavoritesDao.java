@@ -17,7 +17,6 @@ import de.soundboardcrafter.model.Soundboard;
 
 public class FavoritesDao extends AbstractDao {
     private static FavoritesDao instance;
-    private static SoundboardDao soundboardDao;
 
     private static final String SELECT_FAVORITES_NAME =
             "SELECT g." + DBSchema.FavoritesTable.Cols.NAME
@@ -28,7 +27,6 @@ public class FavoritesDao extends AbstractDao {
     public static FavoritesDao getInstance(final Context context) {
         if (instance == null) {
             instance = new FavoritesDao(context);
-            instance.init(context);
         }
         return instance;
     }
@@ -36,11 +34,6 @@ public class FavoritesDao extends AbstractDao {
     private FavoritesDao(@Nonnull Context context) {
         super(context);
     }
-
-    private void init(@Nonnull Context context) {
-        soundboardDao = SoundboardDao.getInstance(context);
-    }
-
 
     /**
      * Updates this favoritesWithSoundboards (which must already exist in the database) and
@@ -114,7 +107,7 @@ public class FavoritesDao extends AbstractDao {
         try (Cursor cursor = rawQueryOrThrow(
                 SELECT_FAVORITES_NAME,
                 favoritesId)) {
-            while (cursor.moveToNext()) {
+            if (cursor.moveToNext()) {
                 return cursor.getString(0);
             }
 

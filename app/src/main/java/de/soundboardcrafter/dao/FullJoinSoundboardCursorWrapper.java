@@ -78,7 +78,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
     private Soundboard getSoundboard() {
         UUID soundboardId = UUID.fromString(getString(0));
         String soundboardName = getString(1);
-        boolean provided = getInt(2) == 0 ? false : true;
+        boolean provided = getInt(2) != 0;
         return new Soundboard(soundboardId, soundboardName, provided);
     }
 

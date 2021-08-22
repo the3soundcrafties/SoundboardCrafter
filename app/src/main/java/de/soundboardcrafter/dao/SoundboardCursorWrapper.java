@@ -21,8 +21,7 @@ class SoundboardCursorWrapper extends CursorWrapper {
     Soundboard getSoundboard() {
         UUID uuid = UUID.fromString(getString(getColumnIndex(DBSchema.SoundboardTable.Cols.ID)));
         String name = getString(getColumnIndex(DBSchema.SoundboardTable.Cols.NAME));
-        boolean provided =
-                getInt(getColumnIndex(DBSchema.SoundboardTable.Cols.PROVIDED)) == 0 ? false : true;
+        boolean provided = getInt(getColumnIndex(DBSchema.SoundboardTable.Cols.PROVIDED)) != 0;
 
         return new Soundboard(uuid, name, provided);
     }

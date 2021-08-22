@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
-import static android.content.Context.MODE_PRIVATE;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_MENU;
@@ -8,7 +7,6 @@ import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CONTEXT_M
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -61,13 +59,6 @@ import de.soundboardcrafter.model.audio.BasicAudioModel;
  */
 public class SoundboardListFragment extends Fragment
         implements SoundEventListener {
-    // Will not be included in backup! See backup_descriptor.
-    private static final String FIRST_START_SHARED_PREFERENCES = "FirstStart_Prefs";
-
-    public enum FirstStartPrefKey {
-        FIRST_START
-    }
-
     private static final String TAG = SoundboardListFragment.class.getName();
 
     private static final int TAP_TARGET_RADIUS_DP = 44;
@@ -349,15 +340,10 @@ public class SoundboardListFragment extends Fragment
     }
 
     private static boolean shallGenerateSoundboards(Context context) {
-        return getFirstStartPrefs(context).getBoolean(FirstStartPrefKey.FIRST_START.name(), true)
-                // If the user already had some soundboards before uninstalling, they shall keep
-                // them. To not duplicate soundboards, we do not insert any soundboards after
-                // reinstall in this case.
-                && !SoundboardDao.getInstance(context).areAny();
-    }
-
-    private static SharedPreferences getFirstStartPrefs(Context context) {
-        return context.getSharedPreferences(FIRST_START_SHARED_PREFERENCES, MODE_PRIVATE);
+        return !SoundboardDao.getInstance(context).areAny()
+                // There should be at least the provided soundboards which the
+                // user should not be able to delete
+                ;
     }
 
     /**
@@ -427,8 +413,6 @@ public class SoundboardListFragment extends Fragment
             if (shallGenerateSoundboards(appContext)) {
                 generateProvidedSoundboards(appContext);
             }
-
-            setFirstStartDone(appContext);
         }
 
         private void generateProvidedSoundboards(Context appContext) {
@@ -478,12 +462,6 @@ public class SoundboardListFragment extends Fragment
 
         private Sound toSound(BasicAudioModel audioModel) {
             return new Sound(audioModel.getAudioLocation(), audioModel.getName());
-        }
-
-        private void setFirstStartDone(Context appContext) {
-            SharedPreferences.Editor editor = getFirstStartPrefs(appContext).edit();
-            editor.putBoolean(FirstStartPrefKey.FIRST_START.name(), false);
-            editor.apply();
         }
 
         @Override

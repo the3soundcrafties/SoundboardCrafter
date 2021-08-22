@@ -415,7 +415,7 @@ public class SoundboardDao extends AbstractDao {
     }
 
     /**
-     * Fills the gap at index - 1 and lets the following sounds - if any - move up.
+     * Fills the gap at this index - 1 and lets the following sounds - if any - move up.
      */
     private void fillSoundGap(UUID soundboardId, int gapIndex) {
         int i = gapIndex + 1;

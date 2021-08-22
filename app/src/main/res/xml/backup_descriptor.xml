@@ -2,8 +2,5 @@
 <full-backup-content>
     <exclude
         domain="sharedpref"
-        path="FirstStart_Prefs.xml" />
-    <exclude
-        domain="sharedpref"
         path="Tutorial_Prefs.xml" />
 </full-backup-content>
