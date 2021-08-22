@@ -389,15 +389,15 @@ public class AudioFileListFragment extends Fragment implements
         final boolean readExternalPermissionNecessary;
         final IAudioFileSelection newSelection;
 
-        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+        if (selection instanceof FileSystemFolderAudioLocation) {
             readExternalPermissionNecessary = true;
-            newSelection = new FileSystemFolderAudioLocation("/");
-        } else if (selection instanceof FileSystemFolderAudioLocation) {
+            newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
+        } else if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             readExternalPermissionNecessary = false;
             newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
         } else {
             readExternalPermissionNecessary = true;
-            newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
+            newSelection = new FileSystemFolderAudioLocation("/");
         }
 
         if (!readExternalPermissionNecessary || permissionReadExternalStorageIsGranted()) {
