@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
@@ -11,8 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A {@link Soundboard} with sounds.
@@ -37,11 +37,6 @@ public class SoundboardWithSounds implements Serializable {
     }
 
     @NonNull
-    public Soundboard getSoundboard() {
-        return soundboard;
-    }
-
-    @NonNull
     public UUID getId() {
         return soundboard.getId();
     }
@@ -54,6 +49,15 @@ public class SoundboardWithSounds implements Serializable {
     @NonNull
     public String getName() {
         return soundboard.getName();
+    }
+
+    public boolean isProvided() {
+        return soundboard.isProvided();
+    }
+
+    @NonNull
+    public Soundboard getSoundboard() {
+        return soundboard;
     }
 
     /**

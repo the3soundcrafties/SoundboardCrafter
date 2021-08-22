@@ -530,10 +530,13 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 1,
                 0,
                 R.string.context_menu_edit_sound);
-        menu.add(soundboardId,
-                2,
-                1,
-                R.string.context_menu_remove_sound);
+
+        if (!soundboard.isProvided()) {
+            menu.add(soundboardId,
+                    2,
+                    1,
+                    R.string.context_menu_remove_sound);
+        }
 
         menu.setHeaderTitle(sound.getName());
 

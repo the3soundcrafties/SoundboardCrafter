@@ -246,7 +246,8 @@ public class SoundboardListFragment extends Fragment
         AdapterView.AdapterContextMenuInfo menuInfo =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         SoundboardListItemRow itemRow = (SoundboardListItemRow) menuInfo.targetView;
-        SoundboardWithSounds soundboardWithSounds = itemRow.getSoundboardWithSounds();
+        SoundboardWithSounds soundboardWithSounds =
+                requireNonNull(itemRow.getSoundboardWithSounds());
         final int id = item.getItemId();
         if (id == 1) {
             Intent intent = SoundboardEditActivity
