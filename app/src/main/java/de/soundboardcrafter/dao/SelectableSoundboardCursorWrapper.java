@@ -42,7 +42,7 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
         String name = getString(getColumnIndex(SoundboardTable.Cols.NAME));
         boolean provided = getInt(getColumnIndex(SoundboardTable.Cols.PROVIDED)) != 0;
 
-        boolean selected = !isNull(2);
+        boolean selected = !isNull(getColumnIndex(SoundboardSoundTable.Cols.SOUND_ID));
 
         Soundboard soundboard = new Soundboard(id, name, provided);
         return new SelectableSoundboard(soundboard, selected);

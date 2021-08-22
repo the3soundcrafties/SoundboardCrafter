@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.soundboard.selectable;
+import de.soundboardcrafter.activity.soundboard.selectable.SelectableSoundboardListItemAdapter;
 import de.soundboardcrafter.model.SelectableSoundboard;
 
 /**
@@ -24,7 +24,7 @@ import de.soundboardcrafter.model.SelectableSoundboard;
 public class FavoritesEditView extends ConstraintLayout {
     private TextView nameTextView;
     private ListView soundboardsListView;
-    private selectable.SelectableSoundboardListItemAdapter adapter;
+    private SelectableSoundboardListItemAdapter adapter;
     private Button cancel;
     private Button save;
 
@@ -71,7 +71,7 @@ public class FavoritesEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        adapter = new selectable.SelectableSoundboardListItemAdapter(soundboards);
+        adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }

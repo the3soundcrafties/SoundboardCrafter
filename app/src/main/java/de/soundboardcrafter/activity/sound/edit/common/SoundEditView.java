@@ -14,7 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.util.List;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.activity.soundboard.selectable;
+import de.soundboardcrafter.activity.soundboard.selectable.SelectableSoundboardListItemAdapter;
 import de.soundboardcrafter.model.SelectableSoundboard;
 
 /**
@@ -123,8 +123,8 @@ public class SoundEditView extends ConstraintLayout {
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
         // TODO Better re-use an existing adapter?!
-        selectable.SelectableSoundboardListItemAdapter
-                adapter = new selectable.SelectableSoundboardListItemAdapter(soundboards);
+        SelectableSoundboardListItemAdapter
+                adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
