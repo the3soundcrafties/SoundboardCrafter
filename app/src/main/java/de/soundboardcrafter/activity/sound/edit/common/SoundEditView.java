@@ -122,9 +122,9 @@ public class SoundEditView extends ConstraintLayout {
      * Sets the soundboards and the info whether they can be changed.
      */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
-        // TODO Better re-use an existing adapter?!
-        SelectableSoundboardListItemAdapter
-                adapter = new SelectableSoundboardListItemAdapter(soundboards);
+        SelectableSoundboardListItemAdapter adapter =
+                new SelectableSoundboardListItemAdapter(soundboards,
+                        soundboard -> !soundboard.isProvided());
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
@@ -187,11 +187,8 @@ public class SoundEditView extends ConstraintLayout {
         int res = Math.toIntExact(Math.round(
                 Math.log(volumePercentage * (Math.E - 1.0) / maxVolumePercentage + 1.0) * 100.0));
 
-        if (res > 100) {
-            return 100;
-        }
+        return Math.min(res, 100);
 
-        return res;
     }
 
     private int seekBarToVolumePercentage(int seekBar) {
@@ -209,10 +206,7 @@ public class SoundEditView extends ConstraintLayout {
             return 0;
         }
 
-        if (res > maxVolumePercentage) {
-            return maxVolumePercentage;
-        }
-        return res;
+        return Math.min(res, maxVolumePercentage);
     }
 
     /**

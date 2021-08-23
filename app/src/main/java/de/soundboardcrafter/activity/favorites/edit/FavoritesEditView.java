@@ -66,11 +66,7 @@ public class FavoritesEditView extends ConstraintLayout {
         cancel.setVisibility(View.INVISIBLE);
     }
 
-    /**
-     * Sets the soundboards and the info whether they can be changed.
-     */
     void setSoundboards(List<SelectableSoundboard> soundboards) {
-        // TODO Better re-use an existing adapter?!
         adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
