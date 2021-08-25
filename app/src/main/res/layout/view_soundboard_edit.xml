@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <Button
@@ -12,16 +12,16 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:text="@string/cancel"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/cancel" />
+        app:layout_constraintStart_toEndOf="@+id/cancel"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/nameText"
@@ -29,13 +29,29 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/sound_edit_sound_name_hint"
-        tools:ignore="UnusedAttribute"
         android:importantForAutofill="no"
         android:inputType="text|textCapSentences"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cancel" />
+        app:layout_constraintTop_toBottomOf="@+id/cancel"
+        tools:ignore="UnusedAttribute" />
+
+    <ImageView
+        android:id="@+id/icon_selection"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:elevation="-10dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:contentDescription="@string/sound_selection_button_content_description"
+        android:src="@drawable/ic_included"
+        app:layout_constraintBottom_toTopOf="@+id/nameText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?android:attr/textColorSecondary" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

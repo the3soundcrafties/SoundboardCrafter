@@ -21,15 +21,15 @@
 
     <ImageView
         android:id="@+id/icon_link_sound_to_soundboards"
-        android:elevation="-10dp"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="@string/sound_add"
+        android:elevation="-10dp"
+        android:foreground="?selectableItemBackground"
         android:paddingStart="6dp"
         android:paddingEnd="6dp"
-        android:foreground="?selectableItemBackground"
-        android:contentDescription="@string/sound_add"
         android:src="@drawable/ic_link_sound_to_soundboards" />
 
     <TextView
@@ -46,13 +46,13 @@
 
     <TextView
         android:id="@+id/audio_name"
-        android:elevation="-10dp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/audio_artist_and_length"
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/icon_link_sound_to_soundboards"
         android:layout_toEndOf="@id/icon"
+        android:elevation="-10dp"
         android:gravity="center_vertical"
         android:singleLine="true"
         android:textSize="16sp"

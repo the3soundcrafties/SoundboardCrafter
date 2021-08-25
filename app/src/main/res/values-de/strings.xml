@@ -116,4 +116,5 @@
         werden dir nur
         deine Favoriten-Soundboards angezeigt und du kannst schnell zwischen ihnen wechseln. – Du kannst mehrfach Favoriten zusammenstellen, z. B. für unterschiedliche Spiele.</string>
     <string name="tutorial_soundboard_play_remove_sound_description">Lang klicken, um Sound aus eigenem Soundboard zu entfernen</string>
+    <string name="sound_selection_button_content_description">Eigene Sounds? Mitgelieferte Sounds?</string>
 </resources>

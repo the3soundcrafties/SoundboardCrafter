@@ -21,6 +21,7 @@
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by Date</string>
+    <string name="sound_selection_button_content_description">Sound source selection</string>
     <string name="toolbar_menu_audiofiles_folders_all_on_device">All on Device</string>
     <string name="toolbar_menu_audiofiles_assets">Provided</string>
     <string name="toolbar_menu_audiofiles_folders_single">By Folder</string>

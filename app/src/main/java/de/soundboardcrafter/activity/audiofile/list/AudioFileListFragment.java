@@ -114,7 +114,7 @@ public class AudioFileListFragment extends Fragment implements
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
     @Nullable
-    private MenuItem byFolderMenuItem;
+    private MenuItem selectionMenuItem;
     private ListView listView;
     private ConstraintLayout folderLayout;
     private ImageView iconFolder;
@@ -211,7 +211,7 @@ public class AudioFileListFragment extends Fragment implements
             setSelection(new FileSystemFolderAudioLocation("/"));
         }
 
-        byFolderMenuItem = null;
+        selectionMenuItem = null;
 
         initAudioFileListItemAdapter();
 
@@ -298,20 +298,20 @@ public class AudioFileListFragment extends Fragment implements
         throw new IllegalStateException("Unexpected folder type " + type);
     }
 
-    private void updateByFolderMenuItem() {
-        if (byFolderMenuItem == null) {
+    private void updateSelectionMenuItem() {
+        if (selectionMenuItem == null) {
             return;
         }
 
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all_on_device);
-            byFolderMenuItem.setIcon(R.drawable.ic_long_list);
+            selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all_on_device);
+            selectionMenuItem.setIcon(R.drawable.ic_long_list);
         } else if (selection instanceof FileSystemFolderAudioLocation) {
-            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
-            byFolderMenuItem.setIcon(R.drawable.ic_by_folder);
+            selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
+            selectionMenuItem.setIcon(R.drawable.ic_selection);
         } else if (selection instanceof AssetFolderAudioLocation) {
-            byFolderMenuItem.setTitle(R.string.toolbar_menu_audiofiles_assets);
-            byFolderMenuItem.setIcon(R.drawable.ic_included);
+            selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_assets);
+            selectionMenuItem.setIcon(R.drawable.ic_included);
         } else {
             throw new IllegalStateException(
                     "Unexpected type of selection: " + selection.getClass());
@@ -324,8 +324,8 @@ public class AudioFileListFragment extends Fragment implements
 
         inflater.inflate(R.menu.fragment_audiofile_file, menu);
 
-        byFolderMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_by_folder);
-        updateByFolderMenuItem();
+        selectionMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_selection);
+        updateSelectionMenuItem();
     }
 
     private void showTutorialHintForEdit() {
@@ -371,8 +371,8 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         final int id = item.getItemId();
-        if (id == R.id.toolbar_menu_audiofiles_by_folder) {
-            toggleByFolder();
+        if (id == R.id.toolbar_menu_audiofiles_selection) {
+            toggleSelection();
             return true;
         } else if (id == R.id.toolbar_menu_audiofiles_sort_alpha) {
             sort(SortOrder.BY_NAME);
@@ -385,7 +385,7 @@ public class AudioFileListFragment extends Fragment implements
         }
     }
 
-    private void toggleByFolder() {
+    private void toggleSelection() {
         final boolean readExternalPermissionNecessary;
         final IAudioFileSelection newSelection;
 
@@ -507,7 +507,7 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     public void loadAudioFiles() {
-        new FindAudioFilesTask(requireContext(), selection, sortOrder).execute();
+        new FindAudioFilesTask(this, selection, sortOrder).execute();
     }
 
     private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow,
@@ -548,7 +548,7 @@ public class AudioFileListFragment extends Fragment implements
                             .setAction(getString(R.string.update_all_soundboards_and_sounds),
                                     view -> {
                                         if (soundId != null) {
-                                            new DeleteSoundTask(requireActivity(), soundId)
+                                            new DeleteSoundTask(this, soundId)
                                                     .execute();
                                         } else if (soundEventListenerActivity != null) {
                                             soundEventListenerActivity.somethingMightHaveChanged();
@@ -736,12 +736,12 @@ public class AudioFileListFragment extends Fragment implements
      * A background task, used to retrieve audio files (and audio folders)
      * and corresponding sounds from the database.
      */
-    class FindAudioFilesTask extends AsyncTask<Void, Void,
+    static class FindAudioFilesTask extends AsyncTask<Void, Void,
             ImmutableList<? extends AbstractAudioFolderEntry>> {
         private final String TAG = FindAudioFilesTask.class.getName();
 
         @NonNull
-        private final WeakReference<Context> appContextRef;
+        private final WeakReference<AudioFileListFragment> fragmentRef;
 
         private final IAudioFileSelection selection;
 
@@ -774,10 +774,10 @@ public class AudioFileListFragment extends Fragment implements
         @NonNull
         private final SortOrder sortOrder;
 
-        FindAudioFilesTask(@NonNull Context context, IAudioFileSelection selection,
+        FindAudioFilesTask(@NonNull AudioFileListFragment fragment, IAudioFileSelection selection,
                            @NonNull SortOrder sortOrder) {
             super();
-            appContextRef = new WeakReference<>(context.getApplicationContext());
+            fragmentRef = new WeakReference<>(fragment);
             this.selection = selection;
             this.sortOrder = sortOrder;
         }
@@ -786,15 +786,15 @@ public class AudioFileListFragment extends Fragment implements
         @Override
         @WorkerThread
         protected ImmutableList<? extends AbstractAudioFolderEntry> doInBackground(Void... voids) {
-            Context appContext = appContextRef.get();
-            if (appContext == null) {
+            @Nullable AudioFileListFragment fragment = fragmentRef.get();
+            if (fragment == null || fragment.getContext() == null) {
                 cancel(true);
                 return null;
             }
 
             Log.d(TAG, "Loading audio files from file system...");
 
-            return loadAudioFolderEntries(appContext);
+            return loadAudioFolderEntries(fragment.getContext());
         }
 
         /**
@@ -836,15 +836,14 @@ public class AudioFileListFragment extends Fragment implements
         @UiThread
         protected void onPostExecute(
                 ImmutableList<? extends AbstractAudioFolderEntry> audioFolderEntries) {
-            Context appContext = appContextRef.get();
-
-            if (appContext == null) {
+            @Nullable AudioFileListFragment fragment = fragmentRef.get();
+            if (fragment == null || fragment.getContext() == null) {
                 // application context no longer available, I guess that result
                 // will be of no use to anyone
                 return;
             }
-            updateByFolderMenuItem();
-            setAudioFolderEntries(audioFolderEntries);
+            fragment.updateSelectionMenuItem();
+            fragment.setAudioFolderEntries(audioFolderEntries);
         }
     }
 
@@ -887,16 +886,16 @@ public class AudioFileListFragment extends Fragment implements
     /**
      * A background task, used to delete the sound
      */
-    class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
+    static class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = DeleteSoundTask.class.getName();
 
         @NonNull
-        private final WeakReference<Context> appContextRef;
+        private final WeakReference<AudioFileListFragment> fragmentRef;
         private final UUID soundId;
 
-        DeleteSoundTask(@NonNull Context context, UUID soundId) {
+        DeleteSoundTask(@NonNull AudioFileListFragment fragment, UUID soundId) {
             super();
-            appContextRef = new WeakReference<>(context.getApplicationContext());
+            fragmentRef = new WeakReference<>(fragment);
             this.soundId = soundId;
         }
 
@@ -904,31 +903,30 @@ public class AudioFileListFragment extends Fragment implements
         @Override
         @WorkerThread
         protected Void doInBackground(Void... voids) {
-            Context appContext = appContextRef.get();
-            if (appContext == null) {
+            AudioFileListFragment fragment = fragmentRef.get();
+            if (fragment == null || fragment.getContext() == null) {
                 cancel(true);
                 return null;
             }
 
             Log.d(TAG, "Deleting sound " + soundId);
 
-            SoundDao.getInstance(appContext).delete(soundId);
+            SoundDao.getInstance(fragment.requireContext()).delete(soundId);
             return null;
         }
 
         @Override
         @UiThread
         protected void onPostExecute(Void nothing) {
-            Context appContext = appContextRef.get();
-
-            if (appContext == null) {
+            AudioFileListFragment fragment = fragmentRef.get();
+            if (fragment == null || fragment.getContext() == null) {
                 // application context no longer available, I guess that result
                 // will be of no use to anyone
                 return;
             }
 
-            if (soundEventListenerActivity != null) {
-                soundEventListenerActivity.somethingMightHaveChanged();
+            if (fragment.soundEventListenerActivity != null) {
+                fragment.soundEventListenerActivity.somethingMightHaveChanged();
             }
         }
     }

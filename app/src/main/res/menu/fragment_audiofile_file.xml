@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/toolbar_menu_audiofiles_by_folder"
+        android:id="@+id/toolbar_menu_audiofiles_selection"
         android:icon="@drawable/ic_long_list"
         android:title="@string/toolbar_menu_audiofiles_folders_all_on_device"
         app:showAsAction="ifRoom|withText" />
