@@ -56,7 +56,8 @@
         android:layout_marginTop="133dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/soundboardsLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/soundboardsLabel"
+        tools:listitem="@layout/soundboard_multiselect_item" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

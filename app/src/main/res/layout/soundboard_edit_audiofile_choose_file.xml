@@ -54,7 +54,7 @@
         android:id="@+id/edit_audiofile_choose_file_check_box"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:layout_marginStart="6dp"
+        android:layout_marginStart="13dp"
         android:contentDescription="@string/sound_name"
         android:elevation="-10dp"
         android:src="@drawable/ic_sound_list_file"

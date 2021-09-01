@@ -9,6 +9,7 @@
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/activity_settings.xml" value="0.2735562310030395" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/audiofile_list_file.xml" value="0.33" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/audiofile_list_subfolder.xml" value="0.33" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/audiofile_subfolder.xml" value="0.33" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/favorites_list_item.xml" value="0.33697916666666666" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_audiofile_list.xml" value="0.33" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/fragment_favorites_edit.xml" value="0.33697916666666666" />
@@ -19,7 +20,8 @@
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_edit_audiofile_chooser_file.xml" value="0.2735562310030395" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_item.xml" value="0.33125" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_list_item.xml" value="0.1" />
-        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_multiselect_item.xml" value="0.33" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/soundboard_multiselect_item.xml" value="0.18" />
+        <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/view_favorites_edit.xml" value="0.2735562310030395" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/layout/view_soundboard_edit.xml" value="0.3263157894736842" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/menu/activity_main.xml" value="0.34375" />
         <entry key="..\:/projects/2019/SoundboardCrafter/Android/SoundboardCrafter/app/src/main/res/menu/fragment_soundboard_play_context.xml" value="0.334375" />
