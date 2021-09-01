@@ -59,7 +59,7 @@ import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.de.soundboardcrafter.widget.GridAutofitLayoutManager;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
@@ -798,11 +798,11 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 SoundWithSelectableSoundboards soundWithSelectableSoundboards =
                         SoundDao.getInstance(appContext)
                                 .findSoundWithSelectableSoundboards(soundId);
-                List<SelectableSoundboard> soundboards =
+                List<SelectableModel<Soundboard>> soundboards =
                         soundWithSelectableSoundboards.getSoundboards();
-                Optional<SelectableSoundboard> foundSoundboard =
+                Optional<SelectableModel<Soundboard>> foundSoundboard =
                         soundboards.stream()
-                                .filter(s -> s.getSoundboard().getId().equals(soundboard.getId()))
+                                .filter(s -> s.getModel().getId().equals(soundboard.getId()))
                                 .findFirst();
                 if (foundSoundboard.isPresent()) {
                     if (!foundSoundboard.get().isSelected()) {

@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
+
 /**
  * The certain folder <i>inside the assets folder</i> where an audio file may reside.
  */
@@ -12,25 +14,41 @@ public class AssetFolderAudioLocation implements IAudioLocation {
      * Path to the audio file in the assets folder
      */
     @NonNull
-    private final String assetPath;
+    private final String path;
 
-    public AssetFolderAudioLocation(@NonNull final String assetPath) {
-        this.assetPath = assetPath;
+    public AssetFolderAudioLocation(@NonNull final String path) {
+        this.path = path;
+    }
+
+    @Override
+    @NonNull
+    public String getDisplayPath() {
+        if (isRoot()) {
+            return "/";
+        }
+
+        return getInternalPath().substring(AudioLoader.ASSET_SOUND_PATH.length());
     }
 
     @Override
     public String getDisplayName() {
-        int lastIndexOfSlash = assetPath.lastIndexOf("/");
+        int lastIndexOfSlash = path.lastIndexOf("/");
         if (lastIndexOfSlash < 0) {
-            return assetPath;
+            return path;
         }
 
-        return assetPath.substring(lastIndexOfSlash + 1);
+        return path.substring(lastIndexOfSlash + 1);
     }
 
+    @Override
+    public boolean isRoot() {
+        return AudioLoader.ASSET_SOUND_PATH.equals(getInternalPath());
+    }
+
+    @Override
     @NonNull
-    public String getAssetPath() {
-        return assetPath;
+    public String getInternalPath() {
+        return path;
     }
 
     @Override
@@ -42,19 +60,19 @@ public class AssetFolderAudioLocation implements IAudioLocation {
             return false;
         }
         AssetFolderAudioLocation that = (AssetFolderAudioLocation) o;
-        return assetPath.equals(that.assetPath);
+        return path.equals(that.path);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(assetPath);
+        return Objects.hash(path);
     }
 
     @NonNull
     @Override
     public String toString() {
         return "AssetFolderAudioLocation{" +
-                "assetPath='" + assetPath + '\'' +
+                "assetPath='" + path + '\'' +
                 '}';
     }
 }

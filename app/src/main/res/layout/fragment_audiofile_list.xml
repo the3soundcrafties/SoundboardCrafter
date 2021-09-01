@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/icon_folder"
+            android:id="@+id/icon_folder_up"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:elevation="-2dp"
@@ -47,9 +47,9 @@
             android:paddingBottom="12dp"
             android:textColor="@color/white"
             android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="@id/icon_folder"
+            app:layout_constraintBottom_toBottomOf="@id/icon_folder_up"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/icon_folder"
+            app:layout_constraintStart_toEndOf="@+id/icon_folder_up"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="/some/very/very/very/very/very/very/very/very/very/very/long/folder/name" />
     </androidx.constraintlayout.widget.ConstraintLayout>

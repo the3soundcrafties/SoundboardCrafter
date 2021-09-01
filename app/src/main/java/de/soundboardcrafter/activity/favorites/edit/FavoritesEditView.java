@@ -16,7 +16,8 @@ import java.util.List;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.selectable.SelectableSoundboardListItemAdapter;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
+import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Custom view for editing favorites (name, soundboards etc.).
@@ -27,8 +28,7 @@ public class FavoritesEditView extends ConstraintLayout {
     private SelectableSoundboardListItemAdapter adapter;
     private Button cancel;
     private Button save;
-
-
+    
     public FavoritesEditView(Context context) {
         super(context);
         init();
@@ -66,14 +66,14 @@ public class FavoritesEditView extends ConstraintLayout {
         cancel.setVisibility(View.INVISIBLE);
     }
 
-    void setSoundboards(List<SelectableSoundboard> soundboards) {
+    void setSoundboards(List<SelectableModel<Soundboard>> soundboards) {
         adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
-    List<SelectableSoundboard> getSelectableSoundboards() {
-        ImmutableList.Builder<SelectableSoundboard> res = new ImmutableList.Builder<>();
+    List<SelectableModel<Soundboard>> getSelectableSoundboards() {
+        ImmutableList.Builder<SelectableModel<Soundboard>> res = new ImmutableList.Builder<>();
         for (int i = 0; i < adapter.getCount(); i++) {
             res.add(adapter.getItem(i));
         }

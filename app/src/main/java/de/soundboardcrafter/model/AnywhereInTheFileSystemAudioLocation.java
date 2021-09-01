@@ -4,14 +4,22 @@ import androidx.annotation.NonNull;
 
 import javax.annotation.Nullable;
 
-/**
- * The selection that an audio file may reside anywhere <i>in the device's file system</i>.
- */
 public class AnywhereInTheFileSystemAudioLocation implements IAudioFileSelection {
     public static final AnywhereInTheFileSystemAudioLocation INSTANCE =
             new AnywhereInTheFileSystemAudioLocation();
 
     private AnywhereInTheFileSystemAudioLocation() {
+    }
+
+    @Override
+    public boolean isRoot() {
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public String getInternalPath() {
+        return null;
     }
 
     @Override

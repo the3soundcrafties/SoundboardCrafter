@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="55dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <CheckBox
@@ -12,5 +13,6 @@
         android:paddingBottom="5dp"
         android:layout_marginStart="13dp"
         android:paddingTop="5dp"
-        android:contentDescription="@string/soundboard_name" />
+        android:contentDescription="@string/soundboard_name"
+        tools:text="Soundboard Name" />
 </LinearLayout>

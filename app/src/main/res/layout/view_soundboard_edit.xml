@@ -37,8 +37,8 @@
         app:layout_constraintTop_toBottomOf="@+id/cancel"
         tools:ignore="UnusedAttribute" />
 
-    <ImageView
-        android:id="@+id/icon_selection"
+    <ImageButton
+        android:id="@+id/selectionImageButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -51,7 +51,66 @@
         app:layout_constraintBottom_toTopOf="@+id/nameText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="?android:attr/textColorSecondary" />
+        app:tint="?android:attr/textColorSecondary"
+        android:background="@null" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/folderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimarySlightlyDark"
+        android:elevation="-2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameText">
+
+        <ImageView
+            android:id="@+id/icon_folder_up"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimarySlightlyDark"
+            android:contentDescription="@string/folder_name"
+            android:elevation="-2dp"
+            android:foreground="?selectableItemBackground"
+            android:paddingStart="24dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:src="@drawable/ic_sound_list_folder_up"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/folder_path"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimarySlightlyDark"
+            android:elevation="-2dp"
+            android:ellipsize="start"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:singleLine="true"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@id/icon_folder_up"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/icon_folder_up"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="/some/very/very/very/very/very/very/very/very/very/very/long/folder/name" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ListView
+        android:elevation="-10dp"
+        android:id="@+id/list_view_audiofile"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/folderLayout"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/folderLayout"
+        tools:layout_editor_absoluteX="16dp"
+        tools:listitem="@layout/soundboard_edit_audiofile_choose_file" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,7 +11,7 @@ import androidx.annotation.UiThread;
 import java.util.function.Function;
 
 import de.soundboardcrafter.R;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -41,8 +41,8 @@ class SelectableSoundboardListItemRow extends LinearLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setSoundboard(SelectableSoundboard soundboard) {
-        checkboxSoundboard.setText(soundboard.getSoundboard().getName());
+    void setSoundboard(SelectableModel<Soundboard> soundboard) {
+        checkboxSoundboard.setText(soundboard.getModel().getName());
         checkboxSoundboard.setChecked(soundboard.isSelected());
 
         checkboxSoundboard.setOnClickListener(v -> {
@@ -52,7 +52,7 @@ class SelectableSoundboardListItemRow extends LinearLayout {
         });
 
         // User cannot change provided soundboards
-        setEnabled(isEnabled.apply(soundboard.getSoundboard()));
+        setEnabled(isEnabled.apply(soundboard.getModel()));
     }
 
     @Override

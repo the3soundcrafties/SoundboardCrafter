@@ -1,20 +1,25 @@
 package de.soundboardcrafter.model.audio;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * A folder containing audio files - or folders with (folders with...) audio files.
  * Might be on the device or in the assets directory.
  */
 public class AudioFolder extends AbstractAudioFolderEntry {
+    static final Comparator<AudioFolder> BY_PATH =
+            Comparator.comparing(AudioFolder::getPath)
+                    .thenComparing(AudioFolder::getNumAudioFiles);
+
     private final IAudioLocation folderLocation;
     private final int numAudioFiles;
 
@@ -32,9 +37,9 @@ public class AudioFolder extends AbstractAudioFolderEntry {
 
     public String getPath() {
         if (folderLocation instanceof FileSystemFolderAudioLocation) {
-            return ((FileSystemFolderAudioLocation) folderLocation).getPath();
+            return ((FileSystemFolderAudioLocation) folderLocation).getInternalPath();
         } else if (folderLocation instanceof AssetFolderAudioLocation) {
-            return ((AssetFolderAudioLocation) folderLocation).getAssetPath();
+            return ((AssetFolderAudioLocation) folderLocation).getInternalPath();
         } else {
             throw new IllegalStateException("Unexpected audio location: " + folderLocation);
         }

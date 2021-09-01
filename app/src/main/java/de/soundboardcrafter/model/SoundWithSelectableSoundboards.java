@@ -10,11 +10,12 @@ import java.util.Objects;
 /**
  * Sound with all soundboards, of which some may be selected.
  */
-public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundboard> {
+public class SoundWithSelectableSoundboards implements Iterable<SelectableModel<Soundboard>> {
     private final Sound sound;
-    private final List<SelectableSoundboard> soundboards;
+    private final List<SelectableModel<Soundboard>> soundboards;
 
-    public SoundWithSelectableSoundboards(Sound sound, List<SelectableSoundboard> soundboards) {
+    public SoundWithSelectableSoundboards(Sound sound,
+                                          List<SelectableModel<Soundboard>> soundboards) {
         this.sound = sound;
         this.soundboards = soundboards;
     }
@@ -25,14 +26,14 @@ public class SoundWithSelectableSoundboards implements Iterable<SelectableSoundb
 
     @NonNull
     @Override
-    public Iterator<SelectableSoundboard> iterator() {
+    public Iterator<SelectableModel<Soundboard>> iterator() {
         return soundboards.iterator();
     }
 
     /**
      * Returns the soundboards in order, unmodifiable.
      */
-    public List<SelectableSoundboard> getSoundboards() {
+    public List<SelectableModel<Soundboard>> getSoundboards() {
         return Collections.unmodifiableList(soundboards);
     }
 

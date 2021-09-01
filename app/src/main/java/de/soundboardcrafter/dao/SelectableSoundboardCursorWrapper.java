@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -22,8 +22,7 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
                 + " " //
                 + "FROM " + SoundboardTable.NAME + " sb "
                 + "LEFT JOIN " + SoundboardSoundTable.NAME + " sbs "
-                + "ON sbs." +
-                SoundboardSoundTable.Cols.SOUNDBOARD_ID +
+                + "ON sbs." + SoundboardSoundTable.Cols.SOUNDBOARD_ID +
                 " = sb." + SoundboardTable.Cols.ID + " " +
                 "AND sbs." + SoundboardSoundTable.Cols.SOUND_ID + " = ? " +
                 "ORDER BY sb." + SoundboardTable.Cols.NAME;
@@ -37,7 +36,7 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
         super(cursor);
     }
 
-    SelectableSoundboard getSelectableSoundboard() {
+    SelectableModel<Soundboard> getSelectableSoundboard() {
         UUID id = UUID.fromString(getString(getColumnIndex(SoundboardTable.Cols.ID)));
         String name = getString(getColumnIndex(SoundboardTable.Cols.NAME));
         boolean provided = getInt(getColumnIndex(SoundboardTable.Cols.PROVIDED)) != 0;
@@ -45,6 +44,6 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
         boolean selected = !isNull(getColumnIndex(SoundboardSoundTable.Cols.SOUND_ID));
 
         Soundboard soundboard = new Soundboard(id, name, provided);
-        return new SelectableSoundboard(soundboard, selected);
+        return new SelectableModel<>(soundboard, selected);
     }
 }

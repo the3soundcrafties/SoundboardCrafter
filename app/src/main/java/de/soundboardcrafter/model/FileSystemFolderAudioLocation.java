@@ -30,8 +30,14 @@ public class FileSystemFolderAudioLocation implements IAudioLocation {
         return path.substring(lastIndexOfSlash + 1);
     }
 
+    @Override
+    public boolean isRoot() {
+        return "/".equals(getInternalPath());
+    }
+
+    @Override
     @NonNull
-    public String getPath() {
+    public String getInternalPath() {
         return path;
     }
 

@@ -64,7 +64,7 @@ public class AudioLoader {
         if (selection instanceof FileSystemFolderAudioLocation) {
             FileSystemFolderAudioLocation fileSystemFolder =
                     (FileSystemFolderAudioLocation) selection;
-            return getAudiosFromDevice(context, fileSystemFolder.getPath());
+            return getAudiosFromDevice(context, fileSystemFolder.getInternalPath());
         }
 
         if (selection instanceof AssetFolderAudioLocation) {
@@ -200,7 +200,7 @@ public class AudioLoader {
     private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> loadAudioFolderEntriesWithoutSounds(
             Context context, AssetFolderAudioLocation assetFolderAudioLocation) {
         return getAudiosAndDirectSubFoldersFromAssets(context,
-                assetFolderAudioLocation.getAssetPath());
+                assetFolderAudioLocation.getInternalPath());
     }
 
     /**

@@ -10,21 +10,21 @@ import androidx.annotation.UiThread;
 import java.util.List;
 import java.util.function.Function;
 
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Adapter for a {@link SelectableSoundboardListItemRow}.
  */
 public class SelectableSoundboardListItemAdapter extends BaseAdapter {
-    private final List<SelectableSoundboard> soundboards;
+    private final List<SelectableModel<Soundboard>> soundboards;
     private final Function<Soundboard, Boolean> isEnabled;
 
-    public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards) {
+    public SelectableSoundboardListItemAdapter(List<SelectableModel<Soundboard>> soundboards) {
         this(soundboards, soundboard -> true);
     }
 
-    public SelectableSoundboardListItemAdapter(List<SelectableSoundboard> soundboards,
+    public SelectableSoundboardListItemAdapter(List<SelectableModel<Soundboard>> soundboards,
                                                Function<Soundboard, Boolean> isEnabled) {
         this.soundboards = soundboards;
         this.isEnabled = isEnabled;
@@ -41,7 +41,7 @@ public class SelectableSoundboardListItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public SelectableSoundboard getItem(int position) {
+    public SelectableModel<Soundboard> getItem(int position) {
         return soundboards.get(position);
     }
 

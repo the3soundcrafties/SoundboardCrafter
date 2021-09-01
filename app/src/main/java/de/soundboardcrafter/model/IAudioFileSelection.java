@@ -2,6 +2,8 @@ package de.soundboardcrafter.model;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 /**
  * A selection for audio files:
  * <ul>
@@ -14,4 +16,13 @@ import java.io.Serializable;
  * as appropriate for a <i>value object</i>.
  */
 public interface IAudioFileSelection extends Serializable {
+    @Nullable
+    default String getDisplayPath() {
+        return getInternalPath();
+    }
+
+    @Nullable
+    String getInternalPath();
+
+    boolean isRoot();
 }

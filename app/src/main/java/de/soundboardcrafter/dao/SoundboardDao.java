@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
@@ -168,21 +168,21 @@ public class SoundboardDao extends AbstractDao {
     }
 
     /**
-     * Retrieves all soundboard, each with a mark, whether this sound is included.
+     * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
-    ImmutableList<SelectableSoundboard> findAllSelectable(Sound sound) {
+    ImmutableList<SelectableModel<Soundboard>> findAllSelectable(Sound sound) {
         Cursor rawCursor = rawQueryOrThrow(SelectableSoundboardCursorWrapper.queryString(),
                 SelectableSoundboardCursorWrapper.selectionArgs(sound.getId()));
         return findAllSelectable(rawCursor);
     }
 
     /**
-     * Retrieves all soundboards, each with a mark, whether this sound is included.
+     * Retrieves all soundboards, each with a mark, whether a certain sound is included.
      */
-    private ImmutableList<SelectableSoundboard> findAllSelectable(Cursor rawCursor) {
+    private ImmutableList<SelectableModel<Soundboard>> findAllSelectable(Cursor rawCursor) {
         try (SelectableSoundboardCursorWrapper cursor =
                      new SelectableSoundboardCursorWrapper(rawCursor)) {
-            final ImmutableList.Builder<SelectableSoundboard> res = ImmutableList.builder();
+            final ImmutableList.Builder<SelectableModel<Soundboard>> res = ImmutableList.builder();
 
             while (cursor.moveToNext()) {
                 res.add(cursor.getSelectableSoundboard());
@@ -196,7 +196,7 @@ public class SoundboardDao extends AbstractDao {
      * Updates the soundboard links for this sound. The soundboards must already exist.
      */
     void updateLinks(SoundWithSelectableSoundboards sound) {
-        for (SelectableSoundboard selectableSoundboard : sound.getSoundboards()) {
+        for (SelectableModel<Soundboard> selectableSoundboard : sound.getSoundboards()) {
             updateLink(sound, selectableSoundboard);
         }
     }
@@ -205,13 +205,13 @@ public class SoundboardDao extends AbstractDao {
      * Creates or deletes the soundboard link for this sound, if necessary.
      */
     private void updateLink(SoundWithSelectableSoundboards sound,
-                            SelectableSoundboard selectableSoundboard) {
+                            SelectableModel<Soundboard> selectableSoundboard) {
         if (selectableSoundboard.isSelected()) {
-            linkSound(selectableSoundboard.getSoundboard(), sound.getSound());
+            linkSound(selectableSoundboard.getModel(), sound.getSound());
             return;
         }
 
-        unlinkSound(selectableSoundboard.getSoundboard(), sound.getSound().getId());
+        unlinkSound(selectableSoundboard.getModel(), sound.getSound().getId());
     }
 
     /**

@@ -3,6 +3,7 @@ package de.soundboardcrafter.model.audio;
 import androidx.annotation.NonNull;
 
 import java.text.CollationKey;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -15,6 +16,22 @@ import de.soundboardcrafter.model.Sound;
  * Metadata of an audio file, perhaps with a sound.
  */
 public class AudioModelAndSound extends AbstractAudioFolderEntry {
+    public enum SortOrder {
+        BY_NAME(Comparator.comparing(AudioModelAndSound::getCollationKey)),
+        BY_DATE(Comparator.comparing(AudioModelAndSound::getDateAdded,
+                Comparator.nullsFirst(Comparator.reverseOrder())));
+
+        private final Comparator<AudioModelAndSound> comparator;
+
+        SortOrder(Comparator<AudioModelAndSound> comparator) {
+            this.comparator = comparator;
+        }
+
+        Comparator<AudioModelAndSound> getComparator() {
+            return comparator;
+        }
+    }
+
     private final FullAudioModel audioModel;
 
     @Nullable

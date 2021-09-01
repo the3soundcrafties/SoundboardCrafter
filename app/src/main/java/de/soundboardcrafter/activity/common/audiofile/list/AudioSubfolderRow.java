@@ -1,4 +1,6 @@
-package de.soundboardcrafter.activity.audiofile.list;
+package de.soundboardcrafter.activity.common.audiofile.list;
+
+import static com.google.common.base.Preconditions.checkState;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,12 +16,10 @@ import javax.annotation.Nonnull;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.model.audio.AudioFolder;
 
-import static com.google.common.base.Preconditions.checkState;
-
 /**
  * Row in the list of audio files representing one subfolder.
  */
-class AudioSubfolderRow extends RelativeLayout {
+public class AudioSubfolderRow extends RelativeLayout {
     @NonNull
     private final TextView path;
     @Nonnull
@@ -27,11 +27,11 @@ class AudioSubfolderRow extends RelativeLayout {
     @Nullable
     private AudioFolder audioSubfolder;
 
-    AudioSubfolderRow(Context context) {
+    public AudioSubfolderRow(Context context) {
         super(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         // Inflate the view into this object
-        inflater.inflate(R.layout.audiofile_list_subfolder, this, true);
+        inflater.inflate(R.layout.audiofile_subfolder, this, true);
         path = findViewById(R.id.path);
         numAudioFiles = findViewById(R.id.num_audiofiles);
     }
@@ -40,14 +40,14 @@ class AudioSubfolderRow extends RelativeLayout {
      * Set the data for the view.
      */
     @UiThread
-    void setData(AudioFolder audioSubfolder) {
+    public void setData(AudioFolder audioSubfolder) {
         this.audioSubfolder = audioSubfolder;
         path.setText(audioSubfolder.getName());
         numAudioFiles.setText(formatNumSounds());
     }
 
     @Nullable
-    String getPath() {
+    public String getPath() {
         if (audioSubfolder == null) {
             return null;
         }

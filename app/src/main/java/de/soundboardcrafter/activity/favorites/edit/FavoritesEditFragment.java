@@ -30,7 +30,7 @@ import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
 import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.FavoritesWithSoundboards;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Soundboard;
 
 /**
@@ -153,14 +153,14 @@ public class FavoritesEditFragment extends Fragment {
 
     @UiThread
     private void updateUISoundboards(List<Soundboard> soundboards) {
-        List<SelectableSoundboard> selectableSoundboards = new ArrayList<>();
+        List<SelectableModel<Soundboard>> selectableSoundboards = new ArrayList<>();
         ImmutableList<Soundboard> soundboardsInFavorites =
                 favoritesWithSoundboards.getSoundboards();
         for (Soundboard soundboard : soundboards) {
             if (soundboardsInFavorites.contains(soundboard)) {
-                selectableSoundboards.add(new SelectableSoundboard(soundboard, true));
+                selectableSoundboards.add(new SelectableModel<>(soundboard, true));
             } else {
-                selectableSoundboards.add(new SelectableSoundboard(soundboard, false));
+                selectableSoundboards.add(new SelectableModel<>(soundboard, false));
             }
         }
         favoritesEditView.setSoundboards(selectableSoundboards);
@@ -189,11 +189,12 @@ public class FavoritesEditFragment extends Fragment {
         if (!nameEntered.isEmpty()) {
             favoritesWithSoundboards.getFavorites().setName(nameEntered);
         }
-        List<SelectableSoundboard> soundboards = favoritesEditView.getSelectableSoundboards();
+        List<SelectableModel<Soundboard>> soundboards =
+                favoritesEditView.getSelectableSoundboards();
         favoritesWithSoundboards.clearSoundboards();
-        for (SelectableSoundboard soundboard : soundboards) {
+        for (SelectableModel<Soundboard> soundboard : soundboards) {
             if (soundboard.isSelected()) {
-                favoritesWithSoundboards.addSoundboard(soundboard.getSoundboard());
+                favoritesWithSoundboards.addSoundboard(soundboard.getModel());
             }
         }
     }

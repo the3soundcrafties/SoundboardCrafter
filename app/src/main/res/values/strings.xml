@@ -16,7 +16,7 @@
     <string name="context_menu_remove_sound">Remove</string>
     <string name="context_menu_edit_favorites">Edit</string>
     <string name="context_menu_remove_favorites">Delete</string>
-    <string name="context_menu_edit_soundboard">Rename</string>
+    <string name="context_menu_edit_soundboard">Edit</string>
     <string name="context_menu_remove_soundboard">Delete</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
@@ -73,7 +73,7 @@
     <string name="tutorial_soundboard_play_remove_sound_description">Long-click to remove sound from your own soundboard</string>
     <string name="tutorial_audio_file_list_edit">Click here to add sound to soundboard</string>
     <string name="tutorial_audio_file_list_local_audio">Click here to use your own sounds</string>
-    <string name="tutorial_soundboard_list_context_menu_description">Long-click to rename
+    <string name="tutorial_soundboard_list_context_menu_description">Long-click to edit
         or delete (only your own soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Long-click to edit</string>
     <string name="toolbar_menu_item_settings">Settings</string>

@@ -15,7 +15,8 @@ import java.util.List;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.selectable.SelectableSoundboardListItemAdapter;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
+import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Custom view for editing a sound (name, volume etc.).
@@ -121,7 +122,7 @@ public class SoundEditView extends ConstraintLayout {
     /**
      * Sets the soundboards and the info whether they can be changed.
      */
-    void setSoundboards(List<SelectableSoundboard> soundboards) {
+    void setSoundboards(List<SelectableModel<Soundboard>> soundboards) {
         SelectableSoundboardListItemAdapter adapter =
                 new SelectableSoundboardListItemAdapter(soundboards,
                         soundboard -> !soundboard.isProvided());

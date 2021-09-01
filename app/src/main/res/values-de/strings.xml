@@ -23,7 +23,7 @@
     <string name="context_menu_remove_sound">Entfernen</string>
     <string name="context_menu_edit_favorites">Bearbeiten</string>
     <string name="context_menu_remove_favorites">Löschen</string>
-    <string name="context_menu_edit_soundboard">Umbenennen</string>
+    <string name="context_menu_edit_soundboard">Bearbeiten</string>
     <string name="context_menu_remove_soundboard">Löschen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
     <string name="reset_all_message">Alle Favoriten, Soundboards und Sound-Einstellungen werden
@@ -73,7 +73,7 @@
         hinzuzufügen</string>
     <string name="tutorial_audio_file_list_local_audio">Hier klicken, um eigene Sounds zu verwenden</string>
     <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
-        Umbenennen oder Löschen (nur eigene Soundboards)</string>
+        Bearbeiten oder Löschen (nur eigene Soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Lang klicken zum
         Bearbeiten</string>
     <string name="toolbar_menu_item_about">Über den Soundboard Crafter</string>

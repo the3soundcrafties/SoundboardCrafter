@@ -19,9 +19,10 @@ import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.IAudioLocation;
-import de.soundboardcrafter.model.SelectableSoundboard;
+import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
+import de.soundboardcrafter.model.Soundboard;
 
 /**
  * Database Access Object for accessing sounds in the database
@@ -49,13 +50,6 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
-     * Returns whether there are any soundboards. Might be slow.
-     */
-    public boolean areAny() {
-        return !findAllByAudioLocation().isEmpty();
-    }
-
-    /**
      * Finds all sounds, mapped on their respective {@link IAudioLocation}.
      */
     public ImmutableMap<IAudioFileSelection, Sound> findAllByAudioLocation() {
@@ -71,6 +65,35 @@ public class SoundDao extends AbstractDao {
         return res.build();
     }
 
+
+    /**
+     * Finds all sounds, each with a mark, whether the sound is part of this soundboard, and each
+     * mapped on their respective {@link IAudioLocation}.
+     */
+    public ImmutableMap<IAudioFileSelection, SelectableModel<Sound>>
+    findAllSelectableByAudioLocation(UUID soundboardId) {
+        ImmutableMap.Builder<IAudioFileSelection, SelectableModel<Sound>> res =
+                ImmutableMap.builder();
+
+        try (SelectableSoundCursorWrapper cursor = queryAllSelectable(soundboardId)) {
+            while (cursor.moveToNext()) {
+                SelectableModel<Sound> selectableSound = cursor.getSelectableSound();
+                res.put(selectableSound.getModel().getAudioLocation(), selectableSound);
+            }
+        }
+
+        return res.build();
+    }
+
+    /**
+     * Queries all sounds, each with a mark, whether the sound is part of this soundboard.
+     */
+    private SelectableSoundCursorWrapper queryAllSelectable(UUID soundboardId) {
+        Cursor rawCursor = rawQueryOrThrow(SelectableSoundCursorWrapper.queryString(),
+                SelectableSoundCursorWrapper.selectionArgs(soundboardId));
+        return new SelectableSoundCursorWrapper(rawCursor);
+    }
+
     /**
      * Finds a sound by ID, includes all soundboards and a mark, which of them are
      * selected.
@@ -79,7 +102,7 @@ public class SoundDao extends AbstractDao {
      */
     public SoundWithSelectableSoundboards findSoundWithSelectableSoundboards(UUID soundId) {
         Sound sound = find(soundId);
-        ImmutableList<SelectableSoundboard> selectableSoundboards =
+        ImmutableList<SelectableModel<Soundboard>> selectableSoundboards =
                 soundboardDao.findAllSelectable(sound);
 
         return new SoundWithSelectableSoundboards(sound, selectableSoundboards);
@@ -187,11 +210,11 @@ public class SoundDao extends AbstractDao {
 
     private String toPath(IAudioLocation audioLocation) {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
-            return ((FileSystemFolderAudioLocation) audioLocation).getPath();
+            return ((FileSystemFolderAudioLocation) audioLocation).getInternalPath();
         }
 
         if (audioLocation instanceof AssetFolderAudioLocation) {
-            return ((AssetFolderAudioLocation) audioLocation).getAssetPath();
+            return ((AssetFolderAudioLocation) audioLocation).getInternalPath();
         }
 
         throw new IllegalStateException("Unexpected audio location type " +

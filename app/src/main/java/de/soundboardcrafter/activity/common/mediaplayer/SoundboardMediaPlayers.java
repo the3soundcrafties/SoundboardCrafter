@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
@@ -21,8 +23,6 @@ import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Several media players. Some of them are <i>active</i>, others are <i>fading out</i>.
@@ -86,9 +86,11 @@ class SoundboardMediaPlayers {
                                        @NonNull IAudioLocation audioLocation)
             throws IOException {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
-            mediaPlayer.setDataSource(((FileSystemFolderAudioLocation) audioLocation).getPath());
+            mediaPlayer.setDataSource(
+                    ((FileSystemFolderAudioLocation) audioLocation).getInternalPath());
         } else if (audioLocation instanceof AssetFolderAudioLocation) {
-            @NonNull String assetPath = ((AssetFolderAudioLocation) audioLocation).getAssetPath();
+            @NonNull String assetPath =
+                    ((AssetFolderAudioLocation) audioLocation).getInternalPath();
             AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath);
             mediaPlayer.setDataSource(
                     fileDescriptor.getFileDescriptor(),
