@@ -28,22 +28,21 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="@string/sound_edit_sound_name_hint"
-        tools:ignore="UnusedAttribute"
+        android:hint="@string/favorites_edit_favorites_name_hint"
         android:importantForAutofill="no"
         android:inputType="text|textCapSentences"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cancel" />
-
+        app:layout_constraintTop_toBottomOf="@+id/cancel"
+        tools:ignore="UnusedAttribute" />
 
     <TextView
         android:id="@+id/soundboardsLabel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/sound_edit_soundboards_label"
+        android:text="@string/favorites_edit_soundboards_label"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

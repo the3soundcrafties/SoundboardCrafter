@@ -43,6 +43,7 @@
             android:ellipsize="start"
             android:singleLine="true"
             android:paddingTop="12dp"
+            android:paddingStart="0dp"
             android:paddingEnd="16dp"
             android:paddingBottom="12dp"
             android:textColor="@color/white"

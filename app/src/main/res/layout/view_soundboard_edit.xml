@@ -28,7 +28,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="@string/sound_edit_sound_name_hint"
+        android:hint="@string/soundboard_edit_soundboard_name_hint"
         android:importantForAutofill="no"
         android:inputType="text|textCapSentences"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -54,6 +54,17 @@
         app:tint="?android:attr/textColorSecondary"
         android:background="@null" />
 
+    <TextView
+        android:id="@+id/soundsLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/soundboard_edit_sounds_label"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameText" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/folderLayout"
         android:layout_width="match_parent"
@@ -62,7 +73,7 @@
         android:elevation="-2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nameText">
+        app:layout_constraintTop_toBottomOf="@+id/soundsLabel">
 
         <ImageView
             android:id="@+id/icon_folder_up"
