@@ -28,7 +28,7 @@ public class FavoritesEditView extends ConstraintLayout {
     private SelectableSoundboardListItemAdapter adapter;
     private Button cancel;
     private Button save;
-    
+
     public FavoritesEditView(Context context) {
         super(context);
         init();
