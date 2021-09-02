@@ -25,7 +25,7 @@ class SoundboardEditSelectableAudioRow extends AbstractAudioFileRow {
     }
 
     void setAudioFile(
-            SelectableModel<AbstractAudioFolderEntry> selectableAudioModelAndSound) {
+            @NonNull SelectableModel<AbstractAudioFolderEntry> selectableAudioModelAndSound) {
         super.setAudioFile((AudioModelAndSound) selectableAudioModelAndSound.getModel());
         chooseFileCheckBox.setChecked(selectableAudioModelAndSound.isSelected());
 
