@@ -1,7 +1,8 @@
 package de.soundboardcrafter.dao;
 
 import android.database.Cursor;
-import android.database.CursorWrapper;
+
+import androidx.annotation.WorkerThread;
 
 import java.util.UUID;
 
@@ -13,7 +14,8 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Essentially a cursor over soundboards that might or might not be linked to one specific sound.
  */
-class SelectableSoundboardCursorWrapper extends CursorWrapper {
+@WorkerThread
+class SelectableSoundboardCursorWrapper extends AbstractSimpleSoundboardCursorWrapper {
     static String queryString() {
         return "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
@@ -37,13 +39,8 @@ class SelectableSoundboardCursorWrapper extends CursorWrapper {
     }
 
     SelectableModel<Soundboard> getSelectableSoundboard() {
-        UUID id = UUID.fromString(getString(getColumnIndex(SoundboardTable.Cols.ID)));
-        String name = getString(getColumnIndex(SoundboardTable.Cols.NAME));
-        boolean provided = getInt(getColumnIndex(SoundboardTable.Cols.PROVIDED)) != 0;
-
         boolean selected = !isNull(getColumnIndex(SoundboardSoundTable.Cols.SOUND_ID));
 
-        Soundboard soundboard = new Soundboard(id, name, provided);
-        return new SelectableModel<>(soundboard, selected);
+        return new SelectableModel<>(getSoundboard(), selected);
     }
 }

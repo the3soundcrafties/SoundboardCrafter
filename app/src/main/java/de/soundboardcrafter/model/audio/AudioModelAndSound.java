@@ -92,7 +92,7 @@ public class AudioModelAndSound extends AbstractAudioFolderEntry {
     }
 
     @Nullable
-    public Date getDateAdded() {
+    private Date getDateAdded() {
         return audioModel.getDateAdded();
     }
 
