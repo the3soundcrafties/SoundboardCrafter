@@ -4,10 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import org.jetbrains.annotations.Contract;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -88,6 +91,7 @@ public class SoundDao extends AbstractDao {
     /**
      * Queries all sounds, each with a mark, whether the sound is part of this soundboard.
      */
+    @NonNull
     private SelectableSoundCursorWrapper queryAllSelectable(UUID soundboardId) {
         Cursor rawCursor = rawQueryOrThrow(SelectableSoundCursorWrapper.queryString(),
                 SelectableSoundCursorWrapper.selectionArgs(soundboardId));
@@ -130,10 +134,12 @@ public class SoundDao extends AbstractDao {
         }
     }
 
+    @NonNull
     private SoundCursorWrapper queryAll() {
         return querySounds(null, new String[]{});
     }
 
+    @NonNull
     private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
@@ -154,7 +160,7 @@ public class SoundDao extends AbstractDao {
      * <p>
      * (This method is only useful for initialization purposes.)
      */
-    public void insert(Collection<Sound> sounds) {
+    public void insert(@NonNull Collection<Sound> sounds) {
         for (Sound sound : sounds) {
             insert(sound);
         }
@@ -175,7 +181,7 @@ public class SoundDao extends AbstractDao {
      * Updates this sound (which must already exist in the database) and updates the
      * soundboard links.
      */
-    public void updateSoundAndSoundboardLinks(SoundWithSelectableSoundboards sound) {
+    public void updateSoundAndSoundboardLinks(@NonNull SoundWithSelectableSoundboards sound) {
         update(sound.getSound());
         soundboardDao.updateLinks(sound);
     }
@@ -194,7 +200,8 @@ public class SoundDao extends AbstractDao {
         }
     }
 
-    private ContentValues buildContentValues(Sound sound) {
+    @NonNull
+    private ContentValues buildContentValues(@NonNull Sound sound) {
         ContentValues values = new ContentValues();
         values.put(SoundTable.Cols.ID, sound.getId().toString());
         values.put(SoundTable.Cols.NAME, sound.getName());
@@ -208,6 +215,8 @@ public class SoundDao extends AbstractDao {
         return values;
     }
 
+    @NonNull
+    @Contract("null -> fail")
     private String toPath(IAudioLocation audioLocation) {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
             return ((FileSystemFolderAudioLocation) audioLocation).getInternalPath();
