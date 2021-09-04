@@ -3,6 +3,7 @@ package de.soundboardcrafter.activity.soundboard.edit;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -70,10 +71,6 @@ public class SoundboardEditView extends ConstraintLayout {
         listView = findViewById(R.id.list_view_audiofile);
 
         initAudioFileListItemAdapter();
-
-        // TODO on icon folder up click
-
-        // TODO on item click
     }
 
     @UiThread
@@ -93,6 +90,10 @@ public class SoundboardEditView extends ConstraintLayout {
 
     void setOnClickListenerSelection(Runnable runnable) {
         selectionImageButton.setOnClickListener(view -> runnable.run());
+    }
+
+    void setOnListItemClickListener(AdapterView.OnItemClickListener listener) {
+        listView.setOnItemClickListener(listener);
     }
 
     @ParametersAreNonnullByDefault

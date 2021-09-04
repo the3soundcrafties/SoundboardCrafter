@@ -61,6 +61,7 @@
     <string name="sound_list_item_icon">Soundboard</string>
     <string name="soundboard_name">Soundboard name</string>
     <string name="folder_name">Folder name</string>
+    <string name="folder_up">Folder up</string>
     <plurals name="sound_count_text">
         <item quantity="one">1 Sound</item>
         <item quantity="other">%d Sounds</item>

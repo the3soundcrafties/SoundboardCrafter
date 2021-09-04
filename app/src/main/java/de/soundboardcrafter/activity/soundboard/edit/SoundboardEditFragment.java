@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.edit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -27,9 +29,11 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
+import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
@@ -58,11 +62,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     private Soundboard soundboard;
     private boolean isNew;
-
     private IAudioFileSelection selection;
-
-    // TODO Save to bundle
-    // TODO Restore from bundle
     private AudioSelectionChanges audioSelectionChanges;
 
     static SoundboardEditFragment newInstance(UUID soundboardId) {
@@ -159,11 +159,110 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
         // FIXME iconFolderUp.setOnClickListener(…
 
-        // FIXME listView.setOnItemClickListener(…
+        editView.setOnListItemClickListener(
+                (parent, view, position, id) -> {
+                    if (view instanceof SoundboardEditSelectableAudioRow) {
+                        SoundboardEditSelectableAudioRow audioFileItemRow =
+                                (SoundboardEditSelectableAudioRow) view;
+                        onClickAudioFile(audioFileItemRow, position);
+                    } else if (view instanceof AudioSubfolderRow) {
+                        AudioSubfolderRow audioSubfolderRow = (AudioSubfolderRow) view;
+                        onClickAudioSubfolder(audioSubfolderRow);
+                    }
+                });
 
         startFindingAudioFilesIfPermitted();
 
         return rootView;
+    }
+
+    private void onClickAudioSubfolder(@NonNull AudioSubfolderRow audioSubfolderRow) {
+        @Nullable String subfolderPath = audioSubfolderRow.getPath();
+        if (subfolderPath == null) {
+            return;
+        }
+
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+            // (some race condition, perhaps?!)
+            return;
+        }
+
+        changeFolder(subfolderPath);
+    }
+
+    private void changeFolder(@NonNull String newFolder) {
+        checkNotNull(selection, "newFolder");
+
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            changeFolder(new FileSystemFolderAudioLocation(newFolder));
+        } else if (selection instanceof AssetFolderAudioLocation) {
+            changeFolder(new AssetFolderAudioLocation(newFolder));
+        } else {
+            throw new IllegalStateException(
+                    "Unexpected selection type: " + selection.getClass());
+        }
+    }
+
+    private void changeFolder(@NonNull AbstractAudioLocation newFolder) {
+        rememberAudioSelectionChanges();
+
+        if (selection instanceof AssetFolderAudioLocation
+                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+            setSelection(newFolder);
+            loadAudioFiles();
+        } // Otherwise, the fragment will receive an event later.
+    }
+
+    private void onClickAudioFile(@NonNull SoundboardEditSelectableAudioRow audioFileItemRow,
+                                  int position) {
+        /* FIXME Play / Pause file
+        MediaPlayerService service = getService();
+        if (service == null) {
+            return;
+        }
+
+        boolean positionWasPlaying = adapter.isPlaying(position);
+        stopPlaying();
+
+        if (!positionWasPlaying) {
+            AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
+            final AbstractAudioLocation audioLocation =
+                    audioModelAndSound.getAudioModel().getAudioLocation();
+
+            if (audioLocation instanceof AssetFolderAudioLocation
+                    || permissionReadExternalStorageIsGranted()) {
+                adapter.setPositionPlaying(position);
+
+                audioFileItemRow.setImage(R.drawable.ic_stop);
+                try {
+                    mediaPlayer = service.play(audioModelAndSound.getName(),
+                            audioLocation,
+                            () -> {
+                                adapter.setPositionPlaying(null);
+                                mediaPlayer = null;
+                            });
+                } catch (IOException e) {
+                    @Nullable UUID soundId = audioModelAndSound.getSoundId();
+
+                    adapter.setPositionPlaying(null);
+                    mediaPlayer = null;
+                    Snackbar snackbar = Snackbar
+                            .make(listView, getString(R.string.audiofile_not_found),
+                                    Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.update_all_soundboards_and_sounds),
+                                    view -> {
+                                        if (soundId != null) {
+                                            new AudioFileListFragment.DeleteSoundTask(this, soundId)
+                                                    .execute();
+                                        } else if (soundEventListenerActivity != null) {
+                                            soundEventListenerActivity.somethingMightHaveChanged();
+                                        }
+                                    });
+                    snackbar.show();
+                }
+            }
+        }
+         */
     }
 
     @UiThread
@@ -269,6 +368,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
+        rememberAudioSelectionChanges();
         if (!isNew && soundboard != null) {
             String nameEntered = editView.getName();
             if (!nameEntered.isEmpty()) {

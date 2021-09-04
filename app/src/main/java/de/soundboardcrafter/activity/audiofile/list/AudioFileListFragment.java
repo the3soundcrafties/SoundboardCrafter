@@ -230,19 +230,6 @@ public class AudioFileListFragment extends Fragment implements
         return rootView;
     }
 
-    private void changeFolder(@NonNull String newFolder) {
-        checkNotNull(selection, "newFolder");
-
-        if (selection instanceof FileSystemFolderAudioLocation) {
-            changeFolder(new FileSystemFolderAudioLocation(newFolder));
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            changeFolder(new AssetFolderAudioLocation(newFolder));
-        } else {
-            throw new IllegalStateException(
-                    "Unexpected selection type: " + selection.getClass());
-        }
-    }
-
     private void updateSelectionMenuItem() {
         if (selectionMenuItem == null) {
             return;
@@ -388,6 +375,19 @@ public class AudioFileListFragment extends Fragment implements
         changeFolder(subfolderPath);
     }
 
+    private void changeFolder(@NonNull String newFolder) {
+        checkNotNull(selection, "newFolder");
+
+        if (selection instanceof FileSystemFolderAudioLocation) {
+            changeFolder(new FileSystemFolderAudioLocation(newFolder));
+        } else if (selection instanceof AssetFolderAudioLocation) {
+            changeFolder(new AssetFolderAudioLocation(newFolder));
+        } else {
+            throw new IllegalStateException(
+                    "Unexpected selection type: " + selection.getClass());
+        }
+    }
+
     private void changeFolder(@NonNull AbstractAudioLocation newFolder) {
         if (selection instanceof AssetFolderAudioLocation
                 || permissionReadExternalStorageIsGranted()) {
@@ -400,8 +400,7 @@ public class AudioFileListFragment extends Fragment implements
         new FindAudioFilesTask(this, selection, sortOrder).execute();
     }
 
-    private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow,
-                                  int position) {
+    private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow, int position) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
