@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import de.soundboardcrafter.R;
@@ -105,6 +106,10 @@ public class SoundboardEditView extends ConstraintLayout {
         setSelectionIcon(context, getIconId(selection));
     }
 
+    public void notifyListDataSetChanged() {
+        adapter.notifyDataSetChanged();
+    }
+
     @DrawableRes
     private int getIconId(IAudioFileSelection selection) {
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
@@ -158,6 +163,18 @@ public class SoundboardEditView extends ConstraintLayout {
 
     ImmutableList<AbstractAudioLocation> getAudioLocationsNotSelected() {
         return adapter.getAudioLocations(false);
+    }
+
+    public void setPositionPlaying(@Nullable Integer position) {
+        adapter.setPositionPlaying(position);
+    }
+
+    public boolean isPlaying(int position) {
+        return adapter.isPlaying(position);
+    }
+
+    public AbstractAudioFolderEntry getAudioFolderEntry(int position) {
+        return adapter.getItem(position).getModel();
     }
 
     /**

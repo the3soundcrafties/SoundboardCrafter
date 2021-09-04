@@ -113,7 +113,7 @@ public class AudioFileListFragment extends Fragment implements
      * Creates an <code>AudioFileListFragment</code>.
      */
     @NonNull
-    public static AudioFileListFragment createFragment() {
+    public static AudioFileListFragment newInstance() {
         return new AudioFileListFragment();
     }
 
@@ -124,8 +124,6 @@ public class AudioFileListFragment extends Fragment implements
         mediaPlayerService = b.getService();
         // As soon the media player service is connected, the play/stop icons can be set correctly
         updateUI();
-
-        Log.d(TAG, "MediaPlayerService is connected");
     }
 
     @Override
@@ -563,8 +561,6 @@ public class AudioFileListFragment extends Fragment implements
         super.onResume();
 
         requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        // updateUI();
 
         bindService();
     }

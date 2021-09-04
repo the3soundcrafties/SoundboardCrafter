@@ -59,7 +59,9 @@
         android:elevation="-10dp"
         android:src="@drawable/ic_sound_list_file"
         android:text=""
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <!-- Without android:focusable="false" this will consume all clicks in the line. -->
 </androidx.constraintlayout.widget.ConstraintLayout>

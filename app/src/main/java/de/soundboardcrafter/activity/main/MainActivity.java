@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity
     @NonNull
     @Contract(" -> new")
     private static AudioFileListFragment createAudioFileListFragment() {
-        return AudioFileListFragment.createFragment();
+        return AudioFileListFragment.newInstance();
     }
 
     @Override

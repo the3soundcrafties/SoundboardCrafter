@@ -3,10 +3,14 @@ package de.soundboardcrafter.activity.soundboard.edit;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -20,6 +24,7 @@ import androidx.annotation.WorkerThread;
 
 import com.google.common.collect.ImmutableList;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Map;
@@ -31,6 +36,8 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
+import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
+import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.AbstractAudioLocation;
@@ -49,7 +56,8 @@ import de.soundboardcrafter.model.audio.FullAudioModel;
 /**
  * Activity for editing a single soundboard (name, volume etc.).
  */
-public class SoundboardEditFragment extends AbstractPermissionFragment {
+public class SoundboardEditFragment extends AbstractPermissionFragment
+        implements ServiceConnection {
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
 
     private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
@@ -65,6 +73,10 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     private IAudioFileSelection selection;
     private AudioSelectionChanges audioSelectionChanges;
 
+    private MediaPlayerService mediaPlayerService;
+    @Nullable
+    private SoundboardMediaPlayer mediaPlayer;
+
     static SoundboardEditFragment newInstance(UUID soundboardId) {
         Bundle args = new Bundle();
         args.putString(ARG_SOUNDBOARD_ID, soundboardId.toString());
@@ -76,6 +88,35 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     static SoundboardEditFragment newInstance() {
         return new SoundboardEditFragment();
+    }
+
+    @Override
+    @UiThread
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+        MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
+        mediaPlayerService = b.getService();
+        // As soon the media player service is connected, the play/stop icons can be set correctly
+        if (editView != null) {
+            editView.notifyListDataSetChanged();
+        }
+    }
+
+    @Override
+    @UiThread
+    public void onServiceDisconnected(ComponentName name) {
+        // TODO What to do on Service Disconnected?
+    }
+
+    @Override
+    @UiThread
+    public void onBindingDied(ComponentName name) {
+        // TODO What to do on Service Died?
+    }
+
+    @Override
+    @UiThread
+    public void onNullBinding(ComponentName name) {
+        // TODO What to do on Null Binding?
     }
 
     @Override
@@ -103,6 +144,14 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
             Intent intent = new Intent(requireActivity(), SoundboardEditActivity.class);
             requireActivity().setResult(Activity.RESULT_OK, intent);
         }
+
+        // TODO Necessary?! Also done in onResume()
+        bindService();
+    }
+
+    private void bindService() {
+        Intent intent = new Intent(requireActivity(), MediaPlayerService.class);
+        requireActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -208,6 +257,8 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     }
 
     private void changeFolder(@NonNull AbstractAudioLocation newFolder) {
+        stopPlaying();
+
         rememberAudioSelectionChanges();
 
         if (selection instanceof AssetFolderAudioLocation
@@ -219,55 +270,56 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     private void onClickAudioFile(@NonNull SoundboardEditSelectableAudioRow audioFileItemRow,
                                   int position) {
-        /* FIXME Play / Pause file
         MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
 
-        boolean positionWasPlaying = adapter.isPlaying(position);
+        boolean positionWasPlaying = editView.isPlaying(position);
         stopPlaying();
 
         if (!positionWasPlaying) {
-            AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
+            AudioModelAndSound audioModelAndSound =
+                    (AudioModelAndSound) editView.getAudioFolderEntry(position);
             final AbstractAudioLocation audioLocation =
                     audioModelAndSound.getAudioModel().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || permissionReadExternalStorageIsGranted()) {
-                adapter.setPositionPlaying(position);
+                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                editView.setPositionPlaying(position);
 
                 audioFileItemRow.setImage(R.drawable.ic_stop);
                 try {
                     mediaPlayer = service.play(audioModelAndSound.getName(),
                             audioLocation,
                             () -> {
-                                adapter.setPositionPlaying(null);
+                                editView.setPositionPlaying(null);
                                 mediaPlayer = null;
                             });
                 } catch (IOException e) {
-                    @Nullable UUID soundId = audioModelAndSound.getSoundId();
-
-                    adapter.setPositionPlaying(null);
+                    editView.setPositionPlaying(null);
                     mediaPlayer = null;
-                    Snackbar snackbar = Snackbar
-                            .make(listView, getString(R.string.audiofile_not_found),
-                                    Snackbar.LENGTH_LONG)
-                            .setAction(getString(R.string.update_all_soundboards_and_sounds),
-                                    view -> {
-                                        if (soundId != null) {
-                                            new AudioFileListFragment.DeleteSoundTask(this, soundId)
-                                                    .execute();
-                                        } else if (soundEventListenerActivity != null) {
-                                            soundEventListenerActivity.somethingMightHaveChanged();
-                                        }
-                                    });
-                    snackbar.show();
                 }
             }
         }
-         */
     }
+
+    public void stopPlaying() {
+        if (mediaPlayer == null) {
+            return;
+        }
+        mediaPlayer.stop();
+        mediaPlayer = null;
+    }
+
+    private MediaPlayerService getService() {
+        if (mediaPlayerService == null) {
+            // TODO Necessary?! Also done in onResume()
+            bindService();
+        }
+        return mediaPlayerService;
+    }
+
 
     @UiThread
     private void startFindingAudioFilesIfPermitted() {
@@ -298,6 +350,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
         if (!readExternalPermissionNecessary
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+            stopPlaying();
             rememberAudioSelectionChanges();
             setSelection(newSelection);
             if (soundboard != null) {
@@ -315,6 +368,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     @Override
     protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
+        stopPlaying();
         rememberAudioSelectionChanges();
         setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
         if (soundboard != null) {
@@ -324,20 +378,12 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
         }
     }
 
-    // TODO Also call this on browsing folders
-
     private void rememberAudioSelectionChanges() {
         audioSelectionChanges.addAll(editView.getAudioLocationsSelected());
         audioSelectionChanges.removeAll(editView.getAudioLocationsNotSelected());
 
         // TODO save result to database later - like in Favorites Edit Fragment
         //  (Save new sounds when necessary)
-    }
-
-    private void clearSelectableAudioFolderEntries() {
-        // TODO stopPlaying();
-
-        editView.clearSelectableAudioFolderEntries();
     }
 
     public void loadAudioFiles() {
@@ -347,16 +393,32 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
                 audioSelectionChanges).execute();
     }
 
-    private void setSelection(IAudioFileSelection selection) {
-        this.selection = selection;
-        editView.setSelection(selection);
-    }
-
     @UiThread
     private void updateUI(Soundboard soundboard) {
         this.soundboard = soundboard;
         editView.setName(soundboard.getName());
         loadAudioFiles();
+    }
+
+    private void clearSelectableAudioFolderEntries() {
+        stopPlaying();
+        editView.clearSelectableAudioFolderEntries();
+    }
+
+    private void setSelection(IAudioFileSelection selection) {
+        this.selection = selection;
+        editView.setSelection(selection);
+    }
+
+    @Override
+    @UiThread
+    // Called especially when the edit activity returns.
+    public void onResume() {
+        super.onResume();
+
+        requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        bindService();
     }
 
     private void saveNewSoundboard() {
@@ -372,7 +434,13 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     // Called especially when the user returns to the calling activity.
     public void onPause() {
         super.onPause();
+
+        stopPlaying();
+
+        requireActivity().unbindService(this);
+
         rememberAudioSelectionChanges();
+
         if (!isNew && soundboard != null) {
             String nameEntered = editView.getName();
             if (!nameEntered.isEmpty()) {
