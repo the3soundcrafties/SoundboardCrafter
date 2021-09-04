@@ -1,7 +1,9 @@
 package de.soundboardcrafter.model;
 
+import androidx.annotation.Nullable;
+
 /**
- * A certain folder where an audio file may reside:
+ * Data object for a certain folder where an audio file may reside:
  * <ul>
  * <li>In a certain folder in the file system
  * <li>In a certain folder in the assets
@@ -10,9 +12,15 @@ package de.soundboardcrafter.model;
  * Every subclass needs to provide {@link #equals(Object)} and {@link #hashCode()}
  * as appropriate for a <i>value object</i>.
  */
-public interface IAudioLocation extends IAudioFileSelection {
+public abstract class AbstractAudioLocation implements IAudioFileSelection {
     /**
      * Returns the display name (not necessary the full path).
      */
-    String getDisplayName();
+    public abstract String getDisplayName();
+
+    @Override
+    public abstract boolean equals(@Nullable Object obj);
+
+    @Override
+    public abstract int hashCode();
 }

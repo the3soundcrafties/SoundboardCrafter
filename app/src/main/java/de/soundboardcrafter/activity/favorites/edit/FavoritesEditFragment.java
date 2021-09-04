@@ -100,7 +100,6 @@ public class FavoritesEditFragment extends Fragment {
         super.onResume();
     }
 
-
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
@@ -198,8 +197,7 @@ public class FavoritesEditFragment extends Fragment {
             }
         }
     }
-
-
+    
     /**
      * A background task, used to load all soundboards from the database.
      */

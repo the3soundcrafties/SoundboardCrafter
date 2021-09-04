@@ -1,5 +1,8 @@
 package de.soundboardcrafter.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
@@ -7,9 +10,6 @@ import java.text.CollationKey;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A sound which could be played from a soundboard.
@@ -36,7 +36,7 @@ public class Sound extends AbstractEntity {
      * Location of the audio file
      */
     @NonNull
-    private final IAudioLocation audioLocation;
+    private final AbstractAudioLocation audioLocation;
 
     /**
      * Display name
@@ -60,11 +60,11 @@ public class Sound extends AbstractEntity {
      */
     private boolean loop;
 
-    public Sound(@NonNull IAudioLocation audioLocation, @NonNull String name) {
+    public Sound(@NonNull AbstractAudioLocation audioLocation, @NonNull String name) {
         this(UUID.randomUUID(), audioLocation, name, 100, false);
     }
 
-    public Sound(UUID id, @NonNull IAudioLocation audioLocation, @NonNull String name,
+    public Sound(UUID id, @NonNull AbstractAudioLocation audioLocation, @NonNull String name,
                  int volumePercentage, boolean loop) {
         super(id);
         this.audioLocation = checkNotNull(audioLocation, "audioLocation is null");
@@ -74,7 +74,7 @@ public class Sound extends AbstractEntity {
     }
 
     @NonNull
-    public IAudioLocation getAudioLocation() {
+    public AbstractAudioLocation getAudioLocation() {
         return audioLocation;
     }
 

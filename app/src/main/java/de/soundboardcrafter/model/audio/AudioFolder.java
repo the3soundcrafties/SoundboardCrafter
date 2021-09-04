@@ -7,9 +7,9 @@ import androidx.annotation.NonNull;
 import java.util.Comparator;
 import java.util.Objects;
 
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
-import de.soundboardcrafter.model.IAudioLocation;
 
 /**
  * A folder containing audio files - or folders with (folders with...) audio files.
@@ -20,10 +20,10 @@ public class AudioFolder extends AbstractAudioFolderEntry {
             Comparator.comparing(AudioFolder::getPath)
                     .thenComparing(AudioFolder::getNumAudioFiles);
 
-    private final IAudioLocation folderLocation;
+    private final AbstractAudioLocation folderLocation;
     private final int numAudioFiles;
 
-    public AudioFolder(@NonNull IAudioLocation folderLocation, int numAudioFiles) {
+    public AudioFolder(@NonNull AbstractAudioLocation folderLocation, int numAudioFiles) {
         this.folderLocation = checkNotNull(folderLocation, "audioLocation was null");
         this.numAudioFiles = numAudioFiles;
     }

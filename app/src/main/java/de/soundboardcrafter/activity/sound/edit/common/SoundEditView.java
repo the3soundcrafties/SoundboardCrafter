@@ -26,7 +26,7 @@ public class SoundEditView extends ConstraintLayout {
     private Switch loopSwitch;
     private SeekBar volumePercentageSeekBar;
 
-    // TODO Show Path
+    // IDEA Show Path
 
     private ListView soundboardsListView;
 
@@ -46,9 +46,9 @@ public class SoundEditView extends ConstraintLayout {
          * programmatically.
          *
          * @param volumePercentage The current volumePercentage. This will be in the
-         *                         range 0..max where max was set
+         *                         range 0…max where max was set
          *                         by {@link SoundEditView#setMaxVolumePercentage(int)}.
-         *                         (The default value for max is 100.)
+         *                         (The default value for the max value is 100.)
          * @param fromUser         True if the change was initiated by the user.
          */
         void onVolumePercentageChanged(int volumePercentage, boolean fromUser);
@@ -120,7 +120,7 @@ public class SoundEditView extends ConstraintLayout {
     }
 
     /**
-     * Sets the soundboards and the info whether they can be changed.
+     * Sets the soundboards, and the info whether they can be changed.
      */
     void setSoundboards(List<SelectableModel<Soundboard>> soundboards) {
         SelectableSoundboardListItemAdapter adapter =
@@ -251,7 +251,7 @@ public class SoundEditView extends ConstraintLayout {
         }
     }
 
-    private class OnCheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
+    private static class OnCheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
         private OnLoopChangeListener onLoopChangeListener;
 
         void setOnLoopChangeListener(OnLoopChangeListener l) {

@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
-import de.soundboardcrafter.model.IAudioLocation;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -225,7 +225,7 @@ public class MediaPlayerService extends Service {
      * Adds a media player and starts playing.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
-     * @see #play(String, IAudioLocation, SoundboardMediaPlayer.OnPlayingStopped)
+     * @see #play(String, AbstractAudioLocation, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
                      @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped)
@@ -262,7 +262,7 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * Starts playing from that {@link IAudioLocation} - without adding a media player and
+     * Starts playing from that {@link AbstractAudioLocation} - without adding a media player and
      * without
      * necessarily starting a foreground service etc.
      *
@@ -270,7 +270,7 @@ public class MediaPlayerService extends Service {
      * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnPlayingStopped)
      */
     public SoundboardMediaPlayer play(@NonNull String name,
-                                      @NonNull IAudioLocation audioLocation,
+                                      @NonNull AbstractAudioLocation audioLocation,
                                       @Nullable SoundboardMediaPlayer.OnPlayingStopped
                                               onPlayingStopped)
             throws IOException {
@@ -419,7 +419,7 @@ public class MediaPlayerService extends Service {
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      */
     private void initMediaPlayer(SoundboardMediaPlayer mediaPlayer, String soundName,
-                                 IAudioLocation audioLocation, int volumePercentage,
+                                 AbstractAudioLocation audioLocation, int volumePercentage,
                                  boolean loop)
             throws IOException {
         SoundboardMediaPlayers.initMediaPlayer(getApplicationContext(),

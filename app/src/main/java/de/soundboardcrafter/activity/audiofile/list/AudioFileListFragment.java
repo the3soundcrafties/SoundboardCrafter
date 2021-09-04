@@ -60,11 +60,11 @@ import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.TutorialDao;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
-import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioFolder;
@@ -84,10 +84,7 @@ public class AudioFileListFragment extends Fragment implements
     private static final int TAP_TARGET_RADIUS_DP = 33;
 
     private static final String STATE_SORT_ORDER = "sortOrder";
-    private static final String STATE_FOLDER_TYPE = "folderType";
-    private static final String STATE_FOLDER_TYPE_FILE = "file";
-    private static final String STATE_FOLDER_TYPE_ASSET = "asset";
-    private static final String STATE_FOLDER_PATH = "folderPath";
+    private static final String STATE_SELECTION = "selection";
 
     /**
      * Request code used whenever this activity starts a sound edit
@@ -188,7 +185,7 @@ public class AudioFileListFragment extends Fragment implements
         if (savedInstanceState != null) {
             sortOrder = (AudioModelAndSound.SortOrder) savedInstanceState
                     .getSerializable(STATE_SORT_ORDER);
-            setSelection(getFolder(savedInstanceState));
+            setSelection(savedInstanceState.getParcelable(STATE_SELECTION));
         } else {
             sortOrder = AudioModelAndSound.SortOrder.BY_NAME;
             setSelection(new FileSystemFolderAudioLocation("/"));
@@ -244,24 +241,6 @@ public class AudioFileListFragment extends Fragment implements
             throw new IllegalStateException(
                     "Unexpected selection type: " + selection.getClass());
         }
-    }
-
-    private IAudioFileSelection getFolder(@NonNull Bundle savedInstanceState) {
-        @Nullable String type = savedInstanceState.getString(STATE_FOLDER_TYPE);
-        @Nullable String path = savedInstanceState.getString(STATE_FOLDER_PATH);
-        if (type == null || path == null) {
-            return AnywhereInTheFileSystemAudioLocation.INSTANCE;
-        }
-
-        if (type.equals(STATE_FOLDER_TYPE_FILE)) {
-            return new FileSystemFolderAudioLocation(path);
-        }
-
-        if (type.equals(STATE_FOLDER_TYPE_ASSET)) {
-            return new AssetFolderAudioLocation(path);
-        }
-
-        throw new IllegalStateException("Unexpected folder type " + type);
     }
 
     private void updateSelectionMenuItem() {
@@ -409,7 +388,7 @@ public class AudioFileListFragment extends Fragment implements
         changeFolder(subfolderPath);
     }
 
-    private void changeFolder(@NonNull IAudioLocation newFolder) {
+    private void changeFolder(@NonNull AbstractAudioLocation newFolder) {
         if (selection instanceof AssetFolderAudioLocation
                 || permissionReadExternalStorageIsGranted()) {
             setSelection(newFolder);
@@ -433,7 +412,7 @@ public class AudioFileListFragment extends Fragment implements
 
         if (!positionWasPlaying) {
             AudioModelAndSound audioModelAndSound = (AudioModelAndSound) adapter.getItem(position);
-            final IAudioLocation audioLocation =
+            final AbstractAudioLocation audioLocation =
                     audioModelAndSound.getAudioModel().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
@@ -622,25 +601,8 @@ public class AudioFileListFragment extends Fragment implements
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(STATE_SORT_ORDER, sortOrder);
-        putFolder(outState);
+        outState.putParcelable(STATE_SELECTION, selection);
         super.onSaveInstanceState(outState);
-    }
-
-    private void putFolder(@NonNull Bundle outState) {
-        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, null);
-            outState.putString(STATE_FOLDER_PATH, null);
-        } else if (selection instanceof FileSystemFolderAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_FILE);
-            outState.putString(STATE_FOLDER_PATH,
-                    ((FileSystemFolderAudioLocation) selection).getInternalPath());
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_ASSET);
-            outState.putString(STATE_FOLDER_PATH,
-                    ((AssetFolderAudioLocation) selection).getInternalPath());
-        } else {
-            throw new IllegalStateException("Unexpected folder type " + selection.getClass());
-        }
     }
 
     /**

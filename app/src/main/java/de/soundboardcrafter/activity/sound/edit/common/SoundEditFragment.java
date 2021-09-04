@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.sound.edit.common;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,12 +32,10 @@ import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
 import de.soundboardcrafter.dao.SoundDao;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
-import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Activity for editing a single sound (name, volume etc.).
@@ -368,7 +368,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
                 return;
             }
 
-            final IAudioLocation audioLocation =
+            final AbstractAudioLocation audioLocation =
                     soundWithSelectableSoundboards.getSound().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation

@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import de.soundboardcrafter.model.IAudioLocation;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 
 /**
  * Full audio file data / metadata, including during, e.g.
@@ -25,12 +25,12 @@ class FullAudioModel extends BasicAudioModel {
 
     private final long durationSecs;
 
-    public FullAudioModel(IAudioLocation audioLocation, String name,
+    public FullAudioModel(AbstractAudioLocation audioLocation, String name,
                           @Nullable String artist, long durationSecs) {
         this(audioLocation, name, artist, null, durationSecs);
     }
 
-    public FullAudioModel(IAudioLocation audioLocation, String name, @Nullable String artist,
+    public FullAudioModel(AbstractAudioLocation audioLocation, String name, @Nullable String artist,
                           @Nullable Date dateAdded, long durationSecs) {
         super(audioLocation, name);
         this.artist = artist;

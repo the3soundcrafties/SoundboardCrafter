@@ -61,23 +61,14 @@ public class FavoritesEditView extends ConstraintLayout {
         cancel.setOnClickListener(l -> runnable.run());
     }
 
-    void setButtonsInvisible() {
-        save.setVisibility(View.INVISIBLE);
-        cancel.setVisibility(View.INVISIBLE);
-    }
-
     void setSoundboards(List<SelectableModel<Soundboard>> soundboards) {
         adapter = new SelectableSoundboardListItemAdapter(soundboards);
         soundboardsListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
-    List<SelectableModel<Soundboard>> getSelectableSoundboards() {
-        ImmutableList.Builder<SelectableModel<Soundboard>> res = new ImmutableList.Builder<>();
-        for (int i = 0; i < adapter.getCount(); i++) {
-            res.add(adapter.getItem(i));
-        }
-        return res.build();
+    ImmutableList<SelectableModel<Soundboard>> getSelectableSoundboards() {
+        return adapter.copySelectableSoundboards();
     }
 
     /**
@@ -91,7 +82,7 @@ public class FavoritesEditView extends ConstraintLayout {
     }
 
     /**
-     * Sets the name of the sound
+     * Sets the favorites' name.
      */
     @UiThread
     public void setName(String name) {
@@ -99,12 +90,15 @@ public class FavoritesEditView extends ConstraintLayout {
     }
 
     /**
-     * Gets the name of the sound
+     * Gets the favorites' name.
      */
     @UiThread
     public String getName() {
         return nameTextView.getText().toString();
     }
 
-
+    void setButtonsInvisible() {
+        save.setVisibility(View.INVISIBLE);
+        cancel.setVisibility(View.INVISIBLE);
+    }
 }

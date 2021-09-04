@@ -39,7 +39,6 @@ public class SelectableModel<T> {
         };
     }
 
-
     public static <T> ImmutableList<SelectableModel<T>> uncheckAll(List<? extends T> models) {
         return models.stream()
                 .map(m -> new SelectableModel<T>(m, false))

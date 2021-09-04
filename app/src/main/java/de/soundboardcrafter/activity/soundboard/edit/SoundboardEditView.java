@@ -9,14 +9,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.UiThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
+import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
@@ -72,21 +80,7 @@ public class SoundboardEditView extends ConstraintLayout {
     private void initAudioFileListItemAdapter() {
         adapter = new SelectableAudioFileListAdapter();
         listView.setAdapter(adapter);
-        updateUI();
-    }
-
-    @UiThread
-    void setAudioFolderEntries(
-            List<SelectableModel<AbstractAudioFolderEntry>> selectableAudioFolderEntries) {
-        // TODO stopPlaying();
-        adapter.setAudioFolderEntries(selectableAudioFolderEntries);
-    }
-
-    @UiThread
-    private void updateUI() {
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
+        adapter.notifyDataSetChanged();
     }
 
     void setOnClickListenerSave(Runnable runnable) {
@@ -99,6 +93,31 @@ public class SoundboardEditView extends ConstraintLayout {
 
     void setOnClickListenerSelection(Runnable runnable) {
         selectionImageButton.setOnClickListener(view -> runnable.run());
+    }
+
+    @ParametersAreNonnullByDefault
+    public void setSelectionIcon(Context context, IAudioFileSelection selection) {
+        setSelectionIcon(context, getIconId(selection));
+    }
+
+    @DrawableRes
+    private int getIconId(IAudioFileSelection selection) {
+        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
+            return R.drawable.ic_long_list;
+        } else if (selection instanceof FileSystemFolderAudioLocation) {
+            return R.drawable.ic_folder;
+        } else if (selection instanceof AssetFolderAudioLocation) {
+            return R.drawable.ic_included;
+        } else {
+            throw new IllegalStateException(
+                    "Unexpected type of selection: " + selection.getClass());
+        }
+    }
+
+    @ParametersAreNonnullByDefault
+    public void setSelectionIcon(Context context, @DrawableRes int iconId) {
+        selectionImageButton.setImageDrawable(
+                ContextCompat.getDrawable(context.getApplicationContext(), iconId));
     }
 
     void setSelection(IAudioFileSelection selection) {
@@ -116,13 +135,28 @@ public class SoundboardEditView extends ConstraintLayout {
         folderPath.setVisibility(visibility);
     }
 
-    public void setSelectionIcon(Context context, int iconId) {
-        selectionImageButton.setImageDrawable(
-                ContextCompat.getDrawable(context.getApplicationContext(), iconId));
+    @UiThread
+    void clearSelectableAudioFolderEntries() {
+        setSelectableAudioFolderEntries(ImmutableList.of());
+    }
+
+    @UiThread
+    void setSelectableAudioFolderEntries(
+            List<SelectableModel<AbstractAudioFolderEntry>> selectableAudioFolderEntries) {
+        // TODO Call when browsing the audio folders
+        adapter.setAudioFolderEntries(selectableAudioFolderEntries);
+    }
+
+    ImmutableList<AbstractAudioLocation> getAudioLocationsSelected() {
+        return adapter.getAudioLocations(true);
+    }
+
+    ImmutableList<AbstractAudioLocation> getAudioLocationsNotSelected() {
+        return adapter.getAudioLocations(false);
     }
 
     /**
-     * Sets the name of the sound
+     * Sets the name of the soundboard
      */
     @UiThread
     public void setName(String name) {
@@ -130,7 +164,7 @@ public class SoundboardEditView extends ConstraintLayout {
     }
 
     /**
-     * Gets the name of the sound
+     * Gets the name of the soundboard.
      */
     @UiThread
     public String getName() {

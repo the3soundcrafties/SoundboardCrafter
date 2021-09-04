@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +31,6 @@ public abstract class AbstractAudioFileListAdapter<T> extends BaseAdapter {
      */
     private Integer positionPlaying;
 
-
     /**
      * Creates an adapter that's initially empty
      */
@@ -44,6 +45,9 @@ public abstract class AbstractAudioFileListAdapter<T> extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public ImmutableList<T> copyAudioFolderEntries() {
+        return ImmutableList.copyOf(audioFolderEntries);
+    }
 
     @Override
     public int getCount() {

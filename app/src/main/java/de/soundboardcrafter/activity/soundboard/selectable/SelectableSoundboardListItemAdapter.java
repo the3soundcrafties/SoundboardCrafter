@@ -7,6 +7,8 @@ import android.widget.BaseAdapter;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 import java.util.function.Function;
 
@@ -28,6 +30,10 @@ public class SelectableSoundboardListItemAdapter extends BaseAdapter {
                                                Function<Soundboard, Boolean> isEnabled) {
         this.soundboards = soundboards;
         this.isEnabled = isEnabled;
+    }
+
+    public ImmutableList<SelectableModel<Soundboard>> copySelectableSoundboards() {
+        return ImmutableList.copyOf(soundboards);
     }
 
     @Override

@@ -18,10 +18,10 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
-import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
@@ -53,7 +53,7 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
-     * Finds all sounds, mapped on their respective {@link IAudioLocation}.
+     * Finds all sounds, mapped on their respective {@link AbstractAudioLocation}.
      */
     public ImmutableMap<IAudioFileSelection, Sound> findAllByAudioLocation() {
         ImmutableMap.Builder<IAudioFileSelection, Sound> res = ImmutableMap.builder();
@@ -71,7 +71,7 @@ public class SoundDao extends AbstractDao {
 
     /**
      * Finds all sounds, each with a mark, whether the sound is part of this soundboard, and each
-     * mapped on their respective {@link IAudioLocation}.
+     * mapped on their respective {@link AbstractAudioLocation}.
      */
     public ImmutableMap<IAudioFileSelection, SelectableModel<Sound>>
     findAllSelectableByAudioLocation(UUID soundboardId) {
@@ -217,7 +217,7 @@ public class SoundDao extends AbstractDao {
 
     @NonNull
     @Contract("null -> fail")
-    private String toPath(IAudioLocation audioLocation) {
+    private String toPath(AbstractAudioLocation audioLocation) {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
             return ((FileSystemFolderAudioLocation) audioLocation).getInternalPath();
         }
@@ -230,7 +230,7 @@ public class SoundDao extends AbstractDao {
                 audioLocation.getClass());
     }
 
-    private SoundTable.LocationType toLocationType(IAudioLocation audioLocation) {
+    private SoundTable.LocationType toLocationType(AbstractAudioLocation audioLocation) {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
             return SoundTable.LocationType.FILE;
         }

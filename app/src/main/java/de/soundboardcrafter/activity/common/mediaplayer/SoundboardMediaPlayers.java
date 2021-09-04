@@ -18,9 +18,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
-import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -69,7 +69,7 @@ class SoundboardMediaPlayers {
      */
     static void initMediaPlayer(Context context,
                                 SoundboardMediaPlayer mediaPlayer, String soundName,
-                                @NonNull IAudioLocation audioLocation, int volumePercentage,
+                                @NonNull AbstractAudioLocation audioLocation, int volumePercentage,
                                 boolean loop)
             throws IOException {
         mediaPlayer.setSoundName(soundName);
@@ -83,7 +83,7 @@ class SoundboardMediaPlayers {
     }
 
     private static void initDataSource(Context context, SoundboardMediaPlayer mediaPlayer,
-                                       @NonNull IAudioLocation audioLocation)
+                                       @NonNull AbstractAudioLocation audioLocation)
             throws IOException {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
             mediaPlayer.setDataSource(
@@ -100,7 +100,6 @@ class SoundboardMediaPlayers {
             throw new IllegalStateException("Unexpected audio location type: " +
                     audioLocation.getClass());
         }
-
     }
 
     void setOnPlayingStopped(@Nullable Soundboard soundboard, Sound sound,

@@ -2,9 +2,9 @@ package de.soundboardcrafter.dao;
 
 import androidx.annotation.NonNull;
 
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
-import de.soundboardcrafter.model.IAudioLocation;
 
 /**
  * The names of the tables and columns in the database schema, where the soundboards, sounds etc.
@@ -111,9 +111,9 @@ class DBSchema {
 
         /**
          * Converts a {@link LocationType} and a <code>path</code> to an
-         * {@link IAudioLocation}.
+         * {@link AbstractAudioLocation}.
          */
-        static IAudioLocation toAudioLocation(
+        static AbstractAudioLocation toAudioLocation(
                 @NonNull SoundTable.LocationType locationType, @NonNull String path) {
             switch (locationType) {
                 case FILE:

@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import android.os.Parcelable;
+
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
@@ -15,7 +17,7 @@ import javax.annotation.Nullable;
  * Every subclass needs to provide {@link #equals(Object)} and {@link #hashCode()}
  * as appropriate for a <i>value object</i>.
  */
-public interface IAudioFileSelection extends Serializable {
+public interface IAudioFileSelection extends Parcelable, Serializable {
     @Nullable
     default String getDisplayPath() {
         return getInternalPath();
@@ -25,4 +27,9 @@ public interface IAudioFileSelection extends Serializable {
     String getInternalPath();
 
     boolean isRoot();
+
+    @Override
+    default int describeContents() {
+        return 0;
+    }
 }

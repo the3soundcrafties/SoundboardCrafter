@@ -1,10 +1,26 @@
 package de.soundboardcrafter.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import javax.annotation.Nullable;
 
 public class AnywhereInTheFileSystemAudioLocation implements IAudioFileSelection {
+    public static final Parcelable.Creator<AnywhereInTheFileSystemAudioLocation> CREATOR
+            = new Parcelable.Creator<AnywhereInTheFileSystemAudioLocation>() {
+        @Override
+        public AnywhereInTheFileSystemAudioLocation createFromParcel(Parcel in) {
+            return INSTANCE;
+        }
+
+        @Override
+        public AnywhereInTheFileSystemAudioLocation[] newArray(int size) {
+            return new AnywhereInTheFileSystemAudioLocation[size];
+        }
+    };
+
     public static final AnywhereInTheFileSystemAudioLocation INSTANCE =
             new AnywhereInTheFileSystemAudioLocation();
 
@@ -20,6 +36,10 @@ public class AnywhereInTheFileSystemAudioLocation implements IAudioFileSelection
     @Override
     public String getInternalPath() {
         return null;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
     }
 
     @Override
@@ -40,4 +60,5 @@ public class AnywhereInTheFileSystemAudioLocation implements IAudioFileSelection
     public String toString() {
         return "AnywhereInTheFileSystemAudioLocation";
     }
+
 }

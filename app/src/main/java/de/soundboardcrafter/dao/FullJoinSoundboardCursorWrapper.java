@@ -15,7 +15,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardFavoritesTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
-import de.soundboardcrafter.model.IAudioLocation;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
@@ -99,7 +99,7 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
                 SoundTable.LocationType.valueOf(getString(6));
         String soundPath = getString(7);
 
-        final IAudioLocation soundLocation =
+        final AbstractAudioLocation soundLocation =
                 SoundTable.toAudioLocation(soundLocationType, soundPath);
 
         int soundVolumePercentage = getInt(8);

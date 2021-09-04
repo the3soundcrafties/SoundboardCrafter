@@ -57,8 +57,8 @@ import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.de.soundboardcrafter.widget.GridAutofitLayoutManager;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
-import de.soundboardcrafter.model.IAudioLocation;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
@@ -318,7 +318,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
 
         if (!service.isActivelyPlaying(soundboard.getSoundboard(), sound)) {
-            final IAudioLocation audioLocation = sound.getAudioLocation();
+            final AbstractAudioLocation audioLocation = sound.getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
                     || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {

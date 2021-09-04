@@ -51,6 +51,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
     private static final String EXTRA_EDIT_FRAGMENT = "soundboardEditFragment";
 
+    private static final String STATE_SELECTION = "selection";
+    private static final String STATE_AUDIO_SELECTION_CHANGES = "audioSelectionChanges";
+
     private SoundboardEditView editView;
 
     private Soundboard soundboard;
@@ -58,10 +61,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     private IAudioFileSelection selection;
 
-    private static final String STATE_FOLDER_TYPE = "folderType";
-    private static final String STATE_FOLDER_TYPE_FILE = "file";
-    private static final String STATE_FOLDER_TYPE_ASSET = "asset";
-    private static final String STATE_FOLDER_PATH = "folderPath";
+    // TODO Save to bundle
+    // TODO Restore from bundle
+    private AudioSelectionChanges audioSelectionChanges;
 
     static SoundboardEditFragment newInstance(UUID soundboardId) {
         Bundle args = new Bundle();
@@ -91,16 +93,15 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
             isNew = true;
             soundboard = new Soundboard(getString(R.string.new_soundboard_name), false);
         }
+
+        audioSelectionChanges = new AudioSelectionChanges();
+
         if (isNew) {
             Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
-            requireActivity().setResult(
-                    Activity.RESULT_CANCELED,
-                    intent);
+            requireActivity().setResult(Activity.RESULT_CANCELED, intent);
         } else {
             Intent intent = new Intent(requireActivity(), SoundboardEditActivity.class);
-            requireActivity().setResult(
-                    Activity.RESULT_OK,
-                    intent);
+            requireActivity().setResult(Activity.RESULT_OK, intent);
         }
     }
 
@@ -148,14 +149,17 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
         editView.setOnClickListenerSelection(this::toggleSelection);
 
         if (savedInstanceState != null) {
-            setSelection(getFolder(savedInstanceState));
+            setSelection(savedInstanceState.getParcelable(STATE_SELECTION));
+            audioSelectionChanges =
+                    savedInstanceState.getParcelable(STATE_AUDIO_SELECTION_CHANGES);
         } else {
             setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+            audioSelectionChanges = new AudioSelectionChanges();
         }
 
-        // FIXME iconFolderUp.setOnClickListener(...
+        // FIXME iconFolderUp.setOnClickListener(…
 
-        // FIXME listView.setOnItemClickListener(...
+        // FIXME listView.setOnItemClickListener(…
 
         startFindingAudioFilesIfPermitted();
 
@@ -164,47 +168,14 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     @UiThread
     private void startFindingAudioFilesIfPermitted() {
+        clearSelectableAudioFolderEntries();
+
         if (selection instanceof AssetFolderAudioLocation
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
-            editView.setAudioFolderEntries(ImmutableList.of());
             if (soundboard != null) {
                 loadAudioFiles();
             }
         } // Otherwise, we will receive an event later.
-    }
-
-    private IAudioFileSelection getFolder(@NonNull Bundle savedInstanceState) {
-        @Nullable String type = savedInstanceState.getString(STATE_FOLDER_TYPE);
-        @Nullable String path = savedInstanceState.getString(STATE_FOLDER_PATH);
-        if (type == null || path == null) {
-            return AnywhereInTheFileSystemAudioLocation.INSTANCE;
-
-            // FIXME Does this work even when the user has redrawn the relevant
-            //  permission?
-        }
-
-        if (type.equals(STATE_FOLDER_TYPE_FILE)) {
-            return new FileSystemFolderAudioLocation(path);
-        }
-
-        if (type.equals(STATE_FOLDER_TYPE_ASSET)) {
-            return new AssetFolderAudioLocation(path);
-        }
-
-        throw new IllegalStateException("Unexpected folder type " + type);
-    }
-
-    private void updateSelectionMenuItem() {
-        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            editView.setSelectionIcon(requireContext(), R.drawable.ic_long_list);
-        } else if (selection instanceof FileSystemFolderAudioLocation) {
-            editView.setSelectionIcon(requireContext(), R.drawable.ic_folder);
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            editView.setSelectionIcon(requireContext(), R.drawable.ic_included);
-        } else {
-            throw new IllegalStateException(
-                    "Unexpected type of selection: " + selection.getClass());
-        }
     }
 
     private void toggleSelection() {
@@ -224,8 +195,8 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
         if (!readExternalPermissionNecessary
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+            rememberAudioSelectionChanges();
             setSelection(newSelection);
-            editView.setAudioFolderEntries(ImmutableList.of());
             if (soundboard != null) {
                 loadAudioFiles();
             }
@@ -241,15 +212,36 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     @Override
     protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
+        rememberAudioSelectionChanges();
         setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
-        editView.setAudioFolderEntries(ImmutableList.of());
         if (soundboard != null) {
             loadAudioFiles();
+        } else {
+            clearSelectableAudioFolderEntries();
         }
     }
 
+    // TODO Also call this on browsing folders
+
+    private void rememberAudioSelectionChanges() {
+        audioSelectionChanges.addAll(editView.getAudioLocationsSelected());
+        audioSelectionChanges.removeAll(editView.getAudioLocationsNotSelected());
+
+        // TODO save result to database later - like in Favorites Edit Fragment
+        //  (Save new sounds when necessary)
+    }
+
+    private void clearSelectableAudioFolderEntries() {
+        // TODO stopPlaying();
+
+        editView.clearSelectableAudioFolderEntries();
+    }
+
     public void loadAudioFiles() {
-        new FindAudioFilesTask(this, soundboard.getId(), selection).execute();
+        clearSelectableAudioFolderEntries();
+
+        new FindAudioFilesTask(this, soundboard.getId(), selection,
+                audioSelectionChanges).execute();
     }
 
     private void setSelection(IAudioFileSelection selection) {
@@ -289,27 +281,11 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        putFolder(outState);
+        outState.putParcelable(STATE_SELECTION, selection);
+        outState.putParcelable(STATE_AUDIO_SELECTION_CHANGES, audioSelectionChanges);
+
         super.onSaveInstanceState(outState);
     }
-
-    private void putFolder(@NonNull Bundle outState) {
-        if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, null);
-            outState.putString(STATE_FOLDER_PATH, null);
-        } else if (selection instanceof FileSystemFolderAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_FILE);
-            outState.putString(STATE_FOLDER_PATH,
-                    ((FileSystemFolderAudioLocation) selection).getInternalPath());
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            outState.putString(STATE_FOLDER_TYPE, STATE_FOLDER_TYPE_ASSET);
-            outState.putString(STATE_FOLDER_PATH,
-                    ((AssetFolderAudioLocation) selection).getInternalPath());
-        } else {
-            throw new IllegalStateException("Unexpected folder type " + selection.getClass());
-        }
-    }
-
 
     /**
      * A background task, used to load the soundboard from the database.
@@ -372,13 +348,22 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
         private final UUID soundboardId;
         private final IAudioFileSelection selection;
 
+        /**
+         * The audios the user has already added to the soundboard - or
+         * removed from the soundboard. (These changes have not yet been
+         * persisted to the database and must be applied after loading.)
+         */
+        private final AudioSelectionChanges audioSelectionChanges;
+
         FindAudioFilesTask(@NonNull SoundboardEditFragment fragment,
                            UUID soundboardId,
-                           IAudioFileSelection selection) {
+                           IAudioFileSelection selection,
+                           AudioSelectionChanges audioSelectionChanges) {
             super();
             fragmentRef = new WeakReference<>(fragment);
             this.soundboardId = soundboardId;
             this.selection = selection;
+            this.audioSelectionChanges = audioSelectionChanges;
         }
 
         @Nullable
@@ -408,9 +393,6 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
             Map<IAudioFileSelection, SelectableModel<Sound>> soundMap =
                     SoundDao.getInstance(appContext).findAllSelectableByAudioLocation(soundboardId);
 
-            // FIXME add added-and-not-yet-saved
-            // FIXME delete deleted-and-not-yet-saved
-
             return joinAndSort(audioModelsAndFolders, soundMap);
         }
 
@@ -428,13 +410,16 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
                         soundMap.get(audioModel.getAudioLocation());
 
                 if (selectableSound == null) {
-                    // FIXME Selected Audio Models without sound?!
                     res.add(new SelectableModel<>(
-                            new AudioModelAndSound(audioModel, null), false));
+                            new AudioModelAndSound(audioModel, null),
+                            audioSelectionChanges.isAdded(audioModel.getAudioLocation())));
                 } else {
                     res.add(new SelectableModel<>(
                             new AudioModelAndSound(audioModel, selectableSound.getModel()),
-                            selectableSound.isSelected()));
+                            audioSelectionChanges.isAdded(audioModel.getAudioLocation())
+                                    || (selectableSound.isSelected()
+                                    && !audioSelectionChanges
+                                    .isRemoved(audioModel.getAudioLocation()))));
                 }
             }
 
@@ -454,8 +439,11 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
                 // will be of no use to anyone
                 return;
             }
-            fragment.updateSelectionMenuItem();
-            fragment.editView.setAudioFolderEntries(audioFolderEntries);
+
+            // TODO stopPlaying();
+
+            fragment.editView.setSelectionIcon(fragment.requireContext(), fragment.selection);
+            fragment.editView.setSelectableAudioFolderEntries(audioFolderEntries);
         }
     }
 
