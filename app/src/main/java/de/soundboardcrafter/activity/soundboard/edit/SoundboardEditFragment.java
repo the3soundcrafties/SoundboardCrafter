@@ -157,7 +157,14 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
             audioSelectionChanges = new AudioSelectionChanges();
         }
 
-        // FIXME iconFolderUp.setOnClickListener(…
+        editView.setOnIconFolderUpClickListener(() -> {
+                    if (!(selection instanceof AbstractAudioLocation) || selection.isRoot()) {
+                        return;
+                    }
+
+                    changeFolder(((AbstractAudioLocation) selection).folderUp());
+                }
+        );
 
         editView.setOnListItemClickListener(
                 (parent, view, position, id) -> {
@@ -193,13 +200,10 @@ public class SoundboardEditFragment extends AbstractPermissionFragment {
     private void changeFolder(@NonNull String newFolder) {
         checkNotNull(selection, "newFolder");
 
-        if (selection instanceof FileSystemFolderAudioLocation) {
-            changeFolder(new FileSystemFolderAudioLocation(newFolder));
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            changeFolder(new AssetFolderAudioLocation(newFolder));
+        if (selection instanceof AbstractAudioLocation) {
+            changeFolder(((AbstractAudioLocation) selection).changeFolder(newFolder));
         } else {
-            throw new IllegalStateException(
-                    "Unexpected selection type: " + selection.getClass());
+            throw new IllegalStateException("Unexpected selection type: " + selection.getClass());
         }
     }
 

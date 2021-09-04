@@ -92,6 +92,10 @@ public class SoundboardEditView extends ConstraintLayout {
         selectionImageButton.setOnClickListener(view -> runnable.run());
     }
 
+    void setOnIconFolderUpClickListener(Runnable runnable) {
+        iconFolderUp.setOnClickListener(view -> runnable.run());
+    }
+
     void setOnListItemClickListener(AdapterView.OnItemClickListener listener) {
         listView.setOnItemClickListener(listener);
     }

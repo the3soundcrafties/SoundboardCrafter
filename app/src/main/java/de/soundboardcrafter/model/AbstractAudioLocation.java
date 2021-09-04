@@ -18,6 +18,10 @@ public abstract class AbstractAudioLocation implements IAudioFileSelection {
      */
     public abstract String getDisplayName();
 
+    public abstract AbstractAudioLocation folderUp() throws IllegalStateException;
+
+    public abstract AbstractAudioLocation changeFolder(String newPath);
+
     @Override
     public abstract boolean equals(@Nullable Object obj);
 

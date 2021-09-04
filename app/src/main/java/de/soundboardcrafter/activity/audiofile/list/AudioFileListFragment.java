@@ -1,7 +1,6 @@
 package de.soundboardcrafter.activity.audiofile.list;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 
@@ -196,22 +195,11 @@ public class AudioFileListFragment extends Fragment implements
         initAudioFileListItemAdapter();
 
         iconFolderUp.setOnClickListener(v -> {
-                    if (selection instanceof AnywhereInTheFileSystemAudioLocation || selection.isRoot()) {
+                    if (!(selection instanceof AbstractAudioLocation) || selection.isRoot()) {
                         return;
                     }
 
-                    String folderPath = selection.getInternalPath();
-                    int lastIndexOfSlash = requireNonNull(folderPath).lastIndexOf("/");
-                    if (lastIndexOfSlash < 0) {
-                        return;
-                    }
-
-                    String newFolder = folderPath.substring(0, lastIndexOfSlash);
-                    if (newFolder.isEmpty() && selection instanceof FileSystemFolderAudioLocation) {
-                        newFolder = "/";
-                    }
-
-                    changeFolder(newFolder);
+                    changeFolder(((AbstractAudioLocation) selection).folderUp());
                 }
         );
 
@@ -378,10 +366,8 @@ public class AudioFileListFragment extends Fragment implements
     private void changeFolder(@NonNull String newFolder) {
         checkNotNull(selection, "newFolder");
 
-        if (selection instanceof FileSystemFolderAudioLocation) {
-            changeFolder(new FileSystemFolderAudioLocation(newFolder));
-        } else if (selection instanceof AssetFolderAudioLocation) {
-            changeFolder(new AssetFolderAudioLocation(newFolder));
+        if (selection instanceof AbstractAudioLocation) {
+            changeFolder(((AbstractAudioLocation) selection).changeFolder(newFolder));
         } else {
             throw new IllegalStateException(
                     "Unexpected selection type: " + selection.getClass());

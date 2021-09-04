@@ -1,5 +1,7 @@
 package de.soundboardcrafter.model;
 
+import static java.util.Objects.requireNonNull;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -38,6 +40,25 @@ public class AssetFolderAudioLocation extends AbstractAudioLocation {
 
     public AssetFolderAudioLocation(@NonNull final String path) {
         this.path = path;
+    }
+
+    @Override
+    public AssetFolderAudioLocation folderUp() throws IllegalStateException {
+        if (isRoot()) {
+            throw new IllegalStateException("Cannot go up from root folder: " + this);
+        }
+
+        int lastIndexOfSlash = requireNonNull(path).lastIndexOf("/");
+        if (lastIndexOfSlash < 0) {
+            throw new IllegalStateException("Cannot go up: " + this);
+        }
+
+        return changeFolder(path.substring(0, lastIndexOfSlash));
+    }
+
+    @Override
+    public AssetFolderAudioLocation changeFolder(String newPath) {
+        return new AssetFolderAudioLocation(newPath);
     }
 
     @Override
