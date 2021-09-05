@@ -15,6 +15,7 @@ import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioModelAndSound;
+import de.soundboardcrafter.model.audio.BasicAudioModel;
 
 /**
  * Adapter to choose from a list of audio files (and audio folders).
@@ -26,6 +27,20 @@ class SelectableAudioFileListAdapter
      * Creates an adapter that's initially empty
      */
     SelectableAudioFileListAdapter() {
+    }
+
+    Iterable<BasicAudioModel> getBasicAudioModelsSelected() {
+        final ImmutableList.Builder<BasicAudioModel> res = ImmutableList.builder();
+        for (SelectableModel<AbstractAudioFolderEntry> audioFolderEntry :
+                copyAudioFolderEntries()) {
+            if (audioFolderEntry.isSelected()
+                    && audioFolderEntry.getModel() instanceof AudioModelAndSound) {
+                res.add(((AudioModelAndSound) audioFolderEntry.getModel()).getAudioModel()
+                        .toBasic());
+            }
+        }
+
+        return res.build();
     }
 
     ImmutableList<AbstractAudioLocation> getAudioLocations(boolean selected) {
@@ -71,4 +86,5 @@ class SelectableAudioFileListAdapter
         itemRow.setAudioFile(audioModelAndSound);
         itemRow.setImage(isPlaying ? R.drawable.ic_stop : R.drawable.ic_play);
     }
+
 }

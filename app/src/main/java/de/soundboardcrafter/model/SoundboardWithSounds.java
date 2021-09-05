@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import androidx.annotation.NonNull;
 
+import com.google.common.collect.Lists;
+
 import java.io.Serializable;
 import java.text.CollationKey;
 import java.util.ArrayList;
@@ -31,9 +33,9 @@ public class SoundboardWithSounds implements Serializable {
      */
     private final ArrayList<Sound> sounds;
 
-    public SoundboardWithSounds(@NonNull Soundboard soundboard, @NonNull ArrayList<Sound> sounds) {
+    public SoundboardWithSounds(@NonNull Soundboard soundboard, @NonNull List<Sound> sounds) {
         this.soundboard = soundboard;
-        this.sounds = checkNotNull(sounds, "sound is null");
+        this.sounds = Lists.newArrayList(checkNotNull(sounds, "sound is null"));
     }
 
     @NonNull

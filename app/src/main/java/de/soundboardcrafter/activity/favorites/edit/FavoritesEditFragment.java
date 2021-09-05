@@ -10,12 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.collect.ImmutableList;
+
+import org.jetbrains.annotations.Contract;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -42,12 +45,13 @@ public class FavoritesEditFragment extends Fragment {
     private static final String EXTRA_FAVORITES_ID = "favoritesId";
     private static final String EXTRA_EDIT_FRAGMENT = "favoritesEditFragment";
 
-    private FavoritesEditView favoritesEditView;
+    private FavoritesEditView editView;
     private FavoritesWithSoundboards favoritesWithSoundboards;
     private boolean isNew;
 
 
-    static FavoritesEditFragment newInstance(UUID favoritesId) {
+    @NonNull
+    static FavoritesEditFragment newInstance(@NonNull UUID favoritesId) {
         Bundle args = new Bundle();
         args.putString(ARG_FAVORITES_ID, favoritesId.toString());
 
@@ -56,10 +60,11 @@ public class FavoritesEditFragment extends Fragment {
         return fragment;
     }
 
+    @NonNull
+    @Contract(" -> new")
     static FavoritesEditFragment newInstance() {
         return new FavoritesEditFragment();
     }
-
 
     @Override
     @UiThread
@@ -70,8 +75,7 @@ public class FavoritesEditFragment extends Fragment {
         // activity can update its GUI for this favoritesWithSoundboards.
 
         if (getArguments() != null) {
-            String favoritesIdArg = getArguments().getString(ARG_FAVORITES_ID);
-            UUID favoritesId = UUID.fromString(favoritesIdArg);
+            UUID favoritesId = UUID.fromString(getArguments().getString(ARG_FAVORITES_ID));
             new FindFavoritesTask(requireActivity(), favoritesId).execute();
         } else {
             isNew = true;
@@ -95,76 +99,59 @@ public class FavoritesEditFragment extends Fragment {
 
     @Override
     @UiThread
-    // Called especially when the SoundboardPlaySoundEditActivity returns.
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_favorites_edit,
                 container, false);
 
-        favoritesEditView = rootView.findViewById(R.id.edit_view);
+        editView = rootView.findViewById(R.id.edit_view);
         if (isNew) {
-            favoritesEditView.setName(favoritesWithSoundboards.getFavorites().getName());
-            favoritesEditView.setOnClickListenerSave(
+            editView.setName(favoritesWithSoundboards.getFavorites().getName());
+            editView.setOnClickListenerSave(
                     () -> {
                         saveNewFavorites();
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_FAVORITES_ID,
                                 favoritesWithSoundboards.getFavorites().getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, FavoritesEditFragment.class.getName());
-                        requireActivity().setResult(
-                                Activity.RESULT_OK,
-                                intent);
+                        requireActivity().setResult(Activity.RESULT_OK, intent);
                         requireActivity().finish();
                     }
             );
-            favoritesEditView.setOnClickListenerCancel(
+            editView.setOnClickListenerCancel(
                     () -> {
                         Intent intent = new Intent(getActivity(), SoundboardCreateActivity.class);
                         intent.putExtra(EXTRA_FAVORITES_ID,
                                 favoritesWithSoundboards.getFavorites().getId().toString());
                         intent.putExtra(EXTRA_EDIT_FRAGMENT, FavoritesEditFragment.class.getName());
-                        requireActivity().setResult(
-                                Activity.RESULT_CANCELED,
-                                intent);
+                        requireActivity().setResult(Activity.RESULT_CANCELED, intent);
                         requireActivity().finish();
                     }
             );
         } else {
-            favoritesEditView.setButtonsInvisible();
+            editView.setButtonsInvisible();
         }
-
 
         return rootView;
     }
 
 
     @UiThread
-    private void updateUIFavoritesInfo(FavoritesWithSoundboards favoritesWithSoundboards) {
+    private void updateUIFavoritesInfo(@NonNull FavoritesWithSoundboards favoritesWithSoundboards) {
         this.favoritesWithSoundboards = favoritesWithSoundboards;
-        favoritesEditView.setName(favoritesWithSoundboards.getFavorites().getName());
+        editView.setName(favoritesWithSoundboards.getFavorites().getName());
     }
 
     @UiThread
-    private void updateUISoundboards(List<Soundboard> soundboards) {
+    private void updateUISoundboards(@NonNull List<Soundboard> soundboards) {
         List<SelectableModel<Soundboard>> selectableSoundboards = new ArrayList<>();
         ImmutableList<Soundboard> soundboardsInFavorites =
                 favoritesWithSoundboards.getSoundboards();
         for (Soundboard soundboard : soundboards) {
-            if (soundboardsInFavorites.contains(soundboard)) {
-                selectableSoundboards.add(new SelectableModel<>(soundboard, true));
-            } else {
-                selectableSoundboards.add(new SelectableModel<>(soundboard, false));
-            }
+            selectableSoundboards.add(new SelectableModel<>(soundboard,
+                    soundboardsInFavorites.contains(soundboard)));
         }
-        favoritesEditView.setSoundboards(selectableSoundboards);
-
-
+        editView.setSoundboards(selectableSoundboards);
     }
 
     private void saveNewFavorites() {
@@ -184,12 +171,12 @@ public class FavoritesEditFragment extends Fragment {
     }
 
     private void updateFavoritesWithSoundboards() {
-        String nameEntered = favoritesEditView.getName();
+        String nameEntered = editView.getName();
         if (!nameEntered.isEmpty()) {
             favoritesWithSoundboards.getFavorites().setName(nameEntered);
         }
         List<SelectableModel<Soundboard>> soundboards =
-                favoritesEditView.getSelectableSoundboards();
+                editView.getSelectableSoundboards();
         favoritesWithSoundboards.clearSoundboards();
         for (SelectableModel<Soundboard> soundboard : soundboards) {
             if (soundboard.isSelected()) {
@@ -197,7 +184,7 @@ public class FavoritesEditFragment extends Fragment {
             }
         }
     }
-    
+
     /**
      * A background task, used to load all soundboards from the database.
      */
@@ -206,7 +193,7 @@ public class FavoritesEditFragment extends Fragment {
 
         private final WeakReference<Context> appContextRef;
 
-        FindAllSoundboardsTask(Context context) {
+        FindAllSoundboardsTask(@NonNull Context context) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
         }
@@ -249,7 +236,6 @@ public class FavoritesEditFragment extends Fragment {
         }
     }
 
-
     /**
      * A background task, used to load the favoritesWithSoundboards from the database.
      */
@@ -259,7 +245,7 @@ public class FavoritesEditFragment extends Fragment {
         private final WeakReference<Context> appContextRef;
         private final UUID favoritesId;
 
-        FindFavoritesTask(Context context, UUID favoritesId) {
+        FindFavoritesTask(@NonNull Context context, UUID favoritesId) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.favoritesId = favoritesId;
@@ -307,14 +293,17 @@ public class FavoritesEditFragment extends Fragment {
     /**
      * A background task, used to save the favoritesWithSoundboards
      */
-    class SaveNewFavoritesTask extends AsyncTask<Void, Void, Void> {
+    static class SaveNewFavoritesTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveNewFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
         private final FavoritesWithSoundboards favoritesWithSoundboards;
 
-        SaveNewFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
+        SaveNewFavoritesTask(@NonNull Context context,
+                             FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
+
+            // Do not use the fragment here! Activity might have been finished.
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.favoritesWithSoundboards = favoritesWithSoundboards;
         }
@@ -338,14 +327,17 @@ public class FavoritesEditFragment extends Fragment {
     /**
      * A background task, used to save the favoritesWithSoundboards
      */
-    class UpdateFavoritesTask extends AsyncTask<Void, Void, Void> {
+    static class UpdateFavoritesTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = UpdateFavoritesTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
         private final FavoritesWithSoundboards favoritesWithSoundboards;
 
-        UpdateFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
+        UpdateFavoritesTask(@NonNull Context context,
+                            FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
+
+            // Do not use the fragment here! Activity might have been finished.
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.favoritesWithSoundboards = favoritesWithSoundboards;
         }

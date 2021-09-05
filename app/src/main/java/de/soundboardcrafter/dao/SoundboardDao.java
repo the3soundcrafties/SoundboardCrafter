@@ -23,11 +23,14 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
+import de.soundboardcrafter.model.audio.AudioSelectionChanges;
+import de.soundboardcrafter.model.audio.BasicAudioModel;
 
 /**
  * Database Access Object for accessing Soundboards in the database
@@ -118,8 +121,7 @@ public class SoundboardDao extends AbstractDao {
                 } else {
                     if (lastSoundboard != null) {
                         lastSounds.trimToSize();
-                        res.add(new SoundboardWithSounds(lastSoundboard,
-                                Lists.newArrayList(lastSounds)));
+                        res.add(new SoundboardWithSounds(lastSoundboard, lastSounds));
                     }
 
                     lastSoundboard = soundboard;
@@ -142,7 +144,7 @@ public class SoundboardDao extends AbstractDao {
 
             if (lastSoundboard != null) {
                 lastSounds.trimToSize();
-                res.add(new SoundboardWithSounds(lastSoundboard, Lists.newArrayList(lastSounds)));
+                res.add(new SoundboardWithSounds(lastSoundboard, lastSounds));
             }
 
             return res.build();
@@ -192,6 +194,23 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
+    public void insertWithSounds(Soundboard soundboard, List<BasicAudioModel> audios) {
+        insert(soundboard);
+
+        int i = 0;
+        for (BasicAudioModel audioModel : audios) {
+            @Nullable
+            Sound sound = soundDao.find(audioModel.getAudioLocation());
+            if (sound == null) {
+                sound = createSound(audioModel);
+                soundDao.insert(sound);
+            }
+
+            linkSoundToSoundboard(soundboard.getId(), i, sound.getId());
+            i++;
+        }
+    }
+
     /**
      * Updates the soundboard links for this sound. The soundboards must already exist.
      */
@@ -237,6 +256,33 @@ public class SoundboardDao extends AbstractDao {
             Sound sound = soundboardWithSounds.getSounds().get(i);
             linkSoundToSoundboard(soundboardWithSounds.getId(), i, sound.getId());
         }
+    }
+
+
+    public void updateWithChanges(Soundboard soundboard,
+                                  AudioSelectionChanges audioSelectionChanges) {
+        update(soundboard);
+
+        unlink(soundboard, audioSelectionChanges.getImmutableRemovals());
+        link(soundboard, audioSelectionChanges.getImmutableAdditions());
+    }
+
+    private void link(Soundboard soundboard, Iterable<BasicAudioModel> audios) {
+        for (BasicAudioModel audioModel : audios) {
+            @Nullable
+            Sound sound = soundDao.find(audioModel.getAudioLocation());
+            if (sound == null) {
+                sound = createSound(audioModel);
+                soundDao.insert(sound);
+            }
+
+            linkSound(soundboard, sound);
+        }
+    }
+
+    @NonNull
+    private Sound createSound(BasicAudioModel audioModel) {
+        return new Sound(audioModel.getAudioLocation(), audioModel.getName());
     }
 
     private void linkSound(Soundboard soundboard, Sound sound) {
@@ -316,7 +362,6 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
-
     /**
      * Adds this sound at this <code>index</code> in this
      * soundboard.
@@ -360,7 +405,17 @@ public class SoundboardDao extends AbstractDao {
                 unlinkSound(UUID.fromString(cursor.getString(0)), soundId);
             }
         }
+    }
 
+    private void unlink(Soundboard soundboard,
+                        ImmutableList<AbstractAudioLocation> audioLocations) {
+        for (AbstractAudioLocation audioLocation : audioLocations) {
+            @Nullable
+            Sound sound = soundDao.find(audioLocation);
+            if (sound != null) {
+                unlinkSound(soundboard, sound.getId());
+            }
+        }
     }
 
     private void unlinkSound(@NonNull Soundboard soundboard, UUID soundId) {

@@ -30,6 +30,7 @@ import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
+import de.soundboardcrafter.model.audio.BasicAudioModel;
 
 /**
  * Custom view for editing a soundboard.
@@ -153,12 +154,11 @@ public class SoundboardEditView extends ConstraintLayout {
     @UiThread
     void setSelectableAudioFolderEntries(
             List<SelectableModel<AbstractAudioFolderEntry>> selectableAudioFolderEntries) {
-        // TODO Call when browsing the audio folders
         adapter.setAudioFolderEntries(selectableAudioFolderEntries);
     }
 
-    ImmutableList<AbstractAudioLocation> getAudioLocationsSelected() {
-        return adapter.getAudioLocations(true);
+    public Iterable<BasicAudioModel> getBasicAudioModelsSelected() {
+        return adapter.getBasicAudioModelsSelected();
     }
 
     ImmutableList<AbstractAudioLocation> getAudioLocationsNotSelected() {

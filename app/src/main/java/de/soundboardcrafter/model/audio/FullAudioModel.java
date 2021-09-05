@@ -1,6 +1,10 @@
 package de.soundboardcrafter.model.audio;
 
-import java.io.IOException;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -16,6 +20,18 @@ import de.soundboardcrafter.model.AbstractAudioLocation;
 @ParametersAreNonnullByDefault
 public
 class FullAudioModel extends BasicAudioModel {
+    public static final Parcelable.Creator<FullAudioModel> CREATOR
+            = new Parcelable.Creator<FullAudioModel>() {
+        @Override
+        public FullAudioModel createFromParcel(@NonNull Parcel in) {
+            return new FullAudioModel(in);
+        }
+
+        @Override
+        public FullAudioModel[] newArray(int size) {
+            return new FullAudioModel[size];
+        }
+    };
 
     @Nullable
     private final String artist;
@@ -24,6 +40,19 @@ class FullAudioModel extends BasicAudioModel {
     private final Date dateAdded;
 
     private final long durationSecs;
+
+    private FullAudioModel(@NonNull Parcel in) {
+        this(in.readParcelable(FullAudioModel.class.getClassLoader()),
+                in.readString(), in.readString(),
+                readDate(in),
+                in.readLong());
+    }
+
+    @Nullable
+    private static Date readDate(@NonNull Parcel in) {
+        long tmpDate = in.readLong();
+        return tmpDate == Long.MIN_VALUE ? null : new Date(tmpDate);
+    }
 
     public FullAudioModel(AbstractAudioLocation audioLocation, String name,
                           @Nullable String artist, long durationSecs) {
@@ -36,6 +65,19 @@ class FullAudioModel extends BasicAudioModel {
         this.artist = artist;
         this.dateAdded = dateAdded;
         this.durationSecs = durationSecs;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeParcelable(getAudioLocation(), 0);
+        out.writeString(getName());
+        out.writeString(artist);
+        writeDate(out, dateAdded);
+        out.writeLong(durationSecs);
+    }
+
+    private void writeDate(Parcel out, @Nullable Date date) {
+        out.writeLong(date != null ? date.getTime() : Long.MIN_VALUE);
     }
 
     @Nullable
@@ -52,14 +94,8 @@ class FullAudioModel extends BasicAudioModel {
         return durationSecs;
     }
 
-    private void writeObject(final java.io.ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-    }
-
-    private void readObject(final java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        setCollationKey();
+    public BasicAudioModel toBasic() {
+        return new BasicAudioModel(getAudioLocation(), getName());
     }
 
     @Override

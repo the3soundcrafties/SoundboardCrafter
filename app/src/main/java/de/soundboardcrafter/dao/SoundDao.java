@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import de.soundboardcrafter.dao.DBSchema.SoundTable;
 import de.soundboardcrafter.model.AbstractAudioLocation;
@@ -111,6 +112,27 @@ public class SoundDao extends AbstractDao {
 
         return new SoundWithSelectableSoundboards(sound, selectableSoundboards);
 
+    }
+
+    /**
+     * Finds a sound by audio location.
+     */
+    @Nullable
+    public Sound find(AbstractAudioLocation audioLocation) {
+        try (SoundCursorWrapper cursor = querySounds(SoundTable.Cols.PATH + " = ?",
+                new String[]{audioLocation.getInternalPath()})) {
+            if (!cursor.moveToNext()) {
+                return null;
+            }
+
+            Sound res = cursor.getSound();
+            if (cursor.moveToNext()) {
+                throw new IllegalStateException(
+                        "More than one sound for audio location " + audioLocation);
+            }
+
+            return res;
+        }
     }
 
     /**

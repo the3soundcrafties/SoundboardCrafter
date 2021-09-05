@@ -1,6 +1,6 @@
 package de.soundboardcrafter.activity.sound.edit.common;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -95,7 +95,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
-        checkNotNull(arguments, "Sound edit fragment started without arguments");
+        requireNonNull(arguments, "Sound edit fragment started without arguments");
 
         final UUID soundId = UUID.fromString(arguments.getString(ARG_SOUND_ID));
         new FindSoundTask(requireActivity(), soundId).execute();
@@ -215,7 +215,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
     /**
      * Sets the volume.
      */
-    private void setVolumePercentage(int volumePercentage, boolean playIfNotPlaying) {
+    private void setVolumePercentage(int volumePercentage) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
@@ -307,7 +307,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
             if (fromUser) {
                 ensurePlaying();
             }
-            setVolumePercentage(volumePercentage, fromUser);
+            setVolumePercentage(volumePercentage);
             SoundEditFragment.this.setLoop(loop);
         }
 
@@ -396,7 +396,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
     /**
      * A background task, used to save the sound
      */
-    class SaveSoundTask extends AsyncTask<Void, Void, Void> {
+    static class SaveSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;
@@ -404,6 +404,8 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
 
         SaveSoundTask(Context context, SoundWithSelectableSoundboards sound) {
             super();
+
+            // Do not use the fragment here! Activity might have been finished.
             appContextRef = new WeakReference<>(context.getApplicationContext());
             this.sound = sound;
         }
@@ -427,7 +429,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
     /**
      * A background task, used to delete the sound
      */
-    class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
+    static class DeleteSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = DeleteSoundTask.class.getName();
 
         private final WeakReference<Context> appContextRef;

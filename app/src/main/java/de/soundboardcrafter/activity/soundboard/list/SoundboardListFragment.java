@@ -32,7 +32,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -457,13 +456,13 @@ public class SoundboardListFragment extends Fragment
                                                 List<BasicAudioModel> audioModels) {
             Soundboard soundboard = new Soundboard(name, true);
 
-            ArrayList<Sound> sounds = new ArrayList<>(audioModels.size());
+            ImmutableList.Builder<Sound> sounds = ImmutableList.builder();
             for (BasicAudioModel audioModel : audioModels) {
                 sounds.add(toSound(audioModel));
             }
 
             SoundboardWithSounds soundboardWithSounds =
-                    new SoundboardWithSounds(soundboard, sounds);
+                    new SoundboardWithSounds(soundboard, sounds.build());
 
             SoundboardDao.getInstance(appContext)
                     .insertSoundboardAndInsertAllSounds(soundboardWithSounds);
