@@ -17,6 +17,11 @@ abstract class AbstractDao {
 
     AbstractDao(@Nonnull Context context) {
         Context appContext = context.getApplicationContext();
+        // "If you’re using Sqlite on Android, you do not need to close your db connection.  You
+        // *can*, but managing that will be difficult for you for a number of reasons.  You
+        // *should* simply create a singleton instance of SQLiteOpenHelper, or some derivative,
+        // and reuse that as needed."
+        // (https://kpgalligan.tumblr.com/post/109546839958/single-database-connection )
         database = new DBHelper(appContext).getWritableDatabase();
     }
 

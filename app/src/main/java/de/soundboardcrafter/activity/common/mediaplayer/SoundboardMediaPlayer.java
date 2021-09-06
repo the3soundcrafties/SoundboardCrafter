@@ -69,9 +69,11 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         super.setOnErrorListener((mp, what, extra) -> {
             try {
                 playingLogicallyStopped();
-            } finally {
-                return listener.onError(mp, what, extra);
+            } catch (RuntimeException e) {
+                // Seems, stop() did not work. Can't do anything about it.
             }
+
+            return listener.onError(mp, what, extra);
         });
     }
 

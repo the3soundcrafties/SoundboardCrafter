@@ -138,6 +138,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private static final String ARG_SORT_ORDER = "sortOrder";
     private SortOrder sortOrder;
 
+    @Nullable
     private ActionMode actionMode;
 
     //  private boolean tutorialHintsAllowed;
@@ -373,10 +374,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                     .execute();
             return true;
         } else if (id == R.id.toolbar_menu_sound_sort_manually) {
-            if (actionMode != null) {
-                return false;
-            }
-
             if (hostingActivity != null) {
                 hostingActivity.setChangingSoundboardEnabled(false);
             }
