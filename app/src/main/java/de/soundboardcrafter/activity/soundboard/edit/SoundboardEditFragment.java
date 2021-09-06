@@ -401,9 +401,6 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     private void rememberAudioSelectionChanges() {
         audioSelectionChanges.addAll(editView.getBasicAudioModelsSelected());
         audioSelectionChanges.removeAll(editView.getAudioLocationsNotSelected());
-
-        // TODO save result to database later - like in Favorites Edit Fragment
-        //  (Save new sounds when necessary)
     }
 
     public void loadAudioFiles() {
@@ -616,8 +613,6 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
             return ImmutableList.copyOf(res);
         }
 
-        // FIXME Some sounds cannot be selected.
-
         @Override
         @UiThread
         protected void onPostExecute(
@@ -628,8 +623,6 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
                 // will be of no use to anyone
                 return;
             }
-
-            // TODO stopPlaying();
 
             fragment.editView.setSelectionIcon(fragment.requireContext(), fragment.selection);
             fragment.editView.setSelectableAudioFolderEntries(audioFolderEntries);
