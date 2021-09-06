@@ -43,16 +43,19 @@ class SelectableSoundboardListItemRow extends LinearLayout {
     @UiThread
     void setSoundboard(SelectableModel<Soundboard> soundboard) {
         checkboxSoundboard.setText(soundboard.getModel().getName());
-        checkboxSoundboard.setChecked(soundboard.isSelected());
 
-        checkboxSoundboard.setOnClickListener(v -> {
-            if (checkboxSoundboard.isEnabled()) {
-                soundboard.setSelected(checkboxSoundboard.isChecked());
-            }
-        });
+        checkboxSoundboard.setOnCheckedChangeListener(null);
+
+        checkboxSoundboard.setChecked(soundboard.isSelected());
 
         // User cannot change provided soundboards
         setEnabled(isEnabled.apply(soundboard.getModel()));
+
+        checkboxSoundboard.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (checkboxSoundboard.isEnabled()) {
+                soundboard.setSelected(isChecked);
+            }
+        });
     }
 
     @Override
