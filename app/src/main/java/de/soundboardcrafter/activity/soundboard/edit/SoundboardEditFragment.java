@@ -284,7 +284,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         if (selection instanceof AssetFolderAudioLocation
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
             setSelection(newFolder);
-            loadAudioFiles();
+            if (soundboard != null) {
+                loadAudioFiles();
+            }
         } // Otherwise, the fragment will receive an event later.
     }
 
@@ -368,10 +370,12 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
             newSelection = new FileSystemFolderAudioLocation("/");
         }
 
+        stopPlaying();
+
+        rememberAudioSelectionChanges();
+
         if (!readExternalPermissionNecessary
                 || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
-            stopPlaying();
-            rememberAudioSelectionChanges();
             setSelection(newSelection);
             if (soundboard != null) {
                 loadAudioFiles();
@@ -382,8 +386,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     @Override
     protected void onPermissionReadExternalStorageGranted() {
         // We don't need any other permissions
-        // FIXME Does this work?
-        toggleSelection();
+
+        // We don't know to which value the selection should be set.
+        // So we don't do anything - the user will have to click again.
     }
 
     @Override
@@ -391,6 +396,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         stopPlaying();
         rememberAudioSelectionChanges();
         setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+
         if (soundboard != null) {
             loadAudioFiles();
         } else {
@@ -466,6 +472,11 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putParcelable(STATE_SELECTION, selection);
         outState.putParcelable(STATE_AUDIO_SELECTION_CHANGES, audioSelectionChanges);
+
+        // FIXME Check allowed max bundle size: How many sounds are possible?
+        //  If too few:
+        //  - For new sound don't store deselected?
+        //  - Save new to database as work in progress?
 
         super.onSaveInstanceState(outState);
     }

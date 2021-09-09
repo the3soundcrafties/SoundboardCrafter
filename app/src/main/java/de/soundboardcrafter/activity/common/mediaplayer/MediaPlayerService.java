@@ -1,5 +1,7 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -31,8 +33,6 @@ import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Android service that allows playing media and also keeps track off
@@ -78,8 +78,8 @@ public class MediaPlayerService extends Service {
         Intent notificationIntent = new Intent(this, SoundboardPlayActivity.class);
 
         // TODO Click on the notification returns to the main activity -
-        // even if the user is currently in a different activity.
-        // How can we just return TO THE APP?
+        //  even if the user is currently in a different activity.
+        //  How can we just return TO THE APP?
 
         // notificationIntent.setFlags( ?!
         // PendingIntent.FLAG?!

@@ -257,7 +257,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
     public void onPause() {
         super.onPause();
 
-        stopPlaying(false);
+        stopPlaying();
 
         requireActivity().unbindService(this);
 
@@ -277,7 +277,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
         new SaveSoundTask(requireActivity(), sound).execute();
     }
 
-    private void stopPlaying(boolean fadeOut) {
+    private void stopPlaying() {
         if (sound == null) {
             // sound not yet loaded - or has been deleted from the database
             return;
@@ -288,7 +288,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
             return;
         }
 
-        service.stopPlaying(null, sound.getSound(), fadeOut);
+        service.stopPlaying(null, sound.getSound(), false);
     }
 
     /**
