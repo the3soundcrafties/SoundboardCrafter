@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -36,6 +38,21 @@ public class SoundboardWithSounds implements Serializable {
     public SoundboardWithSounds(@NonNull Soundboard soundboard, @NonNull List<Sound> sounds) {
         this.soundboard = soundboard;
         this.sounds = Lists.newArrayList(checkNotNull(sounds, "sound is null"));
+    }
+
+    /**
+     * This hash value stays the same for the same soundboard - as long as the included
+     * sounds (IDs) are not changed (added, removed) and not reordered.
+     * <p>
+     * For different soundboards - or when the sounds (IDs) are changed (added, removed) or
+     * reordered -, this hash is very likely to change.
+     */
+    public long getLongHashForSoundboardIdAndSoundIds() {
+        return Objects.hash(
+                soundboard.getId().getMostSignificantBits() & Long.MAX_VALUE,
+                sounds.stream()
+                        .map(s -> s.getId().getMostSignificantBits() & Long.MAX_VALUE)
+                        .collect(Collectors.toList()));
     }
 
     @NonNull

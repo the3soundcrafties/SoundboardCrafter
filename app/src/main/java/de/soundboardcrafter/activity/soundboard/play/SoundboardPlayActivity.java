@@ -325,24 +325,25 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
 
             final SoundboardWithSounds soundboardWithSounds = soundboardList.get(position);
-            return getUniqueLongId(soundboardWithSounds);
+            return soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds();
         }
 
         // FragmentStateAdapter: "When overriding, also override containsItem(long)"
         @Override
         public boolean containsItem(long itemId) {
             for (SoundboardWithSounds soundboardWithSounds : soundboardList) {
-                if (getUniqueLongId(soundboardWithSounds) == itemId) {
+                if (soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds() == itemId) {
+                    // The soundboard has already been contained, and the
+                    // sounds (IDs) have neither been changed nor reordered
+                    // (at least, that is very unlikely).
                     return true;
                 }
             }
 
+            // The soundboard has not yet been contained, or the
+            // sounds (IDs) have been changed or reordered. - The system
+            // will rebuild the soundboard tab.
             return false;
-        }
-
-        private long getUniqueLongId(SoundboardWithSounds soundboardWithSounds) {
-            final UUID uuid = soundboardWithSounds.getId();
-            return uuid.getMostSignificantBits() & Long.MAX_VALUE;
         }
 
         /**
@@ -453,6 +454,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
         } else {
             supportActionBar.setTitle(favoritesName);
         }
+    }
+
+    @Override
+    public void soundChanged(UUID soundId) {
+        pagerAdapter.clear(false);
+        new FindSoundboardsTask(this, favoritesId).execute();
     }
 
     @Override
@@ -572,6 +579,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
             setToolbarTitle(data.getFavoritesName());
 
+            pagerAdapter.clear(false);
             pagerAdapter.addSoundboards(data.getSoundboards());
 
             @Nullable Integer index = null;

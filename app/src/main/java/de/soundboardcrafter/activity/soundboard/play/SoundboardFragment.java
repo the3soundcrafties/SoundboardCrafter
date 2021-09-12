@@ -70,6 +70,8 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  */
 public class SoundboardFragment extends AbstractPermissionFragment implements ServiceConnection {
     public interface HostingActivity {
+        void soundChanged(UUID soundId);
+
         void soundsDeleted();
 
         void setChangingSoundboardEnabled(boolean changingSoundboardEnabled);
@@ -618,6 +620,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 if (soundIdString != null) {
                     final UUID soundId = UUID.fromString(soundIdString);
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
+                    // Sound file has been deleted
+                    if (hostingActivity != null) {
+                        hostingActivity.soundChanged(soundId);
+                    }
                 } else {
                     // Sound file has been deleted
                     if (hostingActivity != null) {
