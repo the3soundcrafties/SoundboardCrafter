@@ -66,6 +66,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/folderLayout"
         tools:layout_editor_absoluteX="16dp"
-        tools:listitem="@layout/audiofile_list_file" />
+        tools:listitem="@layout/audio_item" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

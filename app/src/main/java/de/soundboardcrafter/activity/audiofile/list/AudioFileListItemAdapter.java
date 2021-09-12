@@ -9,6 +9,7 @@ import androidx.annotation.UiThread;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.audiofile.list.AbstractAudioFileListAdapter;
+import de.soundboardcrafter.activity.common.audiofile.list.AudioItem;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioModelAndSound;
 
@@ -16,12 +17,12 @@ import de.soundboardcrafter.model.audio.AudioModelAndSound;
  * Adapter for the list of audio files (and audio folders).
  */
 class AudioFileListItemAdapter extends AbstractAudioFileListAdapter<AbstractAudioFolderEntry> {
-    private final AudioFileRow.Callback callback;
+    private final AudioItem.Callback callback;
 
     /**
      * Creates an adapter that's initially empty
      */
-    AudioFileListItemAdapter(AudioFileRow.Callback callback) {
+    AudioFileListItemAdapter(AudioItem.Callback callback) {
         this.callback = callback;
     }
 
@@ -32,20 +33,20 @@ class AudioFileListItemAdapter extends AbstractAudioFileListAdapter<AbstractAudi
 
     @Override
     @UiThread
-    public AudioFileRow getAudioFileRow(AbstractAudioFolderEntry audioModelAndSound,
-                                        boolean isPlaying,
-                                        @Nullable View convertView, ViewGroup parent) {
-        if (!(convertView instanceof AudioFileRow)) {
-            convertView = new AudioFileRow(parent.getContext());
+    public AudioItem getAudioFileRow(AbstractAudioFolderEntry audioModelAndSound,
+                                     boolean isPlaying,
+                                     @Nullable View convertView, ViewGroup parent) {
+        if (!(convertView instanceof AudioItem)) {
+            convertView = new AudioItem(parent.getContext());
         }
-        AudioFileRow itemRow = (AudioFileRow) convertView;
+        AudioItem itemRow = (AudioItem) convertView;
 
         configureItemRow(itemRow, (AudioModelAndSound) audioModelAndSound, isPlaying);
 
         return itemRow;
     }
 
-    private void configureItemRow(@NonNull AudioFileRow itemRow,
+    private void configureItemRow(@NonNull AudioItem itemRow,
                                   AudioModelAndSound audioModelAndSound,
                                   boolean isPlaying) {
         itemRow.setAudioFile(audioModelAndSound, callback);

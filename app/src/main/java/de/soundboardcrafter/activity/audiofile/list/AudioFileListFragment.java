@@ -50,6 +50,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.TutorialUtil;
+import de.soundboardcrafter.activity.common.audiofile.list.AudioItem;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
@@ -75,7 +76,7 @@ import de.soundboardcrafter.model.audio.FullAudioModel;
  */
 public class AudioFileListFragment extends Fragment implements
         ServiceConnection,
-        AudioFileRow.Callback,
+        AudioItem.Callback,
         SoundEventListener {
 
     private static final String TAG = AudioFileListFragment.class.getName();
@@ -203,8 +204,8 @@ public class AudioFileListFragment extends Fragment implements
 
         listView.setOnItemClickListener(
                 (parent, view, position, id) -> {
-                    if (view instanceof AudioFileRow) {
-                        AudioFileRow audioFileItemRow = (AudioFileRow) view;
+                    if (view instanceof AudioItem) {
+                        AudioItem audioFileItemRow = (AudioItem) view;
                         onClickAudioFile(audioFileItemRow, position);
                     } else if (view instanceof AudioSubfolderRow) {
                         AudioSubfolderRow audioSubfolderRow = (AudioSubfolderRow) view;
@@ -384,7 +385,7 @@ public class AudioFileListFragment extends Fragment implements
         new FindAudioFilesTask(this, selection, sortOrder).execute();
     }
 
-    private void onClickAudioFile(@NonNull AudioFileRow audioFileItemRow, int position) {
+    private void onClickAudioFile(@NonNull AudioItem audioFileItemRow, int position) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
@@ -451,7 +452,7 @@ public class AudioFileListFragment extends Fragment implements
 
     @Override
     @UiThread
-    public void onEditAudioFile(@NonNull AudioModelAndSound audioModelAndSound) {
+    public void onEdit(@NonNull AudioModelAndSound audioModelAndSound) {
         final Sound sound;
         if (audioModelAndSound.getSound() == null) {
             // Create and save new sound

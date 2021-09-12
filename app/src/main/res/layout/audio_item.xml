@@ -20,7 +20,7 @@
         android:src="@drawable/ic_sound_list_file" />
 
     <ImageView
-        android:id="@+id/icon_link_sound_to_soundboards"
+        android:id="@+id/icon_sound_edit"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentTop="true"
@@ -38,7 +38,7 @@
         android:layout_width="0dp"
         android:layout_height="26dp"
         android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@+id/icon_link_sound_to_soundboards"
+        android:layout_toStartOf="@+id/icon_sound_edit"
         android:layout_toEndOf="@id/icon"
         android:singleLine="true"
         android:textSize="12sp"
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/audio_artist_and_length"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/icon_link_sound_to_soundboards"
+        android:layout_toStartOf="@+id/icon_sound_edit"
         android:layout_toEndOf="@id/icon"
         android:elevation="-10dp"
         android:gravity="center_vertical"
