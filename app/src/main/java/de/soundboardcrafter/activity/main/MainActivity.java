@@ -42,7 +42,8 @@ import de.soundboardcrafter.activity.soundboard.list.SoundboardListFragment;
 import de.soundboardcrafter.dao.TutorialDao;
 
 /**
- * The activity with which the app is started, showing favorites, soundboards, and sounds.
+ * The activity with which the app is started, showing favorites (when enabled), soundboards, and
+ * sounds.
  */
 public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
