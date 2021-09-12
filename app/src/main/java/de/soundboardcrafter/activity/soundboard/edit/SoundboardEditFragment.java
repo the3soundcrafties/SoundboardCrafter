@@ -387,6 +387,13 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     protected void onPermissionReadExternalStorageGranted() {
         // We don't need any other permissions
 
+        if (!(selection instanceof AssetFolderAudioLocation)) {
+            // The selection has already been set - now load the audio files.
+            if (soundboard != null) {
+                loadAudioFiles();
+            }
+        }
+
         // We don't know to which value the selection should be set.
         // So we don't do anything - the user will have to click again.
     }

@@ -7,12 +7,22 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
+
+import java.lang.ref.WeakReference;
 
 import de.soundboardcrafter.R;
 
 public class PermissionUtil {
+    /**
+     * Stores the last shown sounds permission Dialog.
+     */
+    @Nullable
+    private static WeakReference<AlertDialog> yourSoundsPermissionDialogRef;
+
+
     private static final String SHARED_PREFERENCES =
             PermissionUtil.class.getName() + "_Prefs";
 
@@ -28,14 +38,31 @@ public class PermissionUtil {
 
     public static void showYourSoundsPermissionDialog(FragmentActivity activity, Runnable onOk,
                                                       Runnable onCancel) {
-        new AlertDialog.Builder(activity)
-                .setTitle(R.string.yourSoundsPermissionRationaleTitle)
-                .setMessage(R.string.yourSoundsPermissionRationaleMsg)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> onOk.run())
-                .setNegativeButton(android.R.string.cancel, (dialog, which) -> onCancel.run())
-                .setOnDismissListener(dialog -> onCancel.run())
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+        if (yourSoundsPermissionDialogRef != null) {
+            @Nullable final AlertDialog oldDialog = yourSoundsPermissionDialogRef.get();
+            if (oldDialog != null && oldDialog.isShowing()) {
+                oldDialog.setOnDismissListener(null);
+                try {
+                    oldDialog.dismiss();
+                } catch (IllegalArgumentException e) {
+                    // java.lang.IllegalArgumentException:
+                    // View=DecorView@6c799f2[SoundboardCreateActivity] not attached to window
+                    // manager
+                    // is expected in some circumstances...
+                }
+            }
+        }
+
+        yourSoundsPermissionDialogRef = new WeakReference<>(
+                new AlertDialog.Builder(activity)
+                        .setTitle(R.string.yourSoundsPermissionRationaleTitle)
+                        .setMessage(R.string.yourSoundsPermissionRationaleMsg)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> onOk.run())
+                        .setNegativeButton(android.R.string.cancel,
+                                (dialog, which) -> onCancel.run())
+                        .setOnDismissListener(dialog -> onCancel.run())
+                        .show());
     }
 
     public static boolean androidDoesNotShowPermissionPopupsAnymore(final Activity activity,

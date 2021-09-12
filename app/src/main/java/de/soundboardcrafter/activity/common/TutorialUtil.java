@@ -96,7 +96,7 @@ public class TutorialUtil {
         if (lastTapTargetViewRef != null) {
             @Nullable
             TapTargetView lastTapTargetView = lastTapTargetViewRef.get();
-            if (lastTapTargetView != null) {
+            if (lastTapTargetView != null && lastTapTargetView.isVisible()) {
                 lastTapTargetView.dismiss(false);
             }
             lastTapTargetViewRef = null;
