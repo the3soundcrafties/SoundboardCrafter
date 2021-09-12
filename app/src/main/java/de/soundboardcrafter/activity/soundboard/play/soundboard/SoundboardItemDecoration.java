@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.soundboard.play;
+package de.soundboardcrafter.activity.soundboard.play.soundboard;
 
 import android.graphics.Rect;
 import android.view.View;
@@ -9,11 +9,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-// See https://stackoverflow.com/questions/30524599/items-are-not-the-same-width-when-using-recyclerview-gridlayoutmanager-to-make-c .
+// See https://stackoverflow.com/questions/30524599/items-are-not-the-same-width-when-using
+// -recyclerview-gridlayoutmanager-to-make-c .
 class SoundboardItemDecoration extends RecyclerView.ItemDecoration {
     private final int verticalSpacing;
     private final int horizontalSpacing;
-    private boolean includeEdge;
+    private final boolean includeEdge;
 
     SoundboardItemDecoration(int verticalSpacing, int horizontalSpacing, boolean includeEdge) {
         this.verticalSpacing = verticalSpacing;
@@ -34,9 +35,11 @@ class SoundboardItemDecoration extends RecyclerView.ItemDecoration {
             int column = position % spanCount;
             getGridItemOffsets(outRect, position, column, spanCount);
         } else if (parent.getLayoutManager() instanceof StaggeredGridLayoutManager) {
-            StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) parent.getLayoutManager();
+            StaggeredGridLayoutManager layoutManager =
+                    (StaggeredGridLayoutManager) parent.getLayoutManager();
             int spanCount = layoutManager.getSpanCount();
-            StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
+            StaggeredGridLayoutManager.LayoutParams lp =
+                    (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
             int column = lp.getSpanIndex();
             getGridItemOffsets(outRect, position, column, spanCount);
         } else if (parent.getLayoutManager() instanceof LinearLayoutManager) {

@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.soundboard.play;
+package de.soundboardcrafter.activity.soundboard.play.soundboard;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.soundboard.play;
+package de.soundboardcrafter.activity.soundboard.play.soundboard;
 
 import android.content.Context;
 import android.view.LayoutInflater;

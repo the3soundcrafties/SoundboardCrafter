@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.soundboard.play;
+package de.soundboardcrafter.activity.soundboard.play.soundboard;
 
 import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
@@ -151,7 +151,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
      */
-    static SoundboardFragment createFragment(SoundboardWithSounds soundboard) {
+    public static SoundboardFragment createFragment(SoundboardWithSounds soundboard) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_SOUNDBOARD, soundboard);
         SoundboardFragment fragment = new SoundboardFragment();

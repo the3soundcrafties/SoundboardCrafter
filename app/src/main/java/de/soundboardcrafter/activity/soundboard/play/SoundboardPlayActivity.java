@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
+import de.soundboardcrafter.activity.soundboard.play.soundboard.SoundboardFragment;
 import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;

@@ -9,7 +9,7 @@
     android:paddingBottom="0dp"
     android:background="@color/white"
     android:elevation="-10dp"
-    tools:context="de.soundboardcrafter.activity.soundboard.play.SoundboardFragment">
+    tools:context="de.soundboardcrafter.activity.soundboard.play.soundboard.SoundboardFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_soundboard"
