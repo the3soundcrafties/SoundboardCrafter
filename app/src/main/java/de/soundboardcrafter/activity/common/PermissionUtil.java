@@ -81,8 +81,8 @@ public class PermissionUtil {
         editor.apply();
     }
 
-    public static boolean getRationaleDisplayStatus(final Context context,
-                                                    final String permission) {
+    private static boolean getRationaleDisplayStatus(final Context context,
+                                                     final String permission) {
         SharedPreferences genPrefs =
                 context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE);
         return genPrefs.getBoolean(permission, false);
