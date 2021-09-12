@@ -83,12 +83,16 @@ public class SoundboardDao extends AbstractDao {
             params = new Object[0];
         }
 
+        // FIXME Custom soundboards first.
+
         Cursor rawCursor = rawQueryOrThrow(
                 FullJoinSoundboardCursorWrapper.queryString(favoritesId), params);
         return find(rawCursor);
     }
 
     private ImmutableList<SoundboardWithSounds> find(Cursor rawCursor) {
+        // FIXME Custom soundboards first.
+
         try (final FullJoinSoundboardCursorWrapper cursor =
                      new FullJoinSoundboardCursorWrapper(rawCursor)) {
             ImmutableList.Builder<SoundboardWithSounds> res = ImmutableList.builder();
@@ -173,6 +177,8 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether this sound is included.
      */
     ImmutableList<SelectableModel<Soundboard>> findAllSelectable(@NonNull Sound sound) {
+        // FIXME Custom soundboards first.
+
         Cursor rawCursor = rawQueryOrThrow(SelectableSoundboardCursorWrapper.queryString(),
                 SelectableSoundboardCursorWrapper.selectionArgs(sound.getId()));
         return findAllSelectable(rawCursor);
@@ -182,6 +188,8 @@ public class SoundboardDao extends AbstractDao {
      * Retrieves all soundboards, each with a mark, whether a certain sound is included.
      */
     private ImmutableList<SelectableModel<Soundboard>> findAllSelectable(Cursor rawCursor) {
+        // FIXME Custom soundboards first.
+
         try (SelectableSoundboardCursorWrapper cursor =
                      new SelectableSoundboardCursorWrapper(rawCursor)) {
             final ImmutableList.Builder<SelectableModel<Soundboard>> res = ImmutableList.builder();
@@ -257,7 +265,6 @@ public class SoundboardDao extends AbstractDao {
             linkSoundToSoundboard(soundboardWithSounds.getId(), i, sound.getId());
         }
     }
-
 
     public void updateWithChanges(Soundboard soundboard,
                                   AudioSelectionChanges audioSelectionChanges) {
@@ -578,6 +585,8 @@ public class SoundboardDao extends AbstractDao {
 
     @NonNull
     private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {
+        // FIXME Custom soundboards first.
+
         final Cursor cursor =
                 getDatabase().query(
                         DBSchema.SoundboardTable.NAME,
