@@ -208,14 +208,15 @@ public class FavoritesEditFragment extends Fragment {
             }
             Log.d(TAG, "Loading soundboards....");
 
-            List<Soundboard> res =
-                    SoundboardDao.getInstance(appContext).findAll();
+            ArrayList<Soundboard> res =
+                    new ArrayList<>(SoundboardDao.getInstance(appContext).findAll());
+
+            res.sort(Soundboard.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
 
             Log.d(TAG, "Favorites loaded.");
 
-            return res;
+            return ImmutableList.copyOf(res);
         }
-
 
         @Override
         @UiThread

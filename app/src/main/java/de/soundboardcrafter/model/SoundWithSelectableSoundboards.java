@@ -2,7 +2,8 @@ package de.soundboardcrafter.model;
 
 import androidx.annotation.NonNull;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -12,12 +13,12 @@ import java.util.Objects;
  */
 public class SoundWithSelectableSoundboards implements Iterable<SelectableModel<Soundboard>> {
     private final Sound sound;
-    private final List<SelectableModel<Soundboard>> soundboards;
+    private final ImmutableList<SelectableModel<Soundboard>> soundboards;
 
     public SoundWithSelectableSoundboards(Sound sound,
                                           List<SelectableModel<Soundboard>> soundboards) {
         this.sound = sound;
-        this.soundboards = soundboards;
+        this.soundboards = ImmutableList.copyOf(soundboards);
     }
 
     public Sound getSound() {
@@ -33,8 +34,8 @@ public class SoundWithSelectableSoundboards implements Iterable<SelectableModel<
     /**
      * Returns the soundboards in order, unmodifiable.
      */
-    public List<SelectableModel<Soundboard>> getSoundboards() {
-        return Collections.unmodifiableList(soundboards);
+    public ImmutableList<SelectableModel<Soundboard>> getSoundboards() {
+        return soundboards;
     }
 
     @Override

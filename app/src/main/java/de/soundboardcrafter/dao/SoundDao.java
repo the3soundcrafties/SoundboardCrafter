@@ -7,11 +7,11 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import org.jetbrains.annotations.Contract;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -107,8 +107,12 @@ public class SoundDao extends AbstractDao {
      */
     public SoundWithSelectableSoundboards findSoundWithSelectableSoundboards(UUID soundId) {
         Sound sound = find(soundId);
-        ImmutableList<SelectableModel<Soundboard>> selectableSoundboards =
-                soundboardDao.findAllSelectable(sound);
+
+        ArrayList<SelectableModel<Soundboard>> selectableSoundboards =
+                new ArrayList<>(soundboardDao.findAllSelectable(sound));
+
+        selectableSoundboards.sort(SelectableModel.byModel(
+                Soundboard.PROVIDED_LAST_THEN_BY_COLLATION_KEY));
 
         return new SoundWithSelectableSoundboards(sound, selectableSoundboards);
 

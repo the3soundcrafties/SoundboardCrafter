@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.google.common.collect.Lists;
 
 import java.io.Serializable;
-import java.text.CollationKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +24,10 @@ import javax.annotation.Nonnull;
  * appropriate synchronization.
  */
 public class SoundboardWithSounds implements Serializable {
+    public static final Comparator<SoundboardWithSounds> PROVIDED_LAST_THEN_BY_COLLATION_KEY =
+            Comparator.comparing(SoundboardWithSounds::getSoundboard,
+                    Soundboard.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
+
     @NonNull
     private final Soundboard soundboard;
 
@@ -58,11 +61,6 @@ public class SoundboardWithSounds implements Serializable {
     @NonNull
     public UUID getId() {
         return soundboard.getId();
-    }
-
-    @NonNull
-    public CollationKey getCollationKey() {
-        return soundboard.getCollationKey();
     }
 
     @NonNull

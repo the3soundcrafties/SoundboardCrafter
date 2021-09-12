@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableList;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -352,7 +351,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          */
         void addSoundboards(Collection<SoundboardWithSounds> soundboards) {
             soundboardList.addAll(soundboards);
-            soundboardList.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
+            soundboardList.sort(SoundboardWithSounds.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
             notifyDataSetChanged();
 
             setChangingSoundboardEnabled(changingSoundboardEnabled);

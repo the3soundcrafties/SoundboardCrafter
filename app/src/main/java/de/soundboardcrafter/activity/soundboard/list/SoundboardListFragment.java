@@ -32,7 +32,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -336,7 +335,7 @@ public class SoundboardListFragment extends Fragment
         loadingProgressBar.setProgress(100);
         listView.removeFooterView(loadingFooterView);
         List<SoundboardWithSounds> list = Lists.newArrayList(soundboards);
-        list.sort(Comparator.comparing(SoundboardWithSounds::getCollationKey));
+        list.sort(SoundboardWithSounds.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
         adapter.setSoundboards(list);
     }
 

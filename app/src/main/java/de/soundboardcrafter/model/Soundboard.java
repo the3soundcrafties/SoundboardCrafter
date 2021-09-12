@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.text.CollationKey;
+import java.util.Comparator;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -18,6 +19,19 @@ import javax.annotation.Nonnull;
  * appropriate synchronization.
  */
 public class Soundboard extends AbstractEntity {
+    public static final Comparator<Soundboard> PROVIDED_LAST_THEN_BY_COLLATION_KEY =
+            (one, other) -> {
+                if (!one.isProvided() && other.isProvided()) {
+                    return -1;
+                }
+
+                if (one.isProvided() && !other.isProvided()) {
+                    return 1;
+                }
+
+                return one.collationKey.compareTo(other.collationKey);
+            };
+
     private static final ThreadSafeCollator nameCollator =
             ThreadSafeCollator.getInstance();
 
