@@ -70,6 +70,22 @@ public class TutorialUtil {
     @UiThread
     public static void showTutorialHint(
             final Activity activity,
+            final View view,
+            int descriptionId,
+            TapTargetView.Listener tapTargetViewListener) {
+        final TapTarget tapTarget = TapTarget.forView(
+                view,
+                view.getResources().getString(descriptionId))
+                .transparentTarget(true);//.targetRadius(tapTargetRadiusDp)
+
+        dismissLastTargetView();
+        lastTapTargetViewRef = new WeakReference<>(
+                TapTargetView.showFor(activity, tapTarget, tapTargetViewListener));
+    }
+
+    @UiThread
+    public static void showTutorialHint(
+            final Activity activity,
             final View view, final int xOffsetDp,
             final int yOffsetDp,
             final int tapTargetRadiusDp,

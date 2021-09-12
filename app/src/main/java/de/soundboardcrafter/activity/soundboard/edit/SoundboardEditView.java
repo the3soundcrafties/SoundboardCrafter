@@ -197,4 +197,8 @@ public class SoundboardEditView extends ConstraintLayout {
         save.setVisibility(View.INVISIBLE);
         cancel.setVisibility(View.INVISIBLE);
     }
+
+    ImageButton getSelectionImageButton() {
+        return selectionImageButton;
+    }
 }

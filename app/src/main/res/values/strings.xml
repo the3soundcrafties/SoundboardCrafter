@@ -77,7 +77,7 @@
     <string name="tutorial_soundboard_play_edit_sound_description">Long-click to edit</string>
     <string name="tutorial_soundboard_play_remove_sound_description">Long-click to remove sound from your own soundboard</string>
     <string name="tutorial_audio_file_list_edit">Click here to add sound to soundboard</string>
-    <string name="tutorial_audio_file_list_local_audio">Click here to use your own sounds</string>
+    <string name="tutorial_soundboard_edit_local_audio">Click here to use your own sounds</string>
     <string name="tutorial_soundboard_list_context_menu_description">Long-click to edit
         or delete (only your own soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Long-click to edit</string>

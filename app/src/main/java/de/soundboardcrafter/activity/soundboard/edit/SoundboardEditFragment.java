@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.edit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -37,12 +38,14 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
+import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
+import de.soundboardcrafter.dao.TutorialDao;
 import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
@@ -158,6 +161,14 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         bindService();
     }
 
+    private void showTutorialHintForLocalAudio() {
+        TutorialUtil.showTutorialHint(requireActivity(),
+                editView.getSelectionImageButton(),
+                R.string.tutorial_soundboard_edit_local_audio,
+                createClickTutorialListener(() -> editView.getSelectionImageButton().performClick()
+                ));
+    }
+
     private void startService() {
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
         requireActivity().startService(intent);
@@ -248,6 +259,11 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
                 });
 
         startFindingAudioFilesIfPermitted();
+
+        if (!TutorialDao.getInstance(requireContext())
+                .isChecked(TutorialDao.Key.SOUNDBOARD_EDIT_LOCAL_AUDIO)) {
+            showTutorialHintForLocalAudio();
+        }
 
         return rootView;
     }
@@ -356,6 +372,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     private void toggleSelection() {
+        TutorialDao.getInstance(requireContext())
+                .check(TutorialDao.Key.SOUNDBOARD_EDIT_LOCAL_AUDIO);
+
         final boolean readExternalPermissionNecessary;
         final IAudioFileSelection newSelection;
 
