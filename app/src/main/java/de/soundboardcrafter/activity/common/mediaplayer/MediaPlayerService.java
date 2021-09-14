@@ -286,18 +286,19 @@ public class MediaPlayerService extends Service {
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                playingHasChanged();
+            }
+        });
         mediaPlayer.prepareAsync();
-
-        // FIXME There may be cases where right after this getSoundIdsActivelyPlaying() will not
-        //  contain the newly started sound (race condition).
-
-        playingHasChanged();
     }
 
     /**
      * Starts playing from that {@link AbstractAudioLocation} - without adding a media player and
-     * without
-     * necessarily starting a foreground service etc.
+     * without necessarily starting a foreground service etc.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
      * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnPlayingStopped)
