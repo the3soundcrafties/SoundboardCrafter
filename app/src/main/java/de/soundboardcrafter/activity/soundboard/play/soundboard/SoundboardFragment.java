@@ -53,6 +53,7 @@ import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySoundEditActivity;
+import de.soundboardcrafter.activity.soundboard.play.common.ISoundboardPlayActivity;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.dao.TutorialDao;
@@ -69,13 +70,6 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  * Shows Soundboard in a Grid
  */
 public class SoundboardFragment extends AbstractPermissionFragment implements ServiceConnection {
-    public interface HostingActivity {
-        void soundChanged(UUID soundId);
-
-        void soundsDeleted();
-
-        void setChangingSoundboardEnabled(boolean changingSoundboardEnabled);
-    }
 
     private static final String TAG = SoundboardFragment.class.getName();
 
@@ -146,12 +140,12 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     //  private boolean tutorialHintsAllowed;
 
     @Nullable
-    private HostingActivity hostingActivity;
+    private ISoundboardPlayActivity hostingActivity;
 
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
      */
-    public static SoundboardFragment createFragment(SoundboardWithSounds soundboard) {
+    public static SoundboardFragment newInstance(SoundboardWithSounds soundboard) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_SOUNDBOARD, soundboard);
         SoundboardFragment fragment = new SoundboardFragment();
@@ -164,10 +158,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        //as soon the media player service is connected, the play/stop icons can be set correctly
+        //as soon the media player service is connected, the play/playingStartedOrStopped icons
+        // can be
+        // set correctly
         updateUI();
-
-        Log.d(TAG, "MediaPlayerService is connected");
     }
 
     @UiThread
@@ -271,7 +265,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         requireActivity().unbindService(this);
     }
 
-
     @Override
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
@@ -303,7 +296,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         recyclerView.setLayoutManager(layoutManager);
 
-        initSoundboardItemAdapter();
+        initAdapter();
         registerForContextMenu(recyclerView);
 
         return rootView;
@@ -466,7 +459,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     }
 
     @UiThread
-    private void initSoundboardItemAdapter() {
+    private void initAdapter() {
         soundboardItemAdapter =
                 new SoundboardItemAdapter(newMediaPlayerServiceCallback(), soundboard);
 
@@ -518,8 +511,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        if (context instanceof HostingActivity) {
-            hostingActivity = (HostingActivity) context;
+        if (context instanceof ISoundboardPlayActivity) {
+            hostingActivity = (ISoundboardPlayActivity) context;
         }
     }
 
@@ -620,7 +613,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 if (soundIdString != null) {
                     final UUID soundId = UUID.fromString(soundIdString);
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
-                    // Sound file has been deleted
+                    // Sound file has been changed
                     if (hostingActivity != null) {
                         hostingActivity.soundChanged(soundId);
                     }
@@ -634,16 +627,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
-    @Override
-    @UiThread
-    public void onDestroy() {
-        // tutorialHintsAllowed = false;
-
-        // TODO: 17.03.2019 destroy service save state
-
-        super.onDestroy();
-    }
-
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             // TODO Necessary?! Also done in onResume()
@@ -652,18 +635,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         return mediaPlayerService;
     }
 
-    /*
-    public void setTutorialHintsAllowed(boolean tutorialHintsAllowed) {
-        this.tutorialHintsAllowed = tutorialHintsAllowed;
-
-        if (soundboardItemAdapter != null && !tutorialHintsAllowed) {
-            soundboardItemAdapter.setTutorialHintsAllowed(false);
-        }
-    }
-     */
-
     // See https://therubberduckdev.wordpress
-// .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
+    // .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
     class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
         @Override
         public int getMovementFlags(@NonNull RecyclerView recyclerView,

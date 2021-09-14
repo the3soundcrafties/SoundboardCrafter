@@ -123,7 +123,9 @@ public class AudioFileListFragment extends Fragment implements
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        // As soon the media player service is connected, the play/stop icons can be set correctly
+        // As soon the media player service is connected, the play/playingStartedOrStopped icons
+        // can be
+        // set correctly
         updateUI();
     }
 
@@ -191,7 +193,7 @@ public class AudioFileListFragment extends Fragment implements
 
         selectionMenuItem = null;
 
-        initAudioFileListItemAdapter();
+        initAdapter();
 
         iconFolderUp.setOnClickListener(v -> {
                     if (!(selection instanceof AbstractAudioLocation) || selection.isRoot()) {
@@ -206,7 +208,7 @@ public class AudioFileListFragment extends Fragment implements
                 (parent, view, position, id) -> {
                     if (view instanceof AudioItem) {
                         AudioItem audioFileItemRow = (AudioItem) view;
-                        onClickAudioFile(audioFileItemRow, position);
+                        onClickAudioItem(audioFileItemRow, position);
                     } else if (view instanceof AudioSubfolderRow) {
                         AudioSubfolderRow audioSubfolderRow = (AudioSubfolderRow) view;
                         onClickAudioSubfolder(audioSubfolderRow);
@@ -385,7 +387,7 @@ public class AudioFileListFragment extends Fragment implements
         new FindAudioFilesTask(this, selection, sortOrder).execute();
     }
 
-    private void onClickAudioFile(@NonNull AudioItem audioFileItemRow, int position) {
+    private void onClickAudioItem(@NonNull AudioItem audioFileItemRow, int position) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
@@ -524,7 +526,7 @@ public class AudioFileListFragment extends Fragment implements
     }
 
     @UiThread
-    private void initAudioFileListItemAdapter() {
+    private void initAdapter() {
         adapter = new AudioFileListItemAdapter(this);
         listView.setAdapter(adapter);
         updateUI();

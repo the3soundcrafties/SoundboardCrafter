@@ -70,7 +70,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
             try {
                 playingLogicallyStopped();
             } catch (RuntimeException e) {
-                // Seems, stop() did not work. Can't do anything about it.
+                // Seems, playingStartedOrStopped() did not work. Can't do anything about it.
             }
 
             return listener.onError(mp, what, extra);

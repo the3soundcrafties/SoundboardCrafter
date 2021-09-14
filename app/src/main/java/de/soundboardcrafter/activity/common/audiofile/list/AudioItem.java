@@ -30,8 +30,8 @@ public class AudioItem extends AbstractAudioFileRow {
      * Set the data for the view.
      */
     @UiThread
-    public void setAudioFile(AudioModelAndSound audioFileAndSound, AudioItem.Callback callback) {
-        super.setAudioFile(audioFileAndSound);
+    public void setAudioFile(AudioModelAndSound audioModelAndSound, AudioItem.Callback callback) {
+        super.setAudioFile(audioModelAndSound);
         iconEdit.setOnClickListener(l -> callback.onEdit(getAudioModelAndSound()));
     }
 }

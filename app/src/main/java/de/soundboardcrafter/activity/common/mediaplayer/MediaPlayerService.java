@@ -25,6 +25,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -38,8 +40,14 @@ import de.soundboardcrafter.model.Soundboard;
  * Android service that allows playing media and also keeps track off
  * most of the media players that are playing sounds in the app.
  */
+@SuppressWarnings("GrazieInspection")
 @MainThread
 public class MediaPlayerService extends Service {
+    @FunctionalInterface
+    public interface OnAnyPlayingStartedOrStopped extends Serializable {
+        void playingStartedOrStopped();
+    }
+
     private static final String TAG = MediaPlayerService.class.getName();
 
     private static final String NOTIFICATION_CHANNEL_ID = "mediaPlayerNotificationChannel";
@@ -66,6 +74,9 @@ public class MediaPlayerService extends Service {
      * that are currently fading out!
      */
     private final SoundboardMediaPlayers mediaPlayers = new SoundboardMediaPlayers();
+
+    @Nullable
+    private OnAnyPlayingStartedOrStopped onAnyPlayingStartedOrStopped;
 
     public MediaPlayerService() {
         Log.d(TAG, "MediaPlayerService is created");
@@ -96,7 +107,9 @@ public class MediaPlayerService extends Service {
             @Override
             public void onPause() {
                 Log.d(TAG, "onPause");
-                // As many speakers do not have a stop button, we stop the playing here.
+                // As many speakers do not have a playingStartedOrStopped button, we
+                // playingStartedOrStopped
+                // the playing here.
                 // We do not offer resuming anyway.
                 stopPlaying(true);
                 super.onPause();
@@ -138,6 +151,11 @@ public class MediaPlayerService extends Service {
             NotificationManagerCompat.from(this)
                     .createNotificationChannel(channel);
         }
+    }
+
+    public void setOnAnyPlayingStartedOrStopped(@Nullable
+                                                        OnAnyPlayingStartedOrStopped onAnyPlayingStartedOrStopped) {
+        this.onAnyPlayingStartedOrStopped = onAnyPlayingStartedOrStopped;
     }
 
     @Nullable
@@ -195,7 +213,7 @@ public class MediaPlayerService extends Service {
      */
     public void stopPlaying(Iterable<Soundboard> soundboards, boolean fadeOut) {
         mediaPlayers.stopPlaying(soundboards, fadeOut);
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
     }
 
     /**
@@ -208,7 +226,19 @@ public class MediaPlayerService extends Service {
         checkNotNull(sound, "sound is null");
 
         mediaPlayers.stopPlaying(soundboard, sound, fadeOut);
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
+    }
+
+    /**
+     * Stops this sound (which might be played from any soundboard);
+     *
+     * @param fadeOut Whether the playing shall be faded out.
+     */
+    public void stopPlaying(@NonNull Sound sound, boolean fadeOut) {
+        checkNotNull(sound, "sound is null");
+
+        mediaPlayers.stopPlaying(sound, fadeOut);
+        playingHasChanged();
     }
 
     /**
@@ -258,7 +288,7 @@ public class MediaPlayerService extends Service {
 
         mediaPlayer.prepareAsync();
 
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
     }
 
     /**
@@ -292,6 +322,14 @@ public class MediaPlayerService extends Service {
             mediaPlayer.release();
             throw e;
         }
+    }
+
+    private void playingHasChanged() {
+        if (onAnyPlayingStartedOrStopped != null) {
+            onAnyPlayingStartedOrStopped.playingStartedOrStopped();
+        }
+
+        updateMediaSessionNotificationAndForegroundService();
     }
 
     private void updateMediaSessionNotificationAndForegroundService() {
@@ -432,7 +470,7 @@ public class MediaPlayerService extends Service {
     }
 
     /**
-     * Return whether this sound is <i>actively playing</i>, that is,
+     * Returns whether this sound is <i>actively playing</i>, that is,
      * it is playing <i>and not fading out</i>.
      */
     public boolean isActivelyPlaying(@NonNull Sound sound) {
@@ -453,6 +491,14 @@ public class MediaPlayerService extends Service {
     }
 
     /**
+     * Returns the IDs of the sounds that are   <i>actively playing</i>:
+     * Playing <i>and not fading out</i>.
+     */
+    public Collection<UUID> getSoundIdsActivelyPlaying() {
+        return mediaPlayers.getSoundIdsActivelyPlaying();
+    }
+
+    /**
      * Called when MediaPlayer is ready
      */
     private void onPrepared(MediaPlayer player) {
@@ -463,13 +509,13 @@ public class MediaPlayerService extends Service {
         Log.e(TAG, "Error in media player: what: " + what + " extra: " + extra);
 
         mediaPlayers.remove(player);
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
         return true;
     }
 
     private void onCompletion(SoundboardMediaPlayer player) {
         mediaPlayers.remove(player);
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
     }
 
     @Override
@@ -489,6 +535,6 @@ public class MediaPlayerService extends Service {
      */
     private void stopPlaying(boolean fadeOut) {
         mediaPlayers.stopPlaying(fadeOut);
-        updateMediaSessionNotificationAndForegroundService();
+        playingHasChanged();
     }
 }

@@ -125,7 +125,7 @@ public class SoundboardItemAdapter
     /**
      * If there are already sounds in the soundboard with one of these IDs, replace
      * them with the respective updates.
-     * stop sound if not in soundboard anymore
+     * playingStartedOrStopped sound if not in soundboard anymore
      */
     void updateSounds(Map<Sound, Boolean> sounds) {
         for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
@@ -177,7 +177,7 @@ public class SoundboardItemAdapter
 
     /**
      * Removes the sound from the adapter. Should the sound currently be playing,
-     * stop it before the sound is removed.
+     * playingStartedOrStopped it before the sound is removed.
      */
     void remove(int position) {
         Sound sound = soundboard.getSounds().get(position);

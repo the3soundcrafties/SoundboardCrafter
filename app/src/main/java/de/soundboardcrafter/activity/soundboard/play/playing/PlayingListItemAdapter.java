@@ -1,4 +1,4 @@
-package de.soundboardcrafter.activity.audiofile.list;
+package de.soundboardcrafter.activity.soundboard.play.playing;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,8 +7,6 @@ import android.widget.BaseAdapter;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-
-import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,8 +20,7 @@ import de.soundboardcrafter.model.audio.AudioModelAndSound;
  * Adapter for the list of sounds currently playing.
  */
 class PlayingListItemAdapter extends BaseAdapter {
-    // FIXME Rename.
-    private final List<AudioModelAndSound> audioFolderEntries = new ArrayList<>();
+    private final List<AudioModelAndSound> audiosPlaying = new ArrayList<>();
 
     private final AudioItem.Callback callback;
 
@@ -34,22 +31,16 @@ class PlayingListItemAdapter extends BaseAdapter {
         this.callback = callback;
     }
 
-    // FIXME Rename.
-    public void setAudioFolderEntries(Collection<AudioModelAndSound> audioModelsAndSounds) {
-        audioFolderEntries.clear();
-        audioFolderEntries.addAll(audioModelsAndSounds);
+    void setAudiosPlaying(Collection<AudioModelAndSound> audiosPlaying) {
+        this.audiosPlaying.clear();
+        this.audiosPlaying.addAll(audiosPlaying);
 
         notifyDataSetChanged();
     }
 
-    // FIXME Rename.
-    public ImmutableList<AudioModelAndSound> copyAudioFolderEntries() {
-        return ImmutableList.copyOf(audioFolderEntries);
-    }
-
     @Override
     public int getCount() {
-        return audioFolderEntries.size();
+        return audiosPlaying.size();
     }
 
     @Override
@@ -59,13 +50,13 @@ class PlayingListItemAdapter extends BaseAdapter {
 
     @Override
     public AudioModelAndSound getItem(int position) {
-        return audioFolderEntries.get(position);
+        return audiosPlaying.get(position);
     }
 
     @Override
     @UiThread
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
-        AudioModelAndSound audioModelAndSound = audioFolderEntries.get(position);
+        AudioModelAndSound audioModelAndSound = audiosPlaying.get(position);
 
         if (!(convertView instanceof AudioItem)) {
             convertView = new AudioItem(parent.getContext());

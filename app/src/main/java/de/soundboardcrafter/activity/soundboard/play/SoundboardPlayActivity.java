@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
+import de.soundboardcrafter.activity.soundboard.play.common.ISoundboardPlayActivity;
 import de.soundboardcrafter.activity.soundboard.play.soundboard.SoundboardFragment;
 import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -57,7 +58,7 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  */
 public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
-        SoundboardFragment.HostingActivity {
+        ISoundboardPlayActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
     private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
     private static final String KEY_FAVORITES_ID = "favoritesId";
@@ -312,7 +313,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         @Override
         public @NonNull
         Fragment createFragment(int position) {
-            return SoundboardFragment.createFragment(soundboardList.get(position));
+            return SoundboardFragment.newInstance(soundboardList.get(position));
         }
 
         // https://developer.android.com/training/animation/vp2-migration :

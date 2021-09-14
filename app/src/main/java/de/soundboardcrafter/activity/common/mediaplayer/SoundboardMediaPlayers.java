@@ -12,11 +12,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
@@ -27,6 +31,7 @@ import de.soundboardcrafter.model.Soundboard;
 /**
  * Several media players. Some of them are <i>active</i>, others are <i>fading out</i>.
  */
+@SuppressWarnings("GrazieInspection")
 class SoundboardMediaPlayers {
     /**
      * The players that are <i>actively playing</i>, that is, they are <i>not</i> fading out.
@@ -114,8 +119,7 @@ class SoundboardMediaPlayers {
 
     private void setOnPlayingStopped(MediaPlayerSearchId searchId, @Nullable
             SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
-        SoundboardMediaPlayer activePlayer =
-                activePlayers.get(searchId);
+        SoundboardMediaPlayer activePlayer = activePlayers.get(searchId);
         if (activePlayer != null) {
             activePlayer.setOnPlayingStopped(onPlayingStopped);
         }
@@ -139,6 +143,7 @@ class SoundboardMediaPlayers {
         }
         return false;
     }
+
 
     /**
      * Returns the media player for this sound in this soundboard.
@@ -170,8 +175,7 @@ class SoundboardMediaPlayers {
 
         MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
 
-        SoundboardMediaPlayer activePlayer =
-                activePlayers.get(searchId);
+        SoundboardMediaPlayer activePlayer = activePlayers.get(searchId);
         if (activePlayer != null) {
             stop(searchId, activePlayer, fadeOut);
         } else if (!fadeOut) {
@@ -221,6 +225,17 @@ class SoundboardMediaPlayers {
                 .filter(e -> e.getKey().getSoundId().equals(sound.getId()))
                 .map(Map.Entry::getValue)
                 .anyMatch(SoundboardMediaPlayer::isPlaying);
+    }
+
+    /**
+     * Returns the IDs of the sounds that are   <i>actively playing</i>:
+     * Playing <i>and not fading out</i>.
+     */
+    Collection<UUID> getSoundIdsActivelyPlaying() {
+        return activePlayers.entrySet().stream().
+                filter(e -> e.getValue().isPlaying())
+                .map(e -> e.getKey().getSoundId())
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     /**
@@ -311,12 +326,26 @@ class SoundboardMediaPlayers {
      */
     @UiThread
     private void stopPlaying(@NonNull Soundboard soundboard, boolean fadeOut) {
+        stopPlaying(searchId -> soundboard.getId().equals(searchId.getSoundboardId()), fadeOut);
+    }
+
+    /**
+     * Stops this sound (which might be played from any soundboard);
+     *
+     * @param fadeOut Whether the playing shall be faded out.
+     */
+    @UiThread
+    public void stopPlaying(@NonNull Sound sound, boolean fadeOut) {
+        stopPlaying(searchId -> sound.getId().equals(searchId.getSoundId()), fadeOut);
+    }
+
+    private void stopPlaying(Predicate<MediaPlayerSearchId> filter, boolean fadeOut) {
         for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
              activePlayers.entrySet().iterator(); entryIt.hasNext(); ) {
             Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry = entryIt.next();
             MediaPlayerSearchId searchId = entry.getKey();
 
-            if (soundboard.getId().equals(searchId.getSoundboardId())) {
+            if (filter.test(searchId)) {
                 SoundboardMediaPlayer player = entry.getValue();
                 if (!fadeOut) {
                     player.stop();
@@ -334,7 +363,7 @@ class SoundboardMediaPlayers {
             for (Iterator<Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer>> entryIt =
                  playersFadingOut.entrySet().iterator(); entryIt.hasNext(); ) {
                 Map.Entry<MediaPlayerSearchId, SoundboardMediaPlayer> entry = entryIt.next();
-                if (soundboard.getId().equals(entry.getKey().getSoundboardId())) {
+                if (filter.test(entry.getKey())) {
                     SoundboardMediaPlayer player = entry.getValue();
                     player.stop();
                     player.release();

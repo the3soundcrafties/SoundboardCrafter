@@ -106,7 +106,12 @@ public class SoundDao extends AbstractDao {
      * @throws IllegalStateException if no sound with this ID exists - or more than one
      */
     public SoundWithSelectableSoundboards findSoundWithSelectableSoundboards(UUID soundId) {
+        @Nullable
         Sound sound = find(soundId);
+
+        if (sound == null) {
+            throw new IllegalStateException("No sound with ID " + soundId);
+        }
 
         ArrayList<SelectableModel<Soundboard>> selectableSoundboards =
                 new ArrayList<>(soundboardDao.findAllSelectable(sound));
@@ -142,13 +147,14 @@ public class SoundDao extends AbstractDao {
     /**
      * Finds a sound by ID.
      *
-     * @throws IllegalStateException if no sound with this ID exists - or more than one
+     * @throws IllegalStateException if more than one sound with this ID exists
      */
-    private Sound find(UUID soundId) {
+    @Nullable
+    public Sound find(UUID soundId) {
         try (SoundCursorWrapper cursor = querySounds(SoundTable.Cols.ID + " = ?",
                 new String[]{soundId.toString()})) {
             if (!cursor.moveToNext()) {
-                throw new IllegalStateException("No sound with ID " + soundId);
+                return null;
             }
 
             Sound res = cursor.getSound();

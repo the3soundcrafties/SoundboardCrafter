@@ -43,6 +43,10 @@
             android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity
+            android:name=".activity.sound.edit.soundboard.play.PlayingSoundEditActivity"
+            android:parentActivityName=".activity.soundboard.play.SoundboardPlayActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".activity.favorites.edit.FavoritesCreateActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />

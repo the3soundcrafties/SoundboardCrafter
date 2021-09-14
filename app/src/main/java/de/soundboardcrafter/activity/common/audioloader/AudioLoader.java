@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AnywhereInTheFileSystemAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
 import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
@@ -336,6 +337,74 @@ public class AudioLoader {
             }
         }
         return res;
+    }
+
+    @Nullable
+    public FullAudioModel getAudio(Context context, AbstractAudioLocation audioLocation) {
+        if (audioLocation instanceof FileSystemFolderAudioLocation) {
+            return getAudioFromDevice(context, audioLocation.getInternalPath());
+        } else if (audioLocation instanceof AssetFolderAudioLocation) {
+            try {
+                return getAudioFromAssets(context,
+                        // FIXME ist this the correct asset path?
+                        audioLocation.getInternalPath());
+            } catch (IOException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private FullAudioModel getAudioFromDevice(Context context, String path) {
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        // MediaStore.Audio.AudioColumns.DURATION has "always" been there and
+        // works fine
+        @SuppressLint("InlinedApi") String[] projection = {MediaStore.Audio.AudioColumns.DATA,
+                MediaStore.Audio.AudioColumns.TITLE,
+                MediaStore.Audio.ArtistColumns.ARTIST,
+                MediaStore.Audio.AudioColumns.DATE_ADDED,
+                MediaStore.Audio.AudioColumns.DURATION};
+
+        try (Cursor c = context.getContentResolver().query(uri,
+                projection,
+                MediaStore.Audio.Media.DATA + " = ? ",
+                new String[]{path}, null)) {
+            if (c != null) {
+                if (!c.moveToNext()) {
+                    return null;
+                }
+
+                return createAudioModelOnDevice(
+                        path, c.getString(1), c.getString(2),
+                        c.getInt(3), c.getLong(4));
+            }
+        }
+
+        return null;
+    }
+
+    private FullAudioModel getAudioFromAssets(Context context, String path) throws IOException {
+        return getAudioFromAssets(context.getAssets(), path);
+    }
+
+    private FullAudioModel getAudioFromAssets(@NonNull AssetManager assets, String assetPath)
+            throws IOException {
+        return createFullAudioModelFromAsset(assets, assetPath,
+                skipExtension(extractFilename(assetPath)));
+    }
+
+    private String extractFilename(@Nullable String path) {
+        if (path == null) {
+            return "";
+        }
+
+        final int indexBeforeFilename = path.lastIndexOf("/");
+        if (indexBeforeFilename < 0) {
+            return path;
+        }
+
+        return path.substring(indexBeforeFilename + 1);
     }
 
     @NonNull

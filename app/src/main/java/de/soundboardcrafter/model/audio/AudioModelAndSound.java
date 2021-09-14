@@ -27,7 +27,7 @@ public class AudioModelAndSound extends AbstractAudioFolderEntry {
             this.comparator = comparator;
         }
 
-        Comparator<AudioModelAndSound> getComparator() {
+        public Comparator<AudioModelAndSound> getComparator() {
             return comparator;
         }
     }
@@ -48,7 +48,7 @@ public class AudioModelAndSound extends AbstractAudioFolderEntry {
     }
 
     @NonNull
-    public CollationKey getCollationKey() {
+    private CollationKey getCollationKey() {
         // This only works because AudioModel and Sound internally use
         // the same Collator object.
         // (I assume, that the user does not fiddle with his

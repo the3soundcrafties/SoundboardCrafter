@@ -106,7 +106,9 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        // As soon the media player service is connected, the play/stop icons can be set correctly
+        // As soon the media player service is connected, the play/playingStartedOrStopped icons
+        // can be
+        // set correctly
         if (editView != null) {
             editView.notifyListDataSetChanged();
         }
