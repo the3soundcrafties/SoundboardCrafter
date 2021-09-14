@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import de.soundboardcrafter.util.UuidUtil;
+
 /**
  * A {@link Soundboard} with sounds.
  * <p></p>
@@ -52,9 +54,9 @@ public class SoundboardWithSounds implements Serializable {
      */
     public long getLongHashForSoundboardIdAndSoundIds() {
         return Objects.hash(
-                soundboard.getId().getMostSignificantBits() & Long.MAX_VALUE,
+                UuidUtil.toLong(soundboard.getId()),
                 sounds.stream()
-                        .map(s -> s.getId().getMostSignificantBits() & Long.MAX_VALUE)
+                        .map(s -> UuidUtil.toLong(s.getId()))
                         .collect(Collectors.toList()));
     }
 

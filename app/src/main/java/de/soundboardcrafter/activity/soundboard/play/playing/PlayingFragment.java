@@ -136,7 +136,7 @@ public class PlayingFragment extends Fragment implements
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_playing,
                 container, false);
 
-        listView = rootView.findViewById(R.id.list_view_audiofile);
+        listView = rootView.findViewById(R.id.list_view_playing);
 
         initAdapter();
 

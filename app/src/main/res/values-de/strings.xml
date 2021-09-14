@@ -123,4 +123,5 @@
     <string name="soundboard_edit_sounds_label">Sounds</string>
     <string name="soundboard_edit_soundboard_name_hint">Name</string>
     <string name="folder_up">Verzeichnis aufwärts</string>
+    <string name="soundboards_currently_playing">Spielt</string>
 </resources>

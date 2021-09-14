@@ -288,6 +288,9 @@ public class MediaPlayerService extends Service {
 
         mediaPlayer.prepareAsync();
 
+        // FIXME There may be cases where right after this getSoundIdsActivelyPlaying() will not
+        //  contain the newly started sound (race condition).
+
         playingHasChanged();
     }
 

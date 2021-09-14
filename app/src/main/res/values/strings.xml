@@ -71,6 +71,7 @@
         <item quantity="other">%d soundboards</item>
     </plurals>
     <string name="soundboards_default_toolbar">All Soundboards</string>
+    <string name="soundboards_currently_playing">Currently Playing</string>
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
     <string name="audiofile_not_found">Sound file not found any longer</string>
     <string name="tutorial_soundboard_play_start_sound_description">Click to play</string>

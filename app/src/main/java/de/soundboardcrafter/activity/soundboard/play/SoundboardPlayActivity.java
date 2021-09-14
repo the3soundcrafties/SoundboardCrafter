@@ -47,10 +47,12 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.activity.soundboard.play.common.ISoundboardPlayActivity;
+import de.soundboardcrafter.activity.soundboard.play.playing.PlayingFragment;
 import de.soundboardcrafter.activity.soundboard.play.soundboard.SoundboardFragment;
 import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.SoundboardWithSounds;
+import de.soundboardcrafter.util.UuidUtil;
 
 /**
  * The most important activity of the app - it shows all the soundboards so that the user
@@ -60,7 +62,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         implements ServiceConnection, ResetAllDialogFragment.OnOkCallback,
         ISoundboardPlayActivity {
     private static final String TAG = SoundboardPlayActivity.class.getName();
-    private static final String KEY_SELECTED_SOUNDBOARD_ID = "selectedSoundboardId";
+    private static final String KEY_TAB_UUID = "tabUuid";
     private static final String KEY_FAVORITES_ID = "favoritesId";
     private static final String SHARED_PREFERENCES =
             SoundboardPlayActivity.class.getName() + "_Prefs";
@@ -69,6 +71,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     private static final String EXTRA_SOUNDBOARD_ID = "SoundboardId";
     public static final String EXTRA_FAVORITES_ID = "FavoritesId";
+
+    /**
+     * The UUID used to identiy the "Currently Playing" tab.
+     */
+    private static final UUID PLAYING_TAB_UUID =
+            UUID.fromString("a4a4d6b4-13ec-45ff-b505-6f7840d14c04");
 
     private MediaPlayerService mediaPlayerService;
     private ViewPager2 pager;
@@ -79,11 +87,14 @@ public class SoundboardPlayActivity extends AppCompatActivity
     /**
      * ID of the chosen favorites - or <code>null</code>, if all soundboards shall be displayed.
      */
-    private @Nullable
-    UUID favoritesId;
+    @Nullable
+    private UUID favoritesId;
 
-    private @Nullable
-    UUID selectedSoundboardId;
+    private boolean stillInitializing = false;
+
+    @Nullable
+    private UUID tabUuid;
+
     private final boolean changingSoundboardEnabled = true;
 
     @Override
@@ -136,9 +147,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
         pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                @Nullable UUID tmp = pagerAdapter.getSoundboardId(position);
-                if (tmp != null) {
-                    selectedSoundboardId = tmp;
+                @Nullable UUID tmp = pagerAdapter.getTabUuid(position);
+                if (tmp != null && !stillInitializing) {
+                    tabUuid = tmp;
                 }
 
                 super.onPageSelected(position);
@@ -153,15 +164,16 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 (tab, position) -> tab.setText(pagerAdapter.getPageTitle(position))
         ).attach();
 
+        stillInitializing = true;
         if (savedInstanceState != null) {
-            selectedSoundboardId = getUUID(savedInstanceState, KEY_SELECTED_SOUNDBOARD_ID);
+            tabUuid = getUUID(savedInstanceState, KEY_TAB_UUID);
             favoritesId = getUUID(savedInstanceState, KEY_FAVORITES_ID);
         }
-        if (selectedSoundboardId == null && getIntent() != null) {
-            selectedSoundboardId = getUUIDExtra(getIntent(), EXTRA_SOUNDBOARD_ID);
+        if (tabUuid == null && getIntent() != null) {
+            tabUuid = getUUIDExtra(getIntent(), EXTRA_SOUNDBOARD_ID);
         }
-        if (selectedSoundboardId == null) {
-            selectedSoundboardId = getUUIDPreference(KEY_SELECTED_SOUNDBOARD_ID);
+        if (tabUuid == null) {
+            tabUuid = getUUIDPreference(KEY_TAB_UUID);
         }
         if (favoritesId == null) {
             if (getIntent() != null) {
@@ -223,7 +235,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
         UUID id = UUID.fromString(idPref);
         SharedPreferences.Editor editor = pref.edit();
-        editor.remove(KEY_SELECTED_SOUNDBOARD_ID);
+        editor.remove(KEY_TAB_UUID);
         editor.apply();
         return id;
     }
@@ -303,7 +315,17 @@ public class SoundboardPlayActivity extends AppCompatActivity
         dialog.show(getSupportFragmentManager(), DIALOG_RESET_ALL);
     }
 
+    /**
+     * Adapter for the tabs. Provides
+     * <ul>
+     *     <li>Currently playing as first tab
+     *     ({@link de.soundboardcrafter.activity.soundboard.play.playing.PlayingFragment})</li>
+     *     <li>Then a tab for each soundboard ({@link SoundboardFragment})</li>
+     * </ul>>
+     */
     class ScreenSlidePagerAdapter extends FragmentStateAdapter {
+        private final /* static */ long playingTabItemId = UuidUtil.toLong(PLAYING_TAB_UUID);
+
         private final List<SoundboardWithSounds> soundboardList = new ArrayList<>();
 
         ScreenSlidePagerAdapter(@NonNull FragmentActivity fragmentActivity) {
@@ -311,9 +333,19 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         @Override
+        public int getItemCount() {
+            return 1 // "Currently playing" tab
+                    + soundboardList.size();
+        }
+
+        @Override
         public @NonNull
         Fragment createFragment(int position) {
-            return SoundboardFragment.newInstance(soundboardList.get(position));
+            if (position == 0) {
+                return PlayingFragment.newInstance();
+            }
+
+            return SoundboardFragment.newInstance(soundboardList.get(position - 1));
         }
 
         // https://developer.android.com/training/animation/vp2-migration :
@@ -321,17 +353,26 @@ public class SoundboardPlayActivity extends AppCompatActivity
         // override getItemId()"
         @Override
         public long getItemId(int position) {
-            if (position < 0 || position >= soundboardList.size()) {
+            if (position < 0 || position > soundboardList.size()) {
                 return RecyclerView.NO_ID;
             }
 
-            final SoundboardWithSounds soundboardWithSounds = soundboardList.get(position);
+            if (position == 0) {
+                return playingTabItemId;
+            }
+
+            final SoundboardWithSounds soundboardWithSounds = soundboardList.get(position - 1);
             return soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds();
         }
 
         // FragmentStateAdapter: "When overriding, also override containsItem(long)"
         @Override
         public boolean containsItem(long itemId) {
+            if (itemId == playingTabItemId) {
+                // Currently-Playing tab shall always be contained.
+                return true;
+            }
+
             for (SoundboardWithSounds soundboardWithSounds : soundboardList) {
                 if (soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds() == itemId) {
                     // The soundboard has already been contained, and the
@@ -360,18 +401,27 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         CharSequence getPageTitle(int position) {
-            return soundboardList.get(position).getName();
+            if (position == 0) {
+                return getResources().getString(R.string.soundboards_currently_playing);
+            }
+
+            return soundboardList.get(position - 1).getName();
         }
 
         /**
-         * Returns the index of the soundboard with the given ID - or <code>null</code>,
-         * if no soundboard with this ID exists.
+         * Returns the tab index for this UUID - or <code>null</code>, if no tab with this UUID
+         * exists.
          */
         @Nullable
-        Integer getIndex(UUID soundboardId) {
-            for (int index = 0; index < getItemCount(); index++) {
-                if (soundboardList.get(index).getId().equals(soundboardId)) {
-                    return index;
+        Integer getIndex(UUID tabUuid) {
+            if (tabUuid.equals(PLAYING_TAB_UUID)) {
+                // Currently-Playing tab is always first.
+                return 0;
+            }
+
+            for (int index = 0; index < soundboardList.size(); index++) {
+                if (soundboardList.get(index).getId().equals(tabUuid)) {
+                    return index + 1;
                 }
             }
 
@@ -379,35 +429,20 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
 
         /**
-         * Returns the soundboard ID at this index - or <code>null</code>, if the index
-         * was invalid.
+         * Returns the UUID at this index - or <code>null</code>, if the index was invalid.
          */
         @Nullable
-        UUID getSoundboardId(int index) {
-            @Nullable SoundboardWithSounds soundboard = getSoundboard(index);
-            if (soundboard == null) {
+        UUID getTabUuid(int index) {
+            if (index == 0) {
+                // Currently-Playing tab is always first.
+                return PLAYING_TAB_UUID;
+            }
+
+            if (index > soundboardList.size()) {
                 return null;
             }
 
-            return soundboard.getId();
-        }
-
-        /**
-         * Returns the soundboard at this index - or <code>null</code>, if the index
-         * was invalid.
-         */
-        @Nullable
-        private SoundboardWithSounds getSoundboard(int index) {
-            if (index >= getItemCount()) {
-                return null;
-            }
-
-            return soundboardList.get(index);
-        }
-
-        @Override
-        public int getItemCount() {
-            return soundboardList.size();
+            return soundboardList.get(index - 1).getId();
         }
 
         /* Old code before migrating to ViewPager2:
@@ -419,6 +454,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
          */
 
         void clear(boolean stopPlayingAllSoundboards) {
+            // Always keep the "Currently Playing" Tab!
+
             if (stopPlayingAllSoundboards) {
                 stopPlayingAllSoundboards();
             }
@@ -489,7 +526,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        savePreference(KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId);
+        savePreference(KEY_TAB_UUID, tabUuid);
         savePreference(KEY_FAVORITES_ID, favoritesId);
 
         if (pageChangeCallback != null) {
@@ -510,15 +547,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        int selectedTab = pager.getCurrentItem();
-        @Nullable UUID selectedSoundboardId = pagerAdapter.getSoundboardId(selectedTab);
-        putUUID(outState, KEY_SELECTED_SOUNDBOARD_ID, selectedSoundboardId);
+        putUUID(outState, KEY_TAB_UUID, pagerAdapter.getTabUuid(pager.getCurrentItem()));
         putUUID(outState, KEY_FAVORITES_ID, favoritesId);
     }
 
     private void putUUID(@NonNull Bundle outState, String key, UUID id) {
-        @Nullable String idString = id != null ?
-                id.toString() : null;
+        @Nullable String idString = id != null ? id.toString() : null;
         outState.putString(key, idString);
     }
 
@@ -584,9 +618,10 @@ public class SoundboardPlayActivity extends AppCompatActivity
             pagerAdapter.addSoundboards(data.getSoundboards());
 
             @Nullable Integer index = null;
-            if (selectedSoundboardId != null) {
-                index = pagerAdapter.getIndex(selectedSoundboardId);
+            if (tabUuid != null) {
+                index = pagerAdapter.getIndex(tabUuid);
             }
+            stillInitializing = false;
 
             pager.setCurrentItem(index != null ? index : 0, false);
         }
@@ -620,7 +655,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
             soundboardDao.clearDatabase();
 
-
             Log.d(TAG, "Loading soundboards...");
 
             final ImmutableList<SoundboardWithSounds> res =
@@ -635,7 +669,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
         @Override
         @UiThread
         protected void onPostExecute(ImmutableList<SoundboardWithSounds> soundboards) {
-
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
@@ -647,12 +680,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
             pagerAdapter.addSoundboards(soundboards);
 
             @Nullable Integer index = null;
-            if (selectedSoundboardId != null) {
-                index = pagerAdapter.getIndex(selectedSoundboardId);
+            if (tabUuid != null) {
+                index = pagerAdapter.getIndex(tabUuid);
             }
+            stillInitializing = false;
 
             pager.setCurrentItem(index != null ? index : 0, false);
         }
-
     }
 }
