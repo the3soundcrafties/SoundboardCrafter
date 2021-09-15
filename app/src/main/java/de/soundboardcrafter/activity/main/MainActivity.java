@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -57,6 +58,15 @@ public class MainActivity extends AppCompatActivity
     private ScreenSlidePagerAdapter pagerAdapter;
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private Page selectedPage;
+
+    public OnBackPressedCallback getBackToSoundboardsCallback() {
+        return new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                selectSoundboardsTab();
+            }
+        };
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

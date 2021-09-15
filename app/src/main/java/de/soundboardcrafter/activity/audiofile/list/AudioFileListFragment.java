@@ -155,31 +155,22 @@ public class AudioFileListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        setOnBackPressed();
+        backButtonLeadsToSoundboards();
 
         // TODO Necessary?! Also done in onResume()
         bindService();
     }
 
-    private void setOnBackPressed() {
-        // This callback will only be called when the fragment is at least started.
-        OnBackPressedCallback onBackPressed =
-                new OnBackPressedCallback(true /* enabled by default */) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        selectSoundboardsTab();
-                    }
-                };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressed);
-    }
-
-    private void selectSoundboardsTab() {
-        @Nullable final FragmentActivity activity = getActivity();
+    private void backButtonLeadsToSoundboards() {
+        final FragmentActivity activity = requireActivity();
         if (!(activity instanceof MainActivity)) {
             return;
         }
 
-        ((MainActivity) activity).selectSoundboardsTab();
+        // This callback will only be called when the fragment is at least STARTED.
+        OnBackPressedCallback onBackPressed =
+                ((MainActivity) activity).getBackToSoundboardsCallback();
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressed);
     }
 
     private void bindService() {
