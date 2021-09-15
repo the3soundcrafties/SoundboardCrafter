@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -34,6 +35,7 @@ import androidx.annotation.WorkerThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
@@ -55,6 +57,7 @@ import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
+import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.activity.sound.edit.audiofile.list.AudiofileListSoundEditActivity;
 import de.soundboardcrafter.activity.sound.edit.common.SoundEditFragment;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
@@ -152,8 +155,31 @@ public class AudioFileListFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        setOnBackPressed();
+
         // TODO Necessary?! Also done in onResume()
         bindService();
+    }
+
+    private void setOnBackPressed() {
+        // This callback will only be called when the fragment is at least started.
+        OnBackPressedCallback onBackPressed =
+                new OnBackPressedCallback(true /* enabled by default */) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        selectSoundboardsTab();
+                    }
+                };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressed);
+    }
+
+    private void selectSoundboardsTab() {
+        @Nullable final FragmentActivity activity = getActivity();
+        if (!(activity instanceof MainActivity)) {
+            return;
+        }
+
+        ((MainActivity) activity).selectSoundboardsTab();
     }
 
     private void bindService() {

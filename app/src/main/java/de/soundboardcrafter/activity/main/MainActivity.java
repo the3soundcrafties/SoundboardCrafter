@@ -115,6 +115,12 @@ public class MainActivity extends AppCompatActivity
         pager.setCurrentItem(index != -1 ? index : 0, false);
     }
 
+    public void selectSoundboardsTab() {
+        selectedPage = Page.SOUNDBOARDS;
+        int index = pagerAdapter.getIndexOf(selectedPage);
+        pager.setCurrentItem(index, true);
+    }
+
     private void stopPlayingInAudioListFragment() {
         @Nullable
         AudioFileListFragment audioFileListFragment = getAudioFileListFragment();
