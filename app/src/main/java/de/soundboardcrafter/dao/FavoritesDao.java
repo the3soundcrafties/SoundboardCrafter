@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.UUID;
@@ -40,7 +42,7 @@ public class FavoritesDao extends AbstractDao {
      * updates the
      * soundboard links.
      */
-    public void updateWithSoundboards(FavoritesWithSoundboards favoritesWithSoundboards) {
+    public void updateWithSoundboards(@NonNull FavoritesWithSoundboards favoritesWithSoundboards) {
         update(favoritesWithSoundboards.getFavorites());
         //unlink soundboards
         getDatabase().delete(SoundboardFavoritesTable.NAME,
@@ -64,7 +66,7 @@ public class FavoritesDao extends AbstractDao {
         }
     }
 
-    public void insertWithSoundboards(FavoritesWithSoundboards favoritesWithSoundboards) {
+    public void insertWithSoundboards(@NonNull FavoritesWithSoundboards favoritesWithSoundboards) {
         insert(favoritesWithSoundboards.getFavorites());
         linkSoundboardsToFavorites(favoritesWithSoundboards);
     }
@@ -75,14 +77,15 @@ public class FavoritesDao extends AbstractDao {
         insertOrThrow(DBSchema.FavoritesTable.NAME, buildContentValues(favorites));
     }
 
-    private void linkSoundboardsToFavorites(FavoritesWithSoundboards favoritesWithSoundboards) {
+    private void linkSoundboardsToFavorites(
+            @NonNull FavoritesWithSoundboards favoritesWithSoundboards) {
         for (Soundboard soundboard : favoritesWithSoundboards.getSoundboards()) {
             linkFavoritesToSoundboard(soundboard.getId(),
                     favoritesWithSoundboards.getFavorites().getId());
         }
     }
 
-    private void linkFavoritesToSoundboard(UUID soundboardId, UUID favoritesId) {
+    private void linkFavoritesToSoundboard(@NonNull UUID soundboardId, @NonNull UUID favoritesId) {
         // TODO throw exception if the favorites are already linked to the soundboard
         //  (at any index)
         ContentValues values = new ContentValues();
@@ -92,7 +95,8 @@ public class FavoritesDao extends AbstractDao {
         insertOrThrow(SoundboardFavoritesTable.NAME, values);
     }
 
-    private ContentValues buildContentValues(Favorites favorites) {
+    @NonNull
+    private ContentValues buildContentValues(@NonNull Favorites favorites) {
         ContentValues values = new ContentValues();
         values.put(DBSchema.FavoritesTable.Cols.ID, favorites.getId().toString());
         values.put(DBSchema.FavoritesTable.Cols.NAME, favorites.getName());
@@ -138,7 +142,7 @@ public class FavoritesDao extends AbstractDao {
     }
 
     private ImmutableList<FavoritesWithSoundboards> findFavoritesWithSoundboards(
-            FavoritesCursorWrapper cursor) {
+            @NonNull FavoritesCursorWrapper cursor) {
         ImmutableList.Builder<FavoritesWithSoundboards> res = ImmutableList.builder();
         FavoritesWithSoundboards currentFavorites = null;
         while (cursor.moveToNext()) {
@@ -167,7 +171,7 @@ public class FavoritesDao extends AbstractDao {
 
     }
 
-    private void unlinkAllSoundboards(UUID favoritesId) {
+    private void unlinkAllSoundboards(@NonNull UUID favoritesId) {
         getDatabase().delete(SoundboardFavoritesTable.NAME,
                 SoundboardFavoritesTable.Cols.FAVORITES_ID + " = ?",
                 new String[]{favoritesId.toString()});

@@ -23,7 +23,7 @@ class SoundboardListItemAdapter extends BaseAdapter {
         soundboards = new ArrayList<>();
     }
 
-    public boolean areAllSoundboardsProvided() {
+    boolean areAllSoundboardsProvided() {
         for (SoundboardWithSounds soundboard : soundboards) {
             if (!soundboard.isProvided()) {
                 return false;

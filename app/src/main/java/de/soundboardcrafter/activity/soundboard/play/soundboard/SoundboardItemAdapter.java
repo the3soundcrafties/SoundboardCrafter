@@ -127,7 +127,7 @@ public class SoundboardItemAdapter
      * them with the respective updates.
      * playingStartedOrStopped sound if not in soundboard anymore
      */
-    void updateSounds(Map<Sound, Boolean> sounds) {
+    void updateSounds(@NonNull Map<Sound, Boolean> sounds) {
         for (Map.Entry<Sound, Boolean> soundEntry : sounds.entrySet()) {
             updateSound(soundEntry.getKey());
             if (!soundEntry.getValue()) {
@@ -137,7 +137,7 @@ public class SoundboardItemAdapter
         }
     }
 
-    void updateSounds(Collection<Sound> sounds) {
+    void updateSounds(@NonNull Collection<Sound> sounds) {
         for (Sound sound : sounds) {
             updateSound(sound);
         }
@@ -172,7 +172,6 @@ public class SoundboardItemAdapter
         soundboard.moveSound(oldPosition, newPosition);
 
         notifyItemMoved(oldPosition, newPosition);
-        // TODO if it should not work, try notifyDataSetChanged();
     }
 
     /**

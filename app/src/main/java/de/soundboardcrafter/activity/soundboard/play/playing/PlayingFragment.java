@@ -49,9 +49,6 @@ import de.soundboardcrafter.model.audio.FullAudioModel;
 public class PlayingFragment extends Fragment implements
         ServiceConnection, MediaPlayerService.OnAnyPlayingStartedOrStopped,
         AudioItem.Callback {
-
-    // FIXME Use this as first tab!
-
     /**
      * Request code used whenever this activity starts a sound edit
      * fragment
@@ -330,9 +327,8 @@ public class PlayingFragment extends Fragment implements
                 }
 
                 return new AudioModelAndSound(audioModel, sound);
-            } catch (Exception e) {
-                // FIXME Which exception would a permission problem be?
-                //  Permission problem? We do not want to deal with this here.
+            } catch (RuntimeException e) {
+                // Perhaps in some weird case when the user concurrently removes a permission...
                 return null;
             }
         }

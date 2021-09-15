@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.dao.DBSchema.FavoritesTable;
 import de.soundboardcrafter.dao.DBSchema.GamesTable;
@@ -17,6 +19,7 @@ import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 /**
  * Helper class for SQL database access
  */
+@ParametersAreNonnullByDefault
 class DBHelper extends SQLiteOpenHelper {
     /**
      * Database version

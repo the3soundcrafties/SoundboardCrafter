@@ -25,11 +25,7 @@ public class SoundEditView extends ConstraintLayout {
     private TextView nameTextView;
     private Switch loopSwitch;
     private SeekBar volumePercentageSeekBar;
-
-    // IDEA Show Path
-
     private ListView soundboardsListView;
-
     private int maxVolumePercentage;
     private SeekBarChangeListener seekBarChangeListener;
     private OnCheckedChangeListener onCheckedChangeListener;

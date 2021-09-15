@@ -345,9 +345,7 @@ public class AudioLoader {
             return getAudioFromDevice(context, audioLocation.getInternalPath());
         } else if (audioLocation instanceof AssetFolderAudioLocation) {
             try {
-                return getAudioFromAssets(context,
-                        // FIXME ist this the correct asset path?
-                        audioLocation.getInternalPath());
+                return getAudioFromAssets(context, audioLocation.getInternalPath());
             } catch (IOException e) {
                 return null;
             }
@@ -390,8 +388,7 @@ public class AudioLoader {
 
     private FullAudioModel getAudioFromAssets(@NonNull AssetManager assets, String assetPath)
             throws IOException {
-        return createFullAudioModelFromAsset(assets, assetPath,
-                skipExtension(extractFilename(assetPath)));
+        return createFullAudioModelFromAsset(assets, assetPath, extractFilename(assetPath));
     }
 
     private String extractFilename(@Nullable String path) {

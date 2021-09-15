@@ -4,9 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.fragment.app.Fragment;
+
+import org.jetbrains.annotations.Contract;
 
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 
@@ -17,6 +20,8 @@ public class FavoritesCreateActivity extends SingleFragmentActivity {
     /**
      * Builds  an {@link Intent}, suitable for starting this activity.
      */
+    @NonNull
+    @Contract("_ -> new")
     public static Intent newIntent(Context packageContext) {
         return new Intent(packageContext, FavoritesCreateActivity.class);
     }

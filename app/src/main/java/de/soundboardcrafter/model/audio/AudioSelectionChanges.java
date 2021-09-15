@@ -79,7 +79,6 @@ public class AudioSelectionChanges implements Parcelable {
     }
 
     public ImmutableList<BasicAudioModel> getImmutableAdditions() {
-        // TODO Sort be location? By folder and name?
         return ImmutableList.copyOf(additions);
     }
 

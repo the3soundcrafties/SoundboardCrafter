@@ -34,6 +34,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.jetbrains.annotations.Contract;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -45,6 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
@@ -88,7 +91,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         // Called when the action mode is created; startActionMode() was called
         @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.fragment_soundboard_play_manual_sorting, menu);
@@ -145,6 +148,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * Creates a <code>SoundboardFragment</code> for this soundboard.
      */
+    @NonNull
     public static SoundboardFragment newInstance(SoundboardWithSounds soundboard) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_SOUNDBOARD, soundboard);
@@ -389,10 +393,13 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
+    @NonNull
     private AppCompatActivity requireAppCompatActivity() {
         return (AppCompatActivity) requireActivity();
     }
 
+    @NonNull
+    @Contract(" -> new")
     private SoundboardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
         return new SoundboardItemRow.MediaPlayerServiceCallback() {
             @Override
@@ -522,7 +529,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         hostingActivity = null;
     }
 
-    private void onCreateSoundboardContextMenu(Sound sound, ContextMenu menu) {
+    private void onCreateSoundboardContextMenu(Sound sound, @NonNull ContextMenu menu) {
         int soundboardId = getUniqueTabId();
 
         menu.add(soundboardId,
@@ -637,6 +644,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     // See https://therubberduckdev.wordpress
     // .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/ .
+    @ParametersAreNonnullByDefault
     class SoundboardSwipeAndDragCallback extends ItemTouchHelper.Callback {
         @Override
         public int getMovementFlags(@NonNull RecyclerView recyclerView,
@@ -651,7 +659,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
 
         @Override
-        public boolean onMove(@NonNull RecyclerView recyclerView,
+        public boolean onMove(RecyclerView recyclerView,
                               RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
             int from = viewHolder.getAdapterPosition();
             int to = target.getAdapterPosition();
@@ -664,7 +672,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
 
         @Override
-        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
             // swiping not supported - might be a problem in a grid view
         }
 
@@ -679,9 +687,9 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
 
         @Override
-        public void onChildDraw(@NonNull Canvas c,
-                                @NonNull RecyclerView recyclerView,
-                                @NonNull RecyclerView.ViewHolder viewHolder,
+        public void onChildDraw(Canvas c,
+                                RecyclerView recyclerView,
+                                RecyclerView.ViewHolder viewHolder,
                                 float dX,
                                 float dY,
                                 int actionState,
@@ -694,6 +702,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
+    @ParametersAreNonnullByDefault
     class SoundSortInSoundboardTask extends AsyncTask<Void, Void, SoundboardWithSounds> {
         private final String TAG = UpdateSoundsTask.class.getName();
 
@@ -749,6 +758,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * A background task, used to retrieve some sounds from the database and update the GUI.
      */
+    @ParametersAreNonnullByDefault
     class UpdateSoundsTask extends AsyncTask<UUID, Void, Map<Sound, Boolean>> {
         private final String TAG = UpdateSoundsTask.class.getName();
 
@@ -825,6 +835,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * A background task, used to move a sound inside the soundboard
      */
+    @ParametersAreNonnullByDefault
     class MoveSoundTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = MoveSoundTask.class.getName();
 
@@ -864,6 +875,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * A background task, used to remove sounds with the given indexes from the soundboard
      */
+    @ParametersAreNonnullByDefault
     class RemoveSoundsTask extends AsyncTask<Integer, Void, Void> {
         private final String TAG = RemoveSoundsTask.class.getName();
 
@@ -899,6 +911,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     /**
      * A background task, used to delete sounds (from the database, from all soundboards etc.)
      */
+    @ParametersAreNonnullByDefault
     class DeleteSoundsTask extends AsyncTask<UUID, Void, Void> {
         private final String TAG = DeleteSoundsTask.class.getName();
 

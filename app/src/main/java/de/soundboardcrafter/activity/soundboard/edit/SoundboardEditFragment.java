@@ -500,12 +500,6 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putParcelable(STATE_SELECTION, selection);
         outState.putParcelable(STATE_AUDIO_SELECTION_CHANGES, audioSelectionChanges);
-
-        // FIXME Check allowed max bundle size: How many sounds are possible?
-        //  If too few:
-        //  - For new sound don't store deselected?
-        //  - Save new to database as work in progress?
-
         super.onSaveInstanceState(outState);
     }
 

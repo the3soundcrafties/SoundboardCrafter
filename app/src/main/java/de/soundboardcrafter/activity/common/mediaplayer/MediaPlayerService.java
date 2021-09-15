@@ -286,12 +286,9 @@ public class MediaPlayerService extends Service {
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-                playingHasChanged();
-            }
+        mediaPlayer.setOnPreparedListener(mp -> {
+            mp.start();
+            playingHasChanged();
         });
         mediaPlayer.prepareAsync();
     }
