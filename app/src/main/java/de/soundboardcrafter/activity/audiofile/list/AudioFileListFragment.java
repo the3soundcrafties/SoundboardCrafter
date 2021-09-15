@@ -96,6 +96,9 @@ public class AudioFileListFragment extends Fragment implements
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
 
     @Nullable
+    private MenuItem sortByDateMenuItem;
+
+    @Nullable
     private MenuItem selectionMenuItem;
     private ListView listView;
     private ConstraintLayout folderLayout;
@@ -236,7 +239,7 @@ public class AudioFileListFragment extends Fragment implements
         return rootView;
     }
 
-    private void updateSelectionMenuItem() {
+    private void updateOptionsMenu() {
         if (selectionMenuItem == null) {
             return;
         }
@@ -244,12 +247,15 @@ public class AudioFileListFragment extends Fragment implements
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_all_on_device);
             selectionMenuItem.setIcon(R.drawable.ic_long_list);
+            sortByDateMenuItem.setVisible(true);
         } else if (selection instanceof FileSystemFolderAudioLocation) {
             selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_folders_single);
             selectionMenuItem.setIcon(R.drawable.ic_folder);
+            sortByDateMenuItem.setVisible(true);
         } else if (selection instanceof AssetFolderAudioLocation) {
             selectionMenuItem.setTitle(R.string.toolbar_menu_audiofiles_assets);
             selectionMenuItem.setIcon(R.drawable.ic_included);
+            sortByDateMenuItem.setVisible(false);
         } else {
             throw new IllegalStateException(
                     "Unexpected type of selection: " + selection.getClass());
@@ -262,8 +268,9 @@ public class AudioFileListFragment extends Fragment implements
 
         inflater.inflate(R.menu.fragment_audiofile_file, menu);
 
+        sortByDateMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_sort_date);
         selectionMenuItem = menu.findItem(R.id.toolbar_menu_audiofiles_selection);
-        updateSelectionMenuItem();
+        updateOptionsMenu();
     }
 
     private void showTutorialHintForEdit() {
@@ -352,6 +359,11 @@ public class AudioFileListFragment extends Fragment implements
                 View.VISIBLE);
         if (this.selection.isRoot()) {
             iconFolderUp.setVisibility(View.INVISIBLE);
+        }
+
+        if (selection instanceof AssetFolderAudioLocation
+                && sortOrder == AudioModelAndSound.SortOrder.BY_DATE) {
+            sortOrder = AudioModelAndSound.SortOrder.BY_NAME;
         }
     }
 
@@ -685,7 +697,7 @@ public class AudioFileListFragment extends Fragment implements
                 // will be of no use to anyone
                 return;
             }
-            fragment.updateSelectionMenuItem();
+            fragment.updateOptionsMenu();
             fragment.setAudioFolderEntries(audioFolderEntries);
         }
     }

@@ -8,6 +8,7 @@
         android:title="@string/toolbar_menu_audiofiles_folders_all_on_device"
         app:showAsAction="ifRoom|withText" />
     <item
+        android:id="@+id/toolbar_menu_audiofiles_sort"
         android:icon="@drawable/ic_menu_sort"
         android:title="@string/toolbar_menu_audiofiles_sort"
         app:showAsAction="ifRoom|withText">
