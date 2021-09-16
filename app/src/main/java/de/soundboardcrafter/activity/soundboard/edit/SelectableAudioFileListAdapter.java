@@ -70,9 +70,10 @@ class SelectableAudioFileListAdapter
             boolean isPlaying,
             @Nullable View convertView,
             ViewGroup parent) {
-        if (!(convertView instanceof SoundboardEditSelectableAudioRow)) {
-            convertView = new SoundboardEditSelectableAudioRow(parent.getContext());
-        }
+        // When using convertView there are seldom cases where the user
+        // cannot click the checkbox. So we always create a new view.
+
+        convertView = new SoundboardEditSelectableAudioRow(parent.getContext());
         SoundboardEditSelectableAudioRow itemRow = (SoundboardEditSelectableAudioRow) convertView;
 
         configureItemRow(itemRow, audioModelAndSound, isPlaying);

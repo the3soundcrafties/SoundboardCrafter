@@ -37,6 +37,22 @@ public abstract class AbstractAudioFileListAdapter<T> extends BaseAdapter {
     protected AbstractAudioFileListAdapter() {
     }
 
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position < 0 || position >= audioFolderEntries.size()) {
+            return 0;
+        }
+
+        T entry = audioFolderEntries.get(position);
+        final AbstractAudioFolderEntry abstractAudioFolderEntry = asAbstractAudioFolderEntry(entry);
+        return (abstractAudioFolderEntry instanceof AudioFolder) ? 0 : 1;
+    }
+
     public void setAudioFolderEntries(Collection<? extends T> audioFolderEntries) {
         this.audioFolderEntries.clear();
         this.audioFolderEntries.addAll(audioFolderEntries);
