@@ -59,6 +59,9 @@ public class MainActivity extends AppCompatActivity
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private Page selectedPage;
 
+    @Nullable
+    private OnBackPressedCallback onBackPressed;
+
     public OnBackPressedCallback getBackToSoundboardsCallback() {
         return new OnBackPressedCallback(true /* enabled by default */) {
             @Override
@@ -87,7 +90,7 @@ public class MainActivity extends AppCompatActivity
 
                 @Nullable Page newSelectedPage = pagerAdapter.getPage(position);
                 if (newSelectedPage != null) {
-                    selectedPage = newSelectedPage;
+                    setSelectedPage(newSelectedPage);
 
                     if (selectedPage == Page.SOUNDS) {
                         if (ContextCompat.checkSelfPermission(MainActivity.this,
@@ -107,26 +110,34 @@ public class MainActivity extends AppCompatActivity
         new TabLayoutMediator(tabLayout, pager,
                 (tab, position) -> tab.setText(getString(pages.get(position).title))).attach();
 
+        backButtonLeadsToSoundboards();
+
         if (savedInstanceState != null) {
             @Nullable String savedSelectedPageString =
                     savedInstanceState.getString(KEY_SELECTED_PAGE);
             if (savedSelectedPageString != null) {
                 final Page selectedPage = Page.valueOf(savedSelectedPageString);
-                this.selectedPage = pages.contains(selectedPage) ? selectedPage : null;
+                setSelectedPage(pages.contains(selectedPage) ? selectedPage : null);
             } else {
-                selectedPage = null;
+                setSelectedPage(null);
             }
         }
 
         if (selectedPage == null) {
-            selectedPage = Page.SOUNDBOARDS;
+            setSelectedPage(Page.SOUNDBOARDS);
         }
         int index = pagerAdapter.getIndexOf(selectedPage);
         pager.setCurrentItem(index != -1 ? index : 0, false);
     }
 
+    private void backButtonLeadsToSoundboards() {
+        // This callback will only be called when the activity is at least STARTED.
+        onBackPressed = getBackToSoundboardsCallback();
+        getOnBackPressedDispatcher().addCallback(this, onBackPressed);
+    }
+
     public void selectSoundboardsTab() {
-        selectedPage = Page.SOUNDBOARDS;
+        setSelectedPage(Page.SOUNDBOARDS);
         int index = pagerAdapter.getIndexOf(selectedPage);
         pager.setCurrentItem(index, true);
     }
@@ -404,5 +415,12 @@ public class MainActivity extends AppCompatActivity
         @Nullable String selectedPageName = selectedPage != null ? selectedPage.name() : null;
 
         outState.putString(KEY_SELECTED_PAGE, selectedPageName);
+    }
+
+    private void setSelectedPage(@Nullable Page selectedPage) {
+        this.selectedPage = selectedPage;
+        if (onBackPressed != null) {
+            onBackPressed.setEnabled(selectedPage != null && selectedPage != Page.SOUNDBOARDS);
+        }
     }
 }

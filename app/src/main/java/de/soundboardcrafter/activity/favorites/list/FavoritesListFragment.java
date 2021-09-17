@@ -19,13 +19,11 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
@@ -42,7 +40,6 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.favorites.edit.FavoritesCreateActivity;
 import de.soundboardcrafter.activity.favorites.edit.FavoritesEditActivity;
-import de.soundboardcrafter.activity.main.MainActivity;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.FavoritesDao;
@@ -82,21 +79,7 @@ public class FavoritesListFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        backButtonLeadsToSoundboards();
-
         new FindFavoritesTask(requireContext()).execute();
-    }
-
-    private void backButtonLeadsToSoundboards() {
-        final FragmentActivity activity = requireActivity();
-        if (!(activity instanceof MainActivity)) {
-            return;
-        }
-
-        // This callback will only be called when the fragment is at least STARTED.
-        OnBackPressedCallback onBackPressed =
-                ((MainActivity) activity).getBackToSoundboardsCallback();
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressed);
     }
 
     @Override
