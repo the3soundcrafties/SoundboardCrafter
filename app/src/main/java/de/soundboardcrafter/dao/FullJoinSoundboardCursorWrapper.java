@@ -24,7 +24,7 @@ import de.soundboardcrafter.model.Soundboard;
  */
 @WorkerThread
 class FullJoinSoundboardCursorWrapper extends CursorWrapper {
-    static String queryString(@Nullable UUID favoritesId) {
+    static String queryString(@Nullable UUID favoritesId, @Nullable UUID soundboardId) {
         String res = "SELECT sb." + SoundboardTable.Cols.ID
                 + ", sb." + SoundboardTable.Cols.NAME
                 + ", sb." + SoundboardTable.Cols.PROVIDED
@@ -51,8 +51,14 @@ class FullJoinSoundboardCursorWrapper extends CursorWrapper {
                 + SoundboardTable.Cols.ID + " "
                 + "LEFT JOIN " + SoundTable.NAME + " s "
                 + "ON s." + SoundTable.Cols.ID + " = sbs." + SoundboardSoundTable.Cols.SOUND_ID
-                + " " //
-                + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs."
+                + " ";
+
+        if (soundboardId != null) {
+            res = res
+                    + "WHERE sb." + SoundboardTable.Cols.ID + " = ? ";
+        }
+
+        res = res + "ORDER BY sb." + SoundboardTable.Cols.ID + ", sbs."
                 + SoundboardSoundTable.Cols.POS_INDEX;
 
         return res;

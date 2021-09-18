@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.soundboard.edit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.toList;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 
 import android.app.Activity;
@@ -54,6 +55,7 @@ import de.soundboardcrafter.model.IAudioFileSelection;
 import de.soundboardcrafter.model.SelectableModel;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
+import de.soundboardcrafter.model.SoundboardWithSounds;
 import de.soundboardcrafter.model.audio.AbstractAudioFolderEntry;
 import de.soundboardcrafter.model.audio.AudioFolder;
 import de.soundboardcrafter.model.audio.AudioModelAndSound;
@@ -66,7 +68,23 @@ import de.soundboardcrafter.model.audio.FullAudioModel;
  */
 public class SoundboardEditFragment extends AbstractPermissionFragment
         implements ServiceConnection {
+    private enum Mode {
+        /**
+         * The user is creating a new soundboard
+         */
+        CREATE,
+        /**
+         * The user is editing an existing soundboard
+         */
+        EDIT,
+        /**
+         * The user is creating and editing a copy of an existing soundboard
+         */
+        COPY
+    }
+
     private static final String ARG_SOUNDBOARD_ID = "soundboardId";
+    private static final String ARG_COPY = "copy";
 
     private static final String EXTRA_SOUNDBOARD_ID = "soundboardId";
     private static final String EXTRA_EDIT_FRAGMENT = "soundboardEditFragment";
@@ -77,7 +95,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     private SoundboardEditView editView;
 
     private Soundboard soundboard;
-    private boolean isNew;
+    private Mode mode;
     private IAudioFileSelection selection;
     private AudioSelectionChanges audioSelectionChanges;
 
@@ -85,16 +103,25 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     @Nullable
     private SoundboardMediaPlayer mediaPlayer;
 
+    /**
+     * Builds a new fragment for editing or copying a soundboard
+     *
+     * @param copy Whether to copy the soundboard (instead of editing it)
+     */
     @NonNull
-    static SoundboardEditFragment newInstance(@NonNull UUID soundboardId) {
+    static SoundboardEditFragment newInstance(@NonNull UUID soundboardId, boolean copy) {
         Bundle args = new Bundle();
         args.putString(ARG_SOUNDBOARD_ID, soundboardId.toString());
+        args.putBoolean(ARG_COPY, copy);
 
         SoundboardEditFragment fragment = new SoundboardEditFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
+    /**
+     * Builds a new fragment for creating a new soundboard
+     */
     @NonNull
     @Contract(" -> new")
     static SoundboardEditFragment newInstance() {
@@ -142,20 +169,25 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
 
         if (getArguments() != null) {
             UUID soundboardId = UUID.fromString(getArguments().getString(ARG_SOUNDBOARD_ID));
-            new FindSoundboardTask(this, soundboardId).execute();
+            mode = getArguments().getBoolean(ARG_COPY) ? Mode.COPY : Mode.EDIT;
+            if (mode == Mode.EDIT) {
+                new FindSoundboardForEditTask(this, soundboardId).execute();
+            } else {
+                new FindSoundboardForCopyTask(this, soundboardId).execute();
+            }
         } else {
-            isNew = true;
-            soundboard = new Soundboard(getString(R.string.new_soundboard_name), false);
+            mode = Mode.CREATE;
+            soundboard = new Soundboard(getString(R.string.new_soundboard_name));
         }
 
         audioSelectionChanges = new AudioSelectionChanges();
 
-        if (isNew) {
+        if (mode == Mode.EDIT) {
+            Intent intent = new Intent(requireActivity(), SoundboardEditOrCopyActivity.class);
+            requireActivity().setResult(Activity.RESULT_OK, intent);
+        } else {
             Intent intent = new Intent(requireActivity(), SoundboardCreateActivity.class);
             requireActivity().setResult(Activity.RESULT_CANCELED, intent);
-        } else {
-            Intent intent = new Intent(requireActivity(), SoundboardEditActivity.class);
-            requireActivity().setResult(Activity.RESULT_OK, intent);
         }
 
         startService();
@@ -200,8 +232,11 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
 
         editView = rootView.findViewById(R.id.edit_view);
 
-        if (isNew) {
+        if (mode == Mode.CREATE) {
             editView.setName(soundboard.getName());
+        }
+
+        if (mode != Mode.EDIT) {
             editView.setOnClickListenerSave(
                     () -> {
                         saveNewSoundboard();
@@ -461,10 +496,14 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         editView.setSelection(selection);
     }
 
+    /**
+     * Saves a new soundboard - this might be a soundboard created from scratch or a copy of
+     * an existing soundboard
+     */
     private void saveNewSoundboard() {
-        String nameEntered = editView.getName();
-        if (!nameEntered.isEmpty()) {
-            soundboard.setName(nameEntered);
+        String name = editView.getName();
+        if (!name.isEmpty()) {
+            soundboard.setName(name);
         }
 
         rememberAudioSelectionChanges();
@@ -486,10 +525,10 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
 
         rememberAudioSelectionChanges();
 
-        if (!isNew && soundboard != null) {
-            String nameEntered = editView.getName();
-            if (!nameEntered.isEmpty()) {
-                soundboard.setName(nameEntered);
+        if (mode == Mode.EDIT && soundboard != null) {
+            String name = editView.getName();
+            if (!name.isEmpty()) {
+                soundboard.setName(name);
             }
 
             new UpdateSoundboardTask(requireContext(), soundboard, audioSelectionChanges).execute();
@@ -504,15 +543,16 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     /**
-     * A background task, used to load the soundboard from the database.
+     * A background task to load a soundboard to be edited from the database. This
+     * only loads the soundboard - its sounds are loaded on the fly.
      */
-    static class FindSoundboardTask extends AsyncTask<Void, Void, Soundboard> {
-        private final String TAG = FindSoundboardTask.class.getName();
+    static class FindSoundboardForEditTask extends AsyncTask<Void, Void, Soundboard> {
+        private final String TAG = FindSoundboardForEditTask.class.getName();
 
         private final WeakReference<SoundboardEditFragment> fragmentRef;
         private final UUID soundboardId;
 
-        FindSoundboardTask(SoundboardEditFragment fragment, UUID soundboardId) {
+        FindSoundboardForEditTask(SoundboardEditFragment fragment, UUID soundboardId) {
             super();
             fragmentRef = new WeakReference<>(fragment);
             this.soundboardId = soundboardId;
@@ -551,6 +591,73 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         }
     }
 
+    /**
+     * A background task to loads a soundboard with all its sounds from the database.
+     * The soundboard can later on be saved as a new soundboard (that is: copied).
+     */
+    static class FindSoundboardForCopyTask extends AsyncTask<Void, Void, SoundboardWithSounds> {
+        private final String TAG = FindSoundboardForCopyTask.class.getName();
+
+        private final WeakReference<SoundboardEditFragment> fragmentRef;
+        private final UUID soundboardId;
+
+        FindSoundboardForCopyTask(SoundboardEditFragment fragment, UUID soundboardId) {
+            super();
+            fragmentRef = new WeakReference<>(fragment);
+            this.soundboardId = soundboardId;
+        }
+
+        @Override
+        @WorkerThread
+        protected SoundboardWithSounds doInBackground(Void... voids) {
+            @Nullable SoundboardEditFragment fragment = fragmentRef.get();
+            if (fragment == null) {
+                cancel(true);
+                return null;
+            }
+
+            @Nullable
+            Context context = fragment.getContext();
+            if (context == null) {
+                cancel(true);
+                return null;
+            }
+
+            Context appContext = context.getApplicationContext();
+
+            Log.d(TAG, "Loading soundboard with sounds....");
+
+            SoundboardWithSounds res =
+                    SoundboardDao.getInstance(fragment.requireContext())
+                            .findWithSounds(soundboardId);
+
+            Log.d(TAG, "Soundboard loaded.");
+
+            res = res.userCopy(
+                    appContext.getString(R.string.soundboard_copy_prefix) + res.getName());
+
+            return res;
+        }
+
+        @Override
+        @UiThread
+        protected void onPostExecute(SoundboardWithSounds soundboard) {
+            @Nullable SoundboardEditFragment fragment = fragmentRef.get();
+            if (fragment == null || fragment.getContext() == null) {
+                // fragment (or context) no longer available, I guess that result
+                // will be of no use to anyone
+                return;
+            }
+
+            Iterable<BasicAudioModel> audios = soundboard.getSounds().stream()
+                    .map(s -> new BasicAudioModel(s.getAudioLocation(), s.getName()))
+                    .collect(toList());
+
+            fragment.audioSelectionChanges.addAll(audios);
+
+            fragment.updateUI(soundboard.getSoundboard());
+        }
+    }
 
     /**
      * A background task, used to retrieve audio files (and audio folders)
@@ -663,7 +770,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     /**
-     * A background task, used to save the soundboard
+     * A background task to save a new soundboard
      */
     static class SaveNewSoundboardTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveNewSoundboardTask.class.getName();
@@ -700,7 +807,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     /**
-     * A background task, used to save the soundboard
+     * A background task to save the changes to an existing soundboard.
      */
     static class UpdateSoundboardTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = SaveNewSoundboardTask.class.getName();

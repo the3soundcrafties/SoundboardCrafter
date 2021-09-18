@@ -17,6 +17,7 @@
     <string name="context_menu_edit_favorites">Edit</string>
     <string name="context_menu_remove_favorites">Delete</string>
     <string name="context_menu_edit_soundboard">Edit</string>
+    <string name="context_menu_copy_soundboard">Copy</string>
     <string name="context_menu_remove_soundboard">Delete</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
@@ -35,6 +36,7 @@
     <string name="favorites_edit_soundboards_label">Soundboards</string>
     <string name="soundboard_edit_soundboard_name_hint">Name</string>
     <string name="soundboard_edit_sounds_label">Sounds</string>
+    <string name="soundboard_copy_prefix">Copy of\u0020</string>
     <string name="sound_edit_sound_name_hint">Name</string>
     <string name="sound_edit_volume_label">Volume</string>
     <string name="sound_edit_loopSwitch">Loop</string>
@@ -79,7 +81,9 @@
     <string name="tutorial_soundboard_play_remove_sound_description">Long-click to remove sound from your own soundboard</string>
     <string name="tutorial_audio_file_list_edit">Click here to add sound to soundboard</string>
     <string name="tutorial_soundboard_edit_local_audio">Click here to use your own sounds</string>
-    <string name="tutorial_soundboard_list_context_menu_description">Long-click to edit
+    <string name="tutorial_soundboard_list_context_menu_description">Long-click to copy
+        and tailor soundboard</string>
+    <string name="tutorial_soundboard_list_custom_context_menu_description">Long-click to edit
         or delete (only your own soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Long-click to edit</string>
     <string name="toolbar_menu_item_settings">Settings</string>

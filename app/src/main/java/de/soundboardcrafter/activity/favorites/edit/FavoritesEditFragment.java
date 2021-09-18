@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
-import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditOrCopyActivity;
 import de.soundboardcrafter.dao.FavoritesDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.model.FavoritesWithSoundboards;
@@ -90,7 +90,7 @@ public class FavoritesEditFragment extends Fragment {
                     Activity.RESULT_CANCELED,
                     intent);
         } else {
-            Intent intent = new Intent(getActivity(), SoundboardEditActivity.class);
+            Intent intent = new Intent(getActivity(), SoundboardEditOrCopyActivity.class);
             requireActivity().setResult(
                     Activity.RESULT_OK,
                     intent);

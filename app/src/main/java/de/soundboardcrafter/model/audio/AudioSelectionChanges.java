@@ -86,8 +86,8 @@ public class AudioSelectionChanges implements Parcelable {
         return ImmutableList.copyOf(removals);
     }
 
-    public void addAll(Iterable<BasicAudioModel> iterable) {
-        for (BasicAudioModel audio : iterable) {
+    public void addAll(Iterable<BasicAudioModel> audios) {
+        for (BasicAudioModel audio : audios) {
             add(audio);
         }
     }
