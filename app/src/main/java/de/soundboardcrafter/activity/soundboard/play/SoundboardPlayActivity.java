@@ -659,7 +659,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
 
             final ImmutableList<SoundboardWithSounds> res =
                     // Resetting is only enabled when no favorites are selected
-                    soundboardDao.findAllWithSounds(null);
+                    soundboardDao.findAllWithSounds();
 
             Log.d(TAG, "Soundboards loaded.");
 

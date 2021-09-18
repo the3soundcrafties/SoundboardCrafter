@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
+import de.soundboardcrafter.dao.DBSchema.SoundboardFavoritesTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardSoundTable;
 import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
 import de.soundboardcrafter.model.AbstractAudioLocation;
@@ -73,6 +74,10 @@ public class SoundboardDao extends AbstractDao {
      */
     public boolean areAny() {
         return !findAll().isEmpty();
+    }
+
+    public ImmutableList<SoundboardWithSounds> findAllWithSounds() {
+        return findAllWithSounds(null);
     }
 
     public ImmutableList<SoundboardWithSounds> findAllWithSounds(@Nullable UUID favoritesId) {
@@ -192,6 +197,36 @@ public class SoundboardDao extends AbstractDao {
 
             return res.build();
         }
+    }
+
+    public void updateProvidedSoundboardWithAudios(String name, List<BasicAudioModel> audioModels) {
+        @Nullable
+        Soundboard soundboard = findProvidedByName(name);
+
+        if (soundboard == null) {
+            soundboard = new Soundboard(name, true);
+            insert(soundboard);
+        }
+
+        link(soundboard, audioModels);
+    }
+
+    public void deleteProvidedSoundboardAndSounds(String name) {
+        @Nullable
+        Soundboard soundboard = findProvidedByName(name);
+        if (soundboard == null) {
+            return;
+        }
+
+        final SoundboardWithSounds soundboardWithSounds = findWithSounds(soundboard.getId());
+
+        unlinkAllSounds(soundboard.getId());
+
+        for (Sound sound : soundboardWithSounds.getSounds()) {
+            soundDao.delete(sound.getId());
+        }
+
+        delete(soundboard.getId());
     }
 
     public void insertWithSounds(Soundboard soundboard, List<BasicAudioModel> audios) {
@@ -391,12 +426,19 @@ public class SoundboardDao extends AbstractDao {
                         new String[]{soundboardId.toString()});
     }
 
+    private void unlinkAllFavorites(@NonNull UUID soundboardId) {
+        getDatabase()
+                .delete(SoundboardFavoritesTable.NAME,
+                        SoundboardFavoritesTable.Cols.SOUNDBOARD_ID + " = ?",
+                        new String[]{soundboardId.toString()});
+    }
+
     void unlinkSound(UUID soundId) {
         try (Cursor cursor = getDatabase().query(
                 SoundboardSoundTable.NAME,
                 new String[]{SoundboardSoundTable.Cols.SOUNDBOARD_ID},
-                null,
-                null,
+                SoundboardSoundTable.Cols.SOUND_ID + " = ?",
+                new String[]{soundId.toString()},
                 null,
                 null,
                 null)) {
@@ -537,7 +579,8 @@ public class SoundboardDao extends AbstractDao {
         getDatabase().delete(SoundboardTable.NAME, null, new String[]{});
     }
 
-    public void remove(UUID soundboardId) {
+    public void delete(UUID soundboardId) {
+        unlinkAllFavorites(soundboardId);
         unlinkAllSounds(soundboardId);
         getDatabase().delete(SoundboardTable.NAME, SoundboardTable.Cols.ID + " = ?",
                 new String[]{soundboardId.toString()});
@@ -553,9 +596,44 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
+    public ImmutableList<Soundboard> findAllProvided() {
+        try (SoundboardCursorWrapper cursorWrapper = queryAllProvided()) {
+            ImmutableList.Builder<Soundboard> res = new ImmutableList.Builder<>();
+            while (cursorWrapper.moveToNext()) {
+                res.add(cursorWrapper.getSoundboard());
+            }
+            return res.build();
+        }
+    }
+
     @NonNull
     private SoundboardCursorWrapper queryAll() {
         return querySoundboards(null, null);
+    }
+
+    @NonNull
+    private SoundboardCursorWrapper queryAllProvided() {
+        return querySoundboards(SoundboardTable.Cols.PROVIDED + " = 1", null);
+    }
+
+    @Nullable
+    private Soundboard findProvidedByName(String name) {
+        try (SoundboardCursorWrapper cursor = querySoundboards(
+                SoundboardTable.Cols.NAME + " = ? "
+                        + "AND " + SoundboardTable.Cols.PROVIDED + " = 1",
+                new String[]{name})) {
+            if (!cursor.moveToNext()) {
+                return null;
+            }
+
+            Soundboard res = cursor.getSoundboard();
+            if (cursor.moveToNext()) {
+                throw new IllegalStateException(
+                        "More than one provided soundboard with name " + name);
+            }
+
+            return res;
+        }
     }
 
     public Soundboard find(UUID soundboardId) {
@@ -592,7 +670,6 @@ public class SoundboardDao extends AbstractDao {
 
         return resList.iterator().next();
     }
-
 
     @NonNull
     private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {

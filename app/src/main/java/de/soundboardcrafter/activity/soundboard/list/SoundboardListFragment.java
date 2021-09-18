@@ -1,6 +1,8 @@
 package de.soundboardcrafter.activity.soundboard.list;
 
+import static android.content.Context.MODE_PRIVATE;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU;
@@ -9,6 +11,7 @@ import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_SOUNDBOAR
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,11 +34,14 @@ import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -47,6 +53,7 @@ import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditOrCopyActivity;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
+import de.soundboardcrafter.dao.DBHelper;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
 import de.soundboardcrafter.dao.TutorialDao;
@@ -294,7 +301,7 @@ public class SoundboardListFragment extends Fragment
             startActivityForResult(intent, NEW_SOUNDBOARD_REQUEST_CODE);
             return true;
         } else if (id == CONTEXT_MENU_DELETE_ITEM_ID) {
-            new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
+            new DeleteSoundboardTask(requireActivity(), soundboardWithSounds).execute();
             adapter.remove(soundboardWithSounds);
             fireSomethingMightHaveChanged();
             return true;
@@ -338,7 +345,7 @@ public class SoundboardListFragment extends Fragment
             return;
         }
 
-        if (shallGenerateSoundboards(getActivity())) {
+        if (noSoundboards(getActivity()) || providedSoundboardsNeedToBeUpdated(getActivity())) {
             setLoadingProgress(0);
             listView.addFooterView(loadingFooterView);
         } else {
@@ -385,21 +392,24 @@ public class SoundboardListFragment extends Fragment
         }
     }
 
-    private static boolean shallGenerateSoundboards(Context context) {
-        return !SoundboardDao.getInstance(context).areAny()
-                // There should be at least the provided soundboards which the
-                // user should not be able to delete
-                ;
+    private static boolean noSoundboards(Context context) {
+        return !SoundboardDao.getInstance(context).areAny();
+    }
+
+    private boolean providedSoundboardsNeedToBeUpdated(Context context) {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(
+                DBHelper.DB_SHARED_PREFERENCES, MODE_PRIVATE);
+        return sharedPreferences.getBoolean(DBHelper.PREF_KEY_CHECK_SOUNDBOARDS, true);
     }
 
     /**
-     * A background task, used to remove soundboard with the given indexes from the soundboard
+     * A background task, used to delete the soundboards with the given indexes from the soundboard
      */
-    static class RemoveSoundboardTask extends AsyncTask<Integer, Void, Void> {
+    static class DeleteSoundboardTask extends AsyncTask<Integer, Void, Void> {
         private final WeakReference<Context> appContextRef;
         private final UUID soundboardId;
 
-        RemoveSoundboardTask(Context context, SoundboardWithSounds soundboard) {
+        DeleteSoundboardTask(Context context, SoundboardWithSounds soundboard) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             soundboardId = soundboard.getId();
@@ -415,7 +425,7 @@ public class SoundboardListFragment extends Fragment
             }
 
             SoundboardDao soundboardDao = SoundboardDao.getInstance(appContext);
-            soundboardDao.remove(soundboardId);
+            soundboardDao.delete(soundboardId);
             return null;
         }
     }
@@ -443,22 +453,26 @@ public class SoundboardListFragment extends Fragment
                 return null;
             }
 
-            generateSoundboardsOnFirstStartIfAppropriate(appContext);
+            updateSoundboardsIfNecessary(appContext);
 
             Log.d(TAG, "Loading soundboards...");
 
             ImmutableList<SoundboardWithSounds> res =
-                    SoundboardDao.getInstance(appContext).findAllWithSounds(null);
+                    SoundboardDao.getInstance(appContext).findAllWithSounds();
 
             Log.d(TAG, "Soundboards loaded.");
 
             return res;
         }
 
-        private void generateSoundboardsOnFirstStartIfAppropriate(Context appContext) {
-            if (shallGenerateSoundboards(appContext)) {
+        private void updateSoundboardsIfNecessary(Context appContext) {
+            if (noSoundboards(appContext)) {
                 generateProvidedSoundboards(appContext);
+            } else if (providedSoundboardsNeedToBeUpdated(appContext)) {
+                updateProvidedSoundboards(appContext);
             }
+
+            DBHelper.setProvidedSoundboardsNeedToBeChecked(appContext, false);
         }
 
         private void generateProvidedSoundboards(Context appContext) {
@@ -504,6 +518,80 @@ public class SoundboardListFragment extends Fragment
 
             SoundboardDao.getInstance(appContext)
                     .insertSoundboardAndInsertAllSounds(soundboardWithSounds);
+        }
+
+        private void updateProvidedSoundboards(Context appContext) {
+            Log.d(TAG, "Updating soundboards from included audio files...");
+            publishProgress(10);
+
+            AudioLoader audioLoader = new AudioLoader();
+            Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
+                    audioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
+
+            final ImmutableList<Soundboard> oldSoundboards =
+                    SoundboardDao.getInstance(appContext).findAllProvided();
+
+            final ImmutableSet.Builder<String> newSoundboardNames =
+                    updateNewSoundboards(appContext, audioModelsByTopFolder);
+
+            deleteObsoleteSoundboards(appContext, oldSoundboards, newSoundboardNames);
+
+            publishProgress(90);
+            Log.d(TAG, "Soundboards updated.");
+        }
+
+        private void deleteObsoleteSoundboards(Context appContext,
+                                               ImmutableList<Soundboard> oldSoundboards,
+                                               ImmutableSet.Builder<String> newSoundboardNames) {
+            Set<String> oldSoundboardNames =
+                    oldSoundboards.stream().map(Soundboard::getName)
+                            .collect(toSet());
+
+            final Sets.SetView<String> removedSoundboardNames = Sets
+                    .difference(oldSoundboardNames, newSoundboardNames.build());
+
+            int numRemovedSoundboards = removedSoundboardNames.size();
+            int removedSoundboardCount = 0;
+
+            for (String removedSoundboardName : removedSoundboardNames) {
+                deleteProvidedSoundboard(appContext, removedSoundboardName);
+
+                removedSoundboardCount++;
+
+                publishProgress(70 + 20 * removedSoundboardCount / numRemovedSoundboards);
+            }
+        }
+
+        @NonNull
+        private ImmutableSet.Builder<String> updateNewSoundboards(Context appContext,
+                                                                  Map<String,
+                                                                          List<BasicAudioModel>> audioModelsByTopFolder) {
+            final ImmutableSet.Builder<String> newSoundboardNames = ImmutableSet.builder();
+
+            int numNewSoundboards = audioModelsByTopFolder.size();
+            int newSoundboardCount = 0;
+
+            for (Map.Entry<String, List<BasicAudioModel>> entry :
+                    audioModelsByTopFolder.entrySet()) {
+                updateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
+
+                newSoundboardNames.add(entry.getKey());
+
+                publishProgress(10 + 60 * newSoundboardCount / numNewSoundboards);
+
+                newSoundboardCount++;
+            }
+            return newSoundboardNames;
+        }
+
+        private void updateProvidedSoundboard(Context appContext, String name,
+                                              List<BasicAudioModel> audioModels) {
+            SoundboardDao.getInstance(appContext)
+                    .updateProvidedSoundboardWithAudios(name, audioModels);
+        }
+
+        private void deleteProvidedSoundboard(Context appContext, String name) {
+            SoundboardDao.getInstance(appContext).deleteProvidedSoundboardAndSounds(name);
         }
 
         private Sound toSound(BasicAudioModel audioModel) {

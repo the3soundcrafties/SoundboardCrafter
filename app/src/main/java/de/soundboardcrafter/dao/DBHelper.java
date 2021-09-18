@@ -1,6 +1,9 @@
 package de.soundboardcrafter.dao;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -20,11 +23,16 @@ import de.soundboardcrafter.dao.DBSchema.SoundboardTable;
  * Helper class for SQL database access
  */
 @ParametersAreNonnullByDefault
-class DBHelper extends SQLiteOpenHelper {
+public class DBHelper extends SQLiteOpenHelper {
     /**
-     * Database version
+     * Database version. Also update this version when there are
+     * changes in the sounds assets!
      */
-    private static final int VERSION = 19;
+    private static final int VERSION = 29;
+
+    public static final String DB_SHARED_PREFERENCES = "DBHelper_Prefs";
+
+    public static final String PREF_KEY_CHECK_SOUNDBOARDS = "Check_Soundboards";
 
     private static final String DROP_TABLE_GAMES = //
             "DROP TABLE IF EXISTS " + GamesTable.NAME + ";";
@@ -89,16 +97,19 @@ class DBHelper extends SQLiteOpenHelper {
 
     private static final String TAG = DBHelper.class.getName();
 
-    DBHelper(Context context) {
+    private final Context appContext;
+
+    DBHelper(Context appContext) {
         super(
-                context,
+                appContext,
                 // The database is chosen by the BUILD TYPE.
                 // There are three build types available:
                 // debug, staging and release.
                 // debug has its special database, staging a release use the same.
-                context.getResources().getString(R.string.database_name),
+                appContext.getResources().getString(R.string.database_name),
                 null,
                 VERSION);
+        this.appContext = appContext;
     }
 
     @Override
@@ -116,10 +127,25 @@ class DBHelper extends SQLiteOpenHelper {
         Log.e(TAG,
                 "Upgrading database from version " + oldVersion + " to version " + newVersion);
 
-        if (oldVersion < VERSION) {
+        if (oldVersion < 21) {
             dropTables(db);
             createInitialTables(db);
         }
+
+        providedSoundboardsNeedToBeChecked();
+    }
+
+    private void providedSoundboardsNeedToBeChecked() {
+        setProvidedSoundboardsNeedToBeChecked(appContext, true);
+    }
+
+    public static void setProvidedSoundboardsNeedToBeChecked(
+            Context appContext,
+            boolean checkSoundboards) {
+        SharedPreferences.Editor editor = appContext.getSharedPreferences(
+                DB_SHARED_PREFERENCES, MODE_PRIVATE).edit();
+        editor.putBoolean(PREF_KEY_CHECK_SOUNDBOARDS, checkSoundboards);
+        editor.apply();
     }
 
     private void createInitialTables(SQLiteDatabase db) {
