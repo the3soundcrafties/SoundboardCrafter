@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 
 import com.getkeepsafe.taptargetview.TapTarget;
@@ -90,7 +91,7 @@ public class TutorialUtil {
             final int yOffsetDp,
             final int tapTargetRadiusDp,
             boolean fromTheRight,
-            int descriptionId,
+            @StringRes int descriptionId,
             TapTargetView.Listener tapTargetViewListener) {
         if (view.getWidth() == 0 && view.getHeight() == 0) {
             return;
@@ -133,7 +134,7 @@ public class TutorialUtil {
             final int yOffsetDp,
             final int tapTargetRadiusDp,
             boolean fromTheRight,
-            int descriptionId) {
+            @StringRes int descriptionId) {
         @Nullable final Rect tapTargetBounds =
                 getTapTargetBounds(view, xOffsetDp, yOffsetDp, tapTargetRadiusDp, fromTheRight);
 

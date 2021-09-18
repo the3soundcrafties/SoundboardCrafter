@@ -84,7 +84,7 @@ public class SoundboardDao extends AbstractDao {
         }
 
         Cursor rawCursor = rawQueryOrThrow(
-                FullJoinSoundboardCursorWrapper.queryString(favoritesId), params);
+                FullJoinSoundboardCursorWrapper.queryString(favoritesId, null), params);
         return find(rawCursor);
     }
 
@@ -563,17 +563,36 @@ public class SoundboardDao extends AbstractDao {
                 DBSchema.SoundboardTable.Cols.ID + " = ?",
                 new String[]{soundboardId.toString()})) {
             if (!cursor.moveToNext()) {
-                throw new IllegalStateException("No sound with ID " + soundboardId);
+                throw new IllegalStateException("No soundboard with ID " + soundboardId);
             }
 
             Soundboard res = cursor.getSoundboard();
             if (cursor.moveToNext()) {
-                throw new IllegalStateException("More than one sound with ID " + soundboardId);
+                throw new IllegalStateException("More than one soundboard with ID " + soundboardId);
             }
 
             return res;
         }
     }
+
+    public SoundboardWithSounds findWithSounds(UUID soundboardId) {
+        checkNotNull(soundboardId, "soundboardId");
+
+        Object[] params = new Object[]{soundboardId};
+
+        Cursor rawCursor = rawQueryOrThrow(
+                FullJoinSoundboardCursorWrapper.queryString(null, soundboardId), params);
+        final ImmutableList<SoundboardWithSounds> resList = find(rawCursor);
+        if (resList.isEmpty()) {
+            throw new IllegalStateException("No soundboard with ID " + soundboardId);
+        }
+        if (resList.size() > 1) {
+            throw new IllegalStateException("More than one soundboard with ID " + soundboardId);
+        }
+
+        return resList.iterator().next();
+    }
+
 
     @NonNull
     private SoundboardCursorWrapper querySoundboards(String whereClause, String[] whereArgs) {

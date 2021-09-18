@@ -30,6 +30,7 @@
         gelöscht. Lautstärkeeinstellungen etc. gehen verloren. Sound-Dateien bleiben erhalten.</string>
     <string name="reset_all_title_cancel">Abbrechen</string>
     <string name="reset_all_title_ok">OK</string>
+    <string name="soundboard_copy_prefix">Kopie von\u0020</string>
     <string name="sound_edit_sound_name_hint">Name</string>
     <string name="sound_edit_volume_label">Lautstärke</string>
     <string name="sound_edit_loopSwitch">In Schleife abspielen</string>
@@ -72,7 +73,9 @@
     <string name="tutorial_audio_file_list_edit">Hier klicken, um Sound einem Soundboard
         hinzuzufügen</string>
     <string name="tutorial_soundboard_edit_local_audio">Hier klicken, um eigene Sounds zu verwenden</string>
-    <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum
+    <string name="tutorial_soundboard_list_context_menu_description">Lang klicken zum Kopieren
+    und Anpassen</string>
+    <string name="tutorial_soundboard_list_custom_context_menu_description">Lang klicken zum
         Bearbeiten oder Löschen (nur eigene Soundboards)</string>
     <string name="tutorial_favorites_list_context_menu_description">Lang klicken zum
         Bearbeiten</string>
@@ -124,4 +127,5 @@
     <string name="soundboard_edit_soundboard_name_hint">Name</string>
     <string name="folder_up">Verzeichnis aufwärts</string>
     <string name="soundboards_currently_playing">Spielt</string>
+    <string name="context_menu_copy_soundboard">Kopieren</string>
 </resources>

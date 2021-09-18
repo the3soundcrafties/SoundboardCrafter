@@ -42,11 +42,18 @@ public class Soundboard extends AbstractEntity {
      * Whether the soundboard has been built automatically from provided sounds.
      * A <i>provided</i> soundboard cannot be deleted.
      */
-    private final boolean provided;
+    private boolean provided;
 
     // CollationKeys may not be serializable
     @NonNull
     private transient CollationKey collationKey;
+
+    /**
+     * Creates a new soundboard that is not provided (a <i>custom</i> soundboard).
+     */
+    public Soundboard(@NonNull String name) {
+        this(name, false);
+    }
 
     public Soundboard(@NonNull String name, boolean provided) {
         this(UUID.randomUUID(), name, provided);
@@ -86,6 +93,10 @@ public class Soundboard extends AbstractEntity {
 
     public boolean isProvided() {
         return provided;
+    }
+
+    public void setProvided(boolean provided) {
+        this.provided = provided;
     }
 
     private void writeObject(final java.io.ObjectOutputStream out) throws IOException {

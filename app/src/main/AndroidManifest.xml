@@ -59,7 +59,7 @@
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
         <activity
-            android:name=".activity.soundboard.edit.SoundboardEditActivity"
+            android:name=".activity.soundboard.edit.SoundboardEditOrCopyActivity"
             android:parentActivityName=".activity.main.MainActivity"
             android:windowSoftInputMode="stateVisible" />
         <activity

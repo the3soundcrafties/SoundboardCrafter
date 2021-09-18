@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createLongClickTutorialListener;
 import static de.soundboardcrafter.activity.common.ViewUtil.dpToPx;
 import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU;
+import static de.soundboardcrafter.dao.TutorialDao.Key.SOUNDBOARD_LIST_SOUNDBOARD_CONTEXT_MENU;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.Fragment;
@@ -43,7 +45,7 @@ import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
-import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditActivity;
+import de.soundboardcrafter.activity.soundboard.edit.SoundboardEditOrCopyActivity;
 import de.soundboardcrafter.activity.soundboard.play.SoundboardPlayActivity;
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.dao.SoundboardDao;
@@ -75,8 +77,12 @@ public class SoundboardListFragment extends Fragment
      */
     private static final int SOUNDBOARD_PLAY_REQUEST_CODE = 1;
 
-    private static final int CREATE_SOUNDBOARD_REQUEST_CODE = 25;
+    private static final int NEW_SOUNDBOARD_REQUEST_CODE = 25;
     private static final int EDIT_SOUNDBOARD_REQUEST_CODE = 26;
+
+    private static final int CONTEXT_MENU_EDIT_ITEM_ID = 1;
+    private static final int CONTEXT_MENU_COPY_ITEM_ID = 2;
+    private static final int CONTEXT_MENU_DELETE_ITEM_ID = 3;
 
     private @Nullable
     SoundEventListener soundEventListenerActivity;
@@ -114,7 +120,7 @@ public class SoundboardListFragment extends Fragment
         addNewSoundboard.setOnClickListener(e ->
                 startActivityForResult(
                         SoundboardCreateActivity.newIntent(
-                                getContext()), CREATE_SOUNDBOARD_REQUEST_CODE));
+                                getContext()), NEW_SOUNDBOARD_REQUEST_CODE));
     }
 
     private void buildListView(@NonNull LayoutInflater inflater, View rootView) {
@@ -150,23 +156,32 @@ public class SoundboardListFragment extends Fragment
 
     private void showTutorialHintIfNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
-        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU)
+
+        if (!tutorialDao.isChecked(SOUNDBOARD_LIST_SOUNDBOARD_CONTEXT_MENU)
+                && adapter != null && !adapter.isEmpty()) {
+            showContextMenuTutorialHint(
+                    R.string.tutorial_soundboard_list_context_menu_description,
+                    SOUNDBOARD_LIST_SOUNDBOARD_CONTEXT_MENU);
+        } else if (!tutorialDao.isChecked(SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU)
                 && adapter != null && !adapter.isEmpty()
                 && !adapter.areAllSoundboardsProvided()) {
-            showTutorialHint();
+            showContextMenuTutorialHint(
+                    R.string.tutorial_soundboard_list_custom_context_menu_description,
+                    SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
         }
     }
 
-    private void showTutorialHint() {
-        showTutorialHint(
-                R.string.tutorial_soundboard_list_context_menu_description,
+    private void showContextMenuTutorialHint(@StringRes final int descriptionId,
+                                             final TutorialDao.Key tutorialKey) {
+        showListViewFirstItemTutorialHint(
+                descriptionId,
                 createLongClickTutorialListener(
                         () -> {
                             @Nullable View itemView =
                                     listView.getChildAt(listView.getFirstVisiblePosition());
                             if (itemView != null) {
                                 TutorialDao.getInstance(requireContext())
-                                        .check(SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
+                                        .check(tutorialKey);
                                 itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
                                         dpToPx(requireContext(), FIRST_ITEM_Y_DP));
                             }
@@ -174,8 +189,8 @@ public class SoundboardListFragment extends Fragment
     }
 
     @UiThread
-    private void showTutorialHint(
-            int descriptionId, TapTargetView.Listener tapTargetViewListener) {
+    private void showListViewFirstItemTutorialHint(
+            @StringRes int descriptionId, TapTargetView.Listener tapTargetViewListener) {
         @Nullable Activity activity = getActivity();
 
         if (activity != null) {
@@ -213,24 +228,43 @@ public class SoundboardListFragment extends Fragment
 
         final Soundboard soundboard = requireNonNull(itemRow.getSoundboard());
 
+        int order = 0;
         if (!soundboard.isProvided()) {
             menu.add(UNIQUE_TAB_ID,
-                    1,
-                    0,
+                    CONTEXT_MENU_EDIT_ITEM_ID,
+                    order++,
                     R.string.context_menu_edit_soundboard);
+        }
 
+        menu.add(UNIQUE_TAB_ID,
+                CONTEXT_MENU_COPY_ITEM_ID,
+                order++,
+                R.string.context_menu_copy_soundboard);
+
+        if (!soundboard.isProvided()) {
             menu.add(UNIQUE_TAB_ID,
-                    2,
-                    1,
+                    CONTEXT_MENU_DELETE_ITEM_ID,
+                    order++,
                     R.string.context_menu_remove_soundboard);
         }
 
         menu.setHeaderTitle(soundboard.getName());
 
+        checkTutorialDaoForContextMenu(soundboard);
+    }
+
+    private void checkTutorialDaoForContextMenu(Soundboard soundboard) {
         @Nullable final Context context = getContext();
-        if (context != null) {
-            TutorialDao.getInstance(context)
-                    .check(TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
+        if (context == null) {
+            return;
+        }
+
+        final TutorialDao tutorialDao = TutorialDao.getInstance(context);
+
+        tutorialDao.check(TutorialDao.Key.SOUNDBOARD_LIST_SOUNDBOARD_CONTEXT_MENU);
+
+        if (!soundboard.isProvided()) {
+            tutorialDao.check(TutorialDao.Key.SOUNDBOARD_LIST_CUSTOM_SOUNDBOARD_CONTEXT_MENU);
         }
     }
 
@@ -249,12 +283,17 @@ public class SoundboardListFragment extends Fragment
         SoundboardWithSounds soundboardWithSounds =
                 requireNonNull(itemRow.getSoundboardWithSounds());
         final int id = item.getItemId();
-        if (id == 1) {
-            Intent intent = SoundboardEditActivity
-                    .newIntent(getActivity(), soundboardWithSounds.getSoundboard());
+        if (id == CONTEXT_MENU_EDIT_ITEM_ID) {
+            Intent intent = SoundboardEditOrCopyActivity
+                    .newIntent(getActivity(), soundboardWithSounds.getSoundboard(), false);
             startActivityForResult(intent, EDIT_SOUNDBOARD_REQUEST_CODE);
             return true;
-        } else if (id == 2) {
+        } else if (id == CONTEXT_MENU_COPY_ITEM_ID) {
+            Intent intent = SoundboardEditOrCopyActivity
+                    .newIntent(getActivity(), soundboardWithSounds.getSoundboard(), true);
+            startActivityForResult(intent, NEW_SOUNDBOARD_REQUEST_CODE);
+            return true;
+        } else if (id == CONTEXT_MENU_DELETE_ITEM_ID) {
             new RemoveSoundboardTask(requireActivity(), soundboardWithSounds).execute();
             adapter.remove(soundboardWithSounds);
             fireSomethingMightHaveChanged();
@@ -281,12 +320,12 @@ public class SoundboardListFragment extends Fragment
             case SOUNDBOARD_PLAY_REQUEST_CODE:
                 fireSomethingMightHaveChanged();
                 break;
-            case CREATE_SOUNDBOARD_REQUEST_CODE:
+            case NEW_SOUNDBOARD_REQUEST_CODE:
                 Log.d(TAG, "created new soundboard " + this);
                 new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
                 break;
             case EDIT_SOUNDBOARD_REQUEST_CODE:
-                Log.d(TAG, "update new soundboard " + this);
+                Log.d(TAG, "updated soundboard " + this);
                 new SoundboardListFragment.FindSoundboardsTask(requireContext()).execute();
                 break;
         }

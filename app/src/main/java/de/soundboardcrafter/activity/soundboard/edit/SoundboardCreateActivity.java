@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment;
 import de.soundboardcrafter.activity.common.SingleFragmentActivity;
 
 /**
- * Abstract super class for activities for editing a single Soundboard
+ * Activity for creating a new soundboard
  */
 public class SoundboardCreateActivity extends SingleFragmentActivity {
     /**

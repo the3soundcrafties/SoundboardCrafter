@@ -45,6 +45,11 @@ public class SoundboardWithSounds implements Serializable {
         this.sounds = Lists.newArrayList(checkNotNull(sounds, "sound is null"));
     }
 
+    public SoundboardWithSounds userCopy(String name) {
+        return new SoundboardWithSounds(new Soundboard(name),
+                new ArrayList<>(sounds));
+    }
+
     /**
      * This hash value stays the same for the same soundboard - as long as the included
      * sounds (IDs) are not changed (added, removed) and not reordered.
