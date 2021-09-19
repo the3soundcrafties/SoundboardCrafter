@@ -500,6 +500,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         SoundboardSwipeAndDragCallback swipeAndDragCallback =
                 new SoundboardSwipeAndDragCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeAndDragCallback);
+        soundboardItemAdapter.setTouchHelper(itemTouchHelper); // FIXME Does this make sense?
 
         recyclerView.setAdapter(soundboardItemAdapter);
         itemTouchHelper.attachToRecyclerView(recyclerView);

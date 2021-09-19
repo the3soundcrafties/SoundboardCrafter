@@ -4,12 +4,14 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.CompoundButton;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.google.android.material.slider.Slider;
 
 import java.util.List;
 
@@ -24,10 +26,9 @@ import de.soundboardcrafter.model.Soundboard;
 public class SoundEditView extends ConstraintLayout {
     private TextView nameTextView;
     private Switch loopSwitch;
-    private SeekBar volumePercentageSeekBar;
+    private Slider volumePercentageSlider;
     private ListView soundboardsListView;
-    private int maxVolumePercentage;
-    private SeekBarChangeListener seekBarChangeListener;
+    private SliderChangeListener sliderChangeListener;
     private OnCheckedChangeListener onCheckedChangeListener;
 
     /**
@@ -42,8 +43,7 @@ public class SoundEditView extends ConstraintLayout {
          * programmatically.
          *
          * @param volumePercentage The current volumePercentage. This will be in the
-         *                         range 0…max where max was set
-         *                         by {@link SoundEditView#setMaxVolumePercentage(int)}.
+         *                         range 0…100.
          *                         (The default value for the max value is 100.)
          * @param fromUser         True if the change was initiated by the user.
          */
@@ -85,10 +85,9 @@ public class SoundEditView extends ConstraintLayout {
 
         nameTextView = findViewById(R.id.nameText);
 
-        volumePercentageSeekBar = findViewById(R.id.volumePercentageSeekBar);
-        setMaxVolumePercentage(100);
-        seekBarChangeListener = new SeekBarChangeListener();
-        volumePercentageSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
+        volumePercentageSlider = findViewById(R.id.volumePercentageSlider);
+        sliderChangeListener = new SliderChangeListener();
+        volumePercentageSlider.addOnChangeListener(sliderChangeListener);
 
         loopSwitch = findViewById(R.id.loopSwitch);
         onCheckedChangeListener = new OnCheckedChangeListener();
@@ -99,20 +98,13 @@ public class SoundEditView extends ConstraintLayout {
         setEnabled(false);
     }
 
-    @UiThread
-    void setMaxVolumePercentage(int maxVolumePercentage) {
-        this.maxVolumePercentage = maxVolumePercentage;
-        int maxSeekBar = volumePercentageToSeekBar(maxVolumePercentage);
-        volumePercentageSeekBar.setMax(maxSeekBar);
-    }
-
     void setVolumePercentage(int volumePercentage) {
-        int seekBar = volumePercentageToSeekBar(volumePercentage);
-        volumePercentageSeekBar.setProgress(seekBar);
+        int sliderValue = volumePercentageToSliderValue(volumePercentage);
+        volumePercentageSlider.setValue(sliderValue);
     }
 
     int getVolumePercentage() {
-        return seekBarToVolumePercentage(volumePercentageSeekBar.getProgress());
+        return sliderValueToVolumePercentage(volumePercentageSlider.getValue());
     }
 
     /**
@@ -135,7 +127,7 @@ public class SoundEditView extends ConstraintLayout {
         super.setEnabled(enabled);
         nameTextView.setEnabled(enabled);
         loopSwitch.setEnabled(enabled);
-        volumePercentageSeekBar.setEnabled(enabled);
+        volumePercentageSlider.setEnabled(enabled);
     }
 
     /**
@@ -170,7 +162,7 @@ public class SoundEditView extends ConstraintLayout {
         return loopSwitch.isChecked();
     }
 
-    private int volumePercentageToSeekBar(int volumePercentage) {
+    private int volumePercentageToSliderValue(int volumePercentage) {
         if (volumePercentage <= 0) {
             return 0;
         }
@@ -182,35 +174,35 @@ public class SoundEditView extends ConstraintLayout {
         // seekBar 100 => volumePercentage 100
         // exponentially in between
         int res = Math.toIntExact(Math.round(
-                Math.log(volumePercentage * (Math.E - 1.0) / maxVolumePercentage + 1.0) * 100.0));
+                Math.log(volumePercentage * (Math.E - 1.0) / 100.0 + 1.0) * 100.0));
 
         return Math.min(res, 100);
 
     }
 
-    private int seekBarToVolumePercentage(int seekBar) {
-        if (seekBar <= 0) {
+    private int sliderValueToVolumePercentage(float sliderValue) {
+        if (sliderValue <= 0) {
             return 0;
         }
 
-        // seekBar 0 => volume 0
-        // seekBar 100 => volumePercentage 100
+        // sliderValue 0 => volume 0
+        // sliderValue 100 => volumePercentage 100
         // exponentially in between
         int res = Math.toIntExact(Math.round(
-                (Math.pow(Math.E, seekBar / 100.0) - 1.0) / (Math.E - 1.0) * maxVolumePercentage));
+                (Math.pow(Math.E, sliderValue / 100.0) - 1.0) / (Math.E - 1.0) * 100.0));
 
         if (res < 0) {
             return 0;
         }
 
-        return Math.min(res, maxVolumePercentage);
+        return Math.min(res, 100);
     }
 
     /**
      * Sets a listener to receive notifications of changes to the volume percentage.
      */
     void setOnVolumePercentageChangeListener(OnVolumePercentageChangeListener l) {
-        seekBarChangeListener.setOnVolumePercentageChangeListener(l);
+        sliderChangeListener.setOnVolumePercentageChangeListener(l);
     }
 
     /**
@@ -221,7 +213,7 @@ public class SoundEditView extends ConstraintLayout {
         onCheckedChangeListener.setOnLoopChangeListener(l);
     }
 
-    private class SeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
+    private class SliderChangeListener implements Slider.OnChangeListener {
         private OnVolumePercentageChangeListener onVolumePercentageChangeListener;
 
         void setOnVolumePercentageChangeListener(OnVolumePercentageChangeListener l) {
@@ -229,21 +221,13 @@ public class SoundEditView extends ConstraintLayout {
         }
 
         @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
             if (onVolumePercentageChangeListener == null) {
                 return;
             }
 
-            int volumePercentage = seekBarToVolumePercentage(progress);
+            int volumePercentage = sliderValueToVolumePercentage(value);
             onVolumePercentageChangeListener.onVolumePercentageChanged(volumePercentage, fromUser);
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
         }
     }
 

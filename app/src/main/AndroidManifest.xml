@@ -23,7 +23,8 @@
         android:fullBackupContent="@xml/backup_descriptor">
         <activity
             android:name=".activity.main.MainActivity"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

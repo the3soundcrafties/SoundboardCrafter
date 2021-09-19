@@ -25,13 +25,6 @@ import javax.annotation.Nonnull;
 public class Sound extends AbstractEntity {
     private static final ThreadSafeCollator nameCollator =
             ThreadSafeCollator.getInstance();
-
-    /**
-     * Maximum volume percentage
-     */
-    // Changing this might need a database migration! -> DBHelper
-    public static final int MAX_VOLUME_PERCENTAGE = 100;
-
     /**
      * Location of the audio file
      */
@@ -110,8 +103,7 @@ public class Sound extends AbstractEntity {
 
     public void setVolumePercentage(int volumePercentage) {
         checkArgument(volumePercentage >= 0, "volumePercentage < 0");
-        checkArgument(volumePercentage <= MAX_VOLUME_PERCENTAGE,
-                "volumePercentage > " + MAX_VOLUME_PERCENTAGE);
+        checkArgument(volumePercentage <= 100, "volumePercentage > 100");
 
         this.volumePercentage = volumePercentage;
     }

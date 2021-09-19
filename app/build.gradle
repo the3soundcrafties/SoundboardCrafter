@@ -5,24 +5,16 @@ android {
     signingConfigs {
         config
     }
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         applicationId "de.soundboardcrafter"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "0.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        dexOptions {
-            preDexLibraries = false
-            javaMaxHeapSize "4g"
-        }
     }
 
-    dexOptions {
-        preDexLibraries = false
-    }
     buildTypes {
         release {
             minifyEnabled true
@@ -52,10 +44,9 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.appcompat:appcompat:1.4.0-alpha03'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
-    implementation 'androidx.media:media:1.4.0'
+    implementation 'androidx.media:media:1.4.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation "com.google.android.material:material:1.5.0-alpha01"
-    implementation 'com.google.android.material:material:1.5.0-alpha01'
+    implementation "com.google.android.material:material:1.5.0-alpha03"
     implementation 'com.google.guava:guava:28.0-jre'
     implementation 'org.jetbrains:annotations:17.0.0'
     implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.3'

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collection;
@@ -31,6 +32,8 @@ public class SoundboardItemAdapter
     private ViewHolder contextMenuViewHolder;
 
     private int contextMenuPosition = -1;
+
+    private ItemTouchHelper touchHelper; // Does this make sense?
 
     public interface ActionListener {
         @UiThread
@@ -120,6 +123,15 @@ public class SoundboardItemAdapter
                     actionListener.onCreateContextMenu(contextMenuPosition, menu);
                 }
         );
+    }
+
+    void setTouchHelper(ItemTouchHelper touchHelper) {
+        this.touchHelper = touchHelper;
+        // https://github.com/sjthn/RecyclerViewDemo/blob
+        // /67950f9cf56b9c7ab9f0906cb38101c14c0fd853/app/src/main/java/com/example/srijith
+        // /recyclerviewdemo/UserListAdapter.java
+        // https://therubberduckdev.wordpress
+        // .com/2017/10/24/android-recyclerview-drag-and-drop-and-swipe-to-dismiss/
     }
 
     /**

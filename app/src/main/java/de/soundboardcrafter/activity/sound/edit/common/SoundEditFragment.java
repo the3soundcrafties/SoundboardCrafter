@@ -34,7 +34,6 @@ import de.soundboardcrafter.activity.sound.edit.soundboard.play.SoundboardPlaySo
 import de.soundboardcrafter.dao.SoundDao;
 import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
-import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundWithSelectableSoundboards;
 
 /**
@@ -140,9 +139,6 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
                 container, false);
 
         soundEditView = rootView.findViewById(R.id.edit_view);
-
-        soundEditView.setMaxVolumePercentage(Sound.MAX_VOLUME_PERCENTAGE);
-
         soundEditView.setOnVolumePercentageChangeListener(soundEditChangeListener);
         soundEditView.setOnLoopChangeListener(soundEditChangeListener);
 
