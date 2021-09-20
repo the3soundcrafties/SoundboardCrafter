@@ -13,6 +13,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.slider.Slider;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 import de.soundboardcrafter.R;
@@ -24,6 +26,8 @@ import de.soundboardcrafter.model.Soundboard;
  * Custom view for editing a sound (name, volume etc.).
  */
 public class SoundEditView extends ConstraintLayout {
+    private final NumberFormat percentageFormat = new DecimalFormat("0'%'");
+
     private TextView nameTextView;
     private Switch loopSwitch;
     private Slider volumePercentageSlider;
@@ -86,6 +90,8 @@ public class SoundEditView extends ConstraintLayout {
         nameTextView = findViewById(R.id.nameText);
 
         volumePercentageSlider = findViewById(R.id.volumePercentageSlider);
+        volumePercentageSlider.setLabelFormatter(percentageFormat::format);
+
         sliderChangeListener = new SliderChangeListener();
         volumePercentageSlider.addOnChangeListener(sliderChangeListener);
 
