@@ -90,7 +90,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @Nullable
     private UUID favoritesId;
 
-    private boolean stillInitializing = false;
+    private boolean initializing = false;
 
     @Nullable
     private UUID tabUuid;
@@ -148,7 +148,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             @Override
             public void onPageSelected(int position) {
                 @Nullable UUID tmp = pagerAdapter.getTabUuid(position);
-                if (tmp != null && !stillInitializing) {
+                if (tmp != null && !initializing) {
                     tabUuid = tmp;
                 }
 
@@ -164,7 +164,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 (tab, position) -> tab.setText(pagerAdapter.getPageTitle(position))
         ).attach();
 
-        stillInitializing = true;
+        initializing = true;
         if (savedInstanceState != null) {
             tabUuid = getUUID(savedInstanceState, KEY_TAB_UUID);
             favoritesId = getUUID(savedInstanceState, KEY_FAVORITES_ID);
@@ -261,12 +261,14 @@ public class SoundboardPlayActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
+        initializing = true;
         pagerAdapter.clear(false);
         new FindSoundboardsTask(this, favoritesId).execute();
     }
 
     @Override
     public void soundsDeleted() {
+        initializing = true;
         pagerAdapter.clear(false);
         new FindSoundboardsTask(this, favoritesId).execute();
     }
@@ -275,6 +277,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     @UiThread
     public void doResetAll() {
         Log.i(TAG, "Resetting all data");
+        initializing = true;
         pagerAdapter.clear(true);
         new ResetAllTask(this).execute();
     }
@@ -621,7 +624,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             if (tabUuid != null) {
                 index = pagerAdapter.getIndex(tabUuid);
             }
-            stillInitializing = false;
+            initializing = false;
 
             pager.setCurrentItem(index != null ? index : 0, false);
         }
@@ -683,7 +686,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             if (tabUuid != null) {
                 index = pagerAdapter.getIndex(tabUuid);
             }
-            stillInitializing = false;
+            initializing = false;
 
             pager.setCurrentItem(index != null ? index : 0, false);
         }
