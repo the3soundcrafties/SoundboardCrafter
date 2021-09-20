@@ -223,11 +223,7 @@ public class PlayingFragment extends Fragment implements
                         data != null ?
                                 data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID) : null;
                 if (soundIdString != null) {
-                    final UUID soundId = UUID.fromString(soundIdString);
-                    // Sound file has been changed
-                    if (hostingActivity != null) {
-                        hostingActivity.soundChanged(soundId);
-                    }
+                    // Sound has been changed
                     loadSoundsCurrentlyPlaying();
                 } else {
                     // Sound file has been deleted

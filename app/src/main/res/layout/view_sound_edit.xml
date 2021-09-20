@@ -40,7 +40,8 @@
         android:valueTo="100.0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel"
+        android:theme="@style/MyMaterialTheme" />
 
     <Switch
         android:id="@+id/loopSwitch"
@@ -69,7 +70,7 @@
         android:id="@+id/soundboardsList"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_marginTop="210dp"
+        android:layout_marginTop="250dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/soundboardsLabel" />

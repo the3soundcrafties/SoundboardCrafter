@@ -26,4 +26,10 @@
         <item name="android:textColor">@color/tabTextColor</item>
         <item name="textAllCaps">true</item>
     </style>
+
+    <!-- Material Theme -->
+    <style name="MyMaterialTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Add attributes here -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
 </resources>

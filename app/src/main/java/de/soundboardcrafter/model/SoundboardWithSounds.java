@@ -11,13 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
-
-import de.soundboardcrafter.util.UuidUtil;
 
 /**
  * A {@link Soundboard} with sounds.
@@ -48,21 +44,6 @@ public class SoundboardWithSounds implements Serializable {
     public SoundboardWithSounds userCopy(String name) {
         return new SoundboardWithSounds(new Soundboard(name),
                 new ArrayList<>(sounds));
-    }
-
-    /**
-     * This hash value stays the same for the same soundboard - as long as the included
-     * sounds (IDs) are not changed (added, removed) and not reordered.
-     * <p>
-     * For different soundboards - or when the sounds (IDs) are changed (added, removed) or
-     * reordered -, this hash is very likely to change.
-     */
-    public long getLongHashForSoundboardIdAndSoundIds() {
-        return Objects.hash(
-                UuidUtil.toLong(soundboard.getId()),
-                sounds.stream()
-                        .map(s -> UuidUtil.toLong(s.getId()))
-                        .collect(Collectors.toList()));
     }
 
     @NonNull

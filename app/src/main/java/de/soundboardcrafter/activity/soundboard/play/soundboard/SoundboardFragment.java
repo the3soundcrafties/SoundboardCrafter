@@ -313,7 +313,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             return;
         }
 
-        if (actionMode != null) {
+        if (isInActionMode()) {
             return;
         }
 
@@ -363,7 +363,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionMode != null) {
+        if (isInActionMode()) {
             return false;
         }
 
@@ -379,7 +379,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             actionMode = requireAppCompatActivity()
                     .startSupportActionMode(manualSortingActionModeCallback);
-            if (actionMode == null) {
+            if (!isInActionMode()) {
                 if (hostingActivity != null) {
                     hostingActivity.setChangingSoundboardEnabled(true);
                 }
@@ -435,6 +435,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         };
     }
 
+    public void notifySoundsChanged() {
+        updateUI();
+    }
+
     /**
      * Starts reading the data for the UI (first time) or
      * simply ensure that the grid shows the latest information.
@@ -443,10 +447,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private void updateUI() {
         if (soundboardItemAdapter != null) {
             soundboardItemAdapter.notifyDataSetChanged();
-
-            // if (tutorialHintsAllowed) {
-            // soundboardItemAdapter.setTutorialHintsAllowed(true);
-            // }
         }
     }
 
@@ -478,7 +478,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                     return;
                 }
 
-                if (actionMode != null) {
+                if (isInActionMode()) {
                     return;
                 }
 
@@ -489,7 +489,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             @Override
             public void onCreateContextMenu(int position, ContextMenu menu) {
-                if (actionMode != null) {
+                if (isInActionMode()) {
                     return;
                 }
 
@@ -562,7 +562,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     @Override
     @UiThread
     public boolean onContextItemSelected(@Nonnull MenuItem item) {
-        if (actionMode != null) {
+        if (isInActionMode()) {
             return false;
         }
 
@@ -621,10 +621,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 if (soundIdString != null) {
                     final UUID soundId = UUID.fromString(soundIdString);
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
-                    // Sound file has been changed
-                    if (hostingActivity != null) {
-                        hostingActivity.soundChanged(soundId);
-                    }
+                    // Sound has been changed
                 } else {
                     // Sound file has been deleted
                     if (hostingActivity != null) {
@@ -641,6 +638,10 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             bindService();
         }
         return mediaPlayerService;
+    }
+
+    public boolean isInActionMode() {
+        return actionMode != null;
     }
 
     // See https://therubberduckdev.wordpress
@@ -679,7 +680,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         @Override
         public boolean isLongPressDragEnabled() {
-            return actionMode != null;
+            return isInActionMode();
         }
 
         @Override

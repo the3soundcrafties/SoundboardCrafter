@@ -362,7 +362,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
 
             final SoundboardWithSounds soundboardWithSounds = soundboardList.get(position - 1);
-            return soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds();
+            return UuidUtil.toLong(soundboardWithSounds.getSoundboard().getId());
         }
 
         // FragmentStateAdapter: "When overriding, also override containsItem(long)"
@@ -374,17 +374,11 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
 
             for (SoundboardWithSounds soundboardWithSounds : soundboardList) {
-                if (soundboardWithSounds.getLongHashForSoundboardIdAndSoundIds() == itemId) {
-                    // The soundboard has already been contained, and the
-                    // sounds (IDs) have neither been changed nor reordered
-                    // (at least, that is very unlikely).
+                if (UuidUtil.toLong(soundboardWithSounds.getSoundboard().getId()) == itemId) {
                     return true;
                 }
             }
 
-            // The soundboard has not yet been contained, or the
-            // sounds (IDs) have been changed or reordered. - The system
-            // will rebuild the soundboard tab.
             return false;
         }
 
@@ -395,6 +389,9 @@ public class SoundboardPlayActivity extends AppCompatActivity
         void addSoundboards(Collection<SoundboardWithSounds> soundboards) {
             soundboardList.addAll(soundboards);
             soundboardList.sort(SoundboardWithSounds.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
+
+            notifySoundsChanged();
+
             notifyDataSetChanged();
 
             setChangingSoundboardEnabled(changingSoundboardEnabled);
@@ -461,6 +458,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             }
 
             soundboardList.clear();
+
             notifyDataSetChanged();
 
             setChangingSoundboardEnabled(changingSoundboardEnabled);
@@ -481,6 +479,14 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
     }
 
+    private void notifySoundsChanged() {
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+            if (fragment instanceof SoundboardFragment) {
+                ((SoundboardFragment) fragment).notifySoundsChanged();
+            }
+        }
+    }
+
     private void setToolbarTitle(@Nullable String favoritesName) {
         @Nullable ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar == null) {
@@ -492,12 +498,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
         } else {
             supportActionBar.setTitle(favoritesName);
         }
-    }
-
-    @Override
-    public void soundChanged(UUID soundId) {
-        pagerAdapter.clear(false);
-        new FindSoundboardsTask(this, favoritesId).execute();
     }
 
     @Override
