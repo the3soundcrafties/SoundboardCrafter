@@ -38,6 +38,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:valueFrom="0.0"
         android:valueTo="100.0"
+        android:value="100.0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel"

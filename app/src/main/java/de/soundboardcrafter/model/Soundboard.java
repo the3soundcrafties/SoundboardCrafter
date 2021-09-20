@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * A soundboard, that is a keyboard you can play sounds with.
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
  * <code>Soundboards</code>s are not thread-safe. So it might be necessary to use
  * appropriate synchronization.
  */
+@ParametersAreNonnullByDefault
 public class Soundboard extends AbstractEntity {
     public static final Comparator<Soundboard> PROVIDED_LAST_THEN_BY_COLLATION_KEY =
             (one, other) -> {
@@ -42,7 +44,7 @@ public class Soundboard extends AbstractEntity {
      * Whether the soundboard has been built automatically from provided sounds.
      * A <i>provided</i> soundboard cannot be deleted.
      */
-    private boolean provided;
+    private final boolean provided;
 
     // CollationKeys may not be serializable
     @NonNull
@@ -65,15 +67,10 @@ public class Soundboard extends AbstractEntity {
         this.provided = provided;
     }
 
-    @NonNull
-    public CollationKey getCollationKey() {
-        return collationKey;
-    }
-
     /**
      * Returns the name.
      * <p></p>
-     * For  sorting purposes better use {@link #getCollationKey()}.
+     * For  sorting purposes better use the {@link #collationKey}.
      */
     @NonNull
     public String getName() {
@@ -93,10 +90,6 @@ public class Soundboard extends AbstractEntity {
 
     public boolean isProvided() {
         return provided;
-    }
-
-    public void setProvided(boolean provided) {
-        this.provided = provided;
     }
 
     private void writeObject(final java.io.ObjectOutputStream out) throws IOException {

@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.soundboard.play;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
@@ -17,14 +18,14 @@ class SoundboardPlayData {
 
     private final ImmutableList<SoundboardWithSounds> soundboards;
 
-    public SoundboardPlayData(@Nullable String favoritesName,
-                              ImmutableList<SoundboardWithSounds> soundboards) {
+    SoundboardPlayData(@Nullable String favoritesName,
+                       ImmutableList<SoundboardWithSounds> soundboards) {
         this.favoritesName = favoritesName;
         this.soundboards = soundboards;
     }
 
     @Nullable
-    public String getFavoritesName() {
+    String getFavoritesName() {
         return favoritesName;
     }
 
@@ -50,6 +51,7 @@ class SoundboardPlayData {
         return Objects.hash(favoritesName, soundboards);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "SoundboardPlayData{" +
