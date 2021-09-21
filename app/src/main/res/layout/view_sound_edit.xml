@@ -32,26 +32,37 @@
         app:layout_constraintTop_toBottomOf="@+id/nameText" />
 
     <ImageView
-        android:id="@+id/iconSilent"
+        android:id="@+id/iconVolumeDown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginTop="25.6dp"
         android:layout_marginEnd="6dp"
-        android:contentDescription="@string/sound_name"
-        android:src="@drawable/ic_sound_list_file"
+        android:contentDescription="@string/sound_edit_volume_down"
+        android:src="@drawable/ic_baseline_volume_down_30_grey"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel" />
+
+    <ImageView
+        android:id="@+id/iconVolumeUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25.6dp"
+        android:contentDescription="@string/sound_edit_volume_up"
+        android:src="@drawable/ic_baseline_volume_up_30_grey"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel" />
 
     <com.google.android.material.slider.Slider
         android:id="@+id/volumePercentageSlider"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:valueFrom="0.0"
         android:valueTo="100.0"
         android:value="100.0"
-        app:layout_constraintStart_toEndOf="@+id/iconSilent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="6dp"
+        app:layout_constraintStart_toEndOf="@+id/iconVolumeDown"
+        app:layout_constraintEnd_toStartOf="@+id/iconVolumeUp"
         app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel"
         android:theme="@style/MyMaterialTheme" />
 
