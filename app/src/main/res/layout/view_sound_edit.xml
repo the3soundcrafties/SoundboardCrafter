@@ -20,17 +20,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/volumePercentageLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/sound_edit_volume_label"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nameText" />
-
     <ImageView
         android:id="@+id/iconVolumeDown"
         android:layout_width="wrap_content"
@@ -40,7 +29,7 @@
         android:contentDescription="@string/sound_edit_volume_down"
         android:src="@drawable/ic_baseline_volume_down_30_grey"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/nameText" />
 
     <ImageView
         android:id="@+id/iconVolumeUp"
@@ -50,7 +39,7 @@
         android:contentDescription="@string/sound_edit_volume_up"
         android:src="@drawable/ic_baseline_volume_up_30_grey"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/nameText" />
 
     <com.google.android.material.slider.Slider
         android:id="@+id/volumePercentageSlider"
@@ -63,7 +52,7 @@
         android:layout_marginEnd="6dp"
         app:layout_constraintStart_toEndOf="@+id/iconVolumeDown"
         app:layout_constraintEnd_toStartOf="@+id/iconVolumeUp"
-        app:layout_constraintTop_toBottomOf="@+id/volumePercentageLabel"
+        app:layout_constraintTop_toBottomOf="@+id/nameText"
         android:theme="@style/MyMaterialTheme" />
 
     <Switch
@@ -93,7 +82,7 @@
         android:id="@+id/soundboardsList"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="205dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/soundboardsLabel" />
