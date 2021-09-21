@@ -465,9 +465,11 @@ public class MediaPlayerService extends Service {
                 mediaPlayer, soundName, audioLocation, volumePercentage, loop);
 
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        mediaPlayer.setOnErrorListener((ev, what, extra) -> onError(mediaPlayer, what, extra));
+        mediaPlayer.setOnSoundboardMediaPlayerErrorListener(
+                (ev, what, extra) -> onError(mediaPlayer, what, extra));
         mediaPlayer.setOnPreparedListener(this::onPrepared);
-        mediaPlayer.setOnCompletionListener((mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
+        mediaPlayer.setOnSoundboardMediaPlayerCompletionListener(
+                (mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
     /**
