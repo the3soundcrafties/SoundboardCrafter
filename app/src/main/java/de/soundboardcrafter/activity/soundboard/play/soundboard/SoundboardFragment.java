@@ -418,7 +418,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             @Override
             public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                            SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+                                            SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped) {
                 MediaPlayerService service = getService();
                 if (service != null) {
                     service.setOnPlayingStopped(soundboard, sound, onPlayingStopped);

@@ -1,13 +1,18 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.os.PowerManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.Serializable;
 
-public class SoundboardMediaPlayer extends MediaPlayer {
+public class SoundboardMediaPlayer {
     @FunctionalInterface
     public interface OnSoundboardMediaPlayerCompletionListener {
         void onCompletion(SoundboardMediaPlayer soundboardMediaPlayer);
@@ -19,9 +24,11 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     }
 
     @FunctionalInterface
-    public interface OnPlayingStopped extends Serializable {
+    public interface OnSoundboardMediaPlayerPlayingStopped extends Serializable {
         void stop();
     }
+
+    private final MediaPlayer mediaPlayer;
 
     private float volume;
 
@@ -32,10 +39,20 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     String soundName;
 
     @Nullable
-    private OnPlayingStopped onPlayingStopped;
+    private OnSoundboardMediaPlayerPlayingStopped onPlayingStopped;
 
     SoundboardMediaPlayer() {
+        mediaPlayer = new MediaPlayer();
         setVolume(1f);
+    }
+
+    void init(Context context, OnSoundboardMediaPlayerErrorListener onErrorListener,
+              MediaPlayer.OnPreparedListener onPreparedListener,
+              OnSoundboardMediaPlayerCompletionListener onCompletionListener) {
+        mediaPlayer.setWakeMode(context.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        setOnSoundboardMediaPlayerErrorListener(onErrorListener);
+        mediaPlayer.setOnPreparedListener(onPreparedListener);
+        setOnSoundboardMediaPlayerCompletionListener(onCompletionListener);
     }
 
     /**
@@ -53,6 +70,15 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         return soundName;
     }
 
+    void setAudioAttributes(AudioAttributes audioAttributes) {
+        mediaPlayer.setAudioAttributes(audioAttributes);
+    }
+
+    void setLooping(boolean looping) {
+        // FIXME User own implementation. This leads to gaps or white noise.
+        mediaPlayer.setLooping(looping);
+    }
+
     float getVolume() {
         return volume;
     }
@@ -60,12 +86,20 @@ public class SoundboardMediaPlayer extends MediaPlayer {
     void setVolume(float volume) {
         this.volume = volume;
 
-        setVolume(volume, volume);
+        mediaPlayer.setVolume(volume, volume);
     }
 
-    void setOnSoundboardMediaPlayerCompletionListener(
+    void setDataSource(String path) throws IOException {
+        mediaPlayer.setDataSource(path);
+    }
+
+    void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {
+        mediaPlayer.setDataSource(fd, offset, length);
+    }
+
+    private void setOnSoundboardMediaPlayerCompletionListener(
             OnSoundboardMediaPlayerCompletionListener listener) {
-        super.setOnCompletionListener(event -> {
+        mediaPlayer.setOnCompletionListener(event -> {
             try {
                 playingLogicallyStopped();
             } finally {
@@ -74,9 +108,13 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         });
     }
 
-    void setOnSoundboardMediaPlayerErrorListener(
+    void setOnPreparedListener(MediaPlayer.OnPreparedListener onPreparedListener) {
+        mediaPlayer.setOnPreparedListener(onPreparedListener);
+    }
+
+    private void setOnSoundboardMediaPlayerErrorListener(
             OnSoundboardMediaPlayerErrorListener listener) {
-        super.setOnErrorListener((mp, what, extra) -> {
+        mediaPlayer.setOnErrorListener((mp, what, extra) -> {
             try {
                 playingLogicallyStopped();
             } catch (RuntimeException e) {
@@ -87,14 +125,29 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         });
     }
 
-    void setOnPlayingStopped(@Nullable OnPlayingStopped onPlayingStopped) {
+    void setOnPlayingStopped(@Nullable OnSoundboardMediaPlayerPlayingStopped onPlayingStopped) {
         this.onPlayingStopped = onPlayingStopped;
     }
 
-    @Override
+    void prepareAsync() {
+        mediaPlayer.prepareAsync();
+    }
+
+    boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
     public void stop() throws IllegalStateException {
-        super.stop();
+        mediaPlayer.stop();
         playingLogicallyStopped();
+    }
+
+    void reset() {
+        mediaPlayer.reset();
+    }
+
+    void release() {
+        mediaPlayer.release();
     }
 
     /**
