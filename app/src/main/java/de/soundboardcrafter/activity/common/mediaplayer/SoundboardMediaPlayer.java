@@ -8,6 +8,21 @@ import androidx.annotation.Nullable;
 import java.io.Serializable;
 
 public class SoundboardMediaPlayer extends MediaPlayer {
+    @FunctionalInterface
+    public interface OnSoundboardMediaPlayerCompletionListener {
+        void onCompletion(SoundboardMediaPlayer soundboardMediaPlayer);
+    }
+
+    @FunctionalInterface
+    public interface OnSoundboardMediaPlayerErrorListener {
+        boolean onError(SoundboardMediaPlayer soundboardMediaPlayer, int what, int extra);
+    }
+
+    @FunctionalInterface
+    public interface OnPlayingStopped extends Serializable {
+        void stop();
+    }
+
     private float volume;
 
     /**
@@ -15,11 +30,6 @@ public class SoundboardMediaPlayer extends MediaPlayer {
      */
     private @Nullable
     String soundName;
-
-    @FunctionalInterface
-    public interface OnPlayingStopped extends Serializable {
-        void stop();
-    }
 
     @Nullable
     private OnPlayingStopped onPlayingStopped;
@@ -53,8 +63,8 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         setVolume(volume, volume);
     }
 
-    @Override
-    public void setOnCompletionListener(OnCompletionListener listener) {
+    void setOnSoundboardMediaPlayerCompletionListener(
+            OnSoundboardMediaPlayerCompletionListener listener) {
         super.setOnCompletionListener(event -> {
             try {
                 playingLogicallyStopped();
@@ -64,8 +74,8 @@ public class SoundboardMediaPlayer extends MediaPlayer {
         });
     }
 
-    @Override
-    public void setOnErrorListener(OnErrorListener listener) {
+    void setOnSoundboardMediaPlayerErrorListener(
+            OnSoundboardMediaPlayerErrorListener listener) {
         super.setOnErrorListener((mp, what, extra) -> {
             try {
                 playingLogicallyStopped();
@@ -73,7 +83,7 @@ public class SoundboardMediaPlayer extends MediaPlayer {
                 // Seems, playingStartedOrStopped() did not work. Can't do anything about it.
             }
 
-            return listener.onError(mp, what, extra);
+            return listener.onError(this, what, extra);
         });
     }
 
