@@ -286,11 +286,10 @@ public class MediaPlayerService extends Service {
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
-        mediaPlayer.setOnPreparedListener((MediaPlayer mp) -> {
+        mediaPlayer.prepareAsync((MediaPlayer mp) -> {
             mp.start();
             playingHasChanged();
         });
-        mediaPlayer.prepareAsync();
     }
 
     /**
@@ -317,7 +316,7 @@ public class MediaPlayerService extends Service {
             });
             initMediaPlayer(mediaPlayer, name, audioLocation, 100, false);
 
-            mediaPlayer.prepareAsync();
+            mediaPlayer.prepareAsync(MediaPlayer::start);
 
             return mediaPlayer;
         } catch (IOException | RuntimeException e) {
@@ -466,8 +465,7 @@ public class MediaPlayerService extends Service {
                 mediaPlayer, soundName, audioLocation, volumePercentage, loop);
 
         mediaPlayer.init(getApplicationContext(),
-                (ev, what, extra) -> onError(mediaPlayer, what, extra),
-                this::onPrepared,
+                (what, extra) -> onError(mediaPlayer, what, extra),
                 (mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 
@@ -498,13 +496,6 @@ public class MediaPlayerService extends Service {
      */
     public Collection<UUID> getSoundIdsActivelyPlaying() {
         return mediaPlayers.getSoundIdsActivelyPlaying();
-    }
-
-    /**
-     * Called when MediaPlayer is ready
-     */
-    private void onPrepared(MediaPlayer player) {
-        player.start();
     }
 
     private boolean onError(SoundboardMediaPlayer player, int what, int extra) {
