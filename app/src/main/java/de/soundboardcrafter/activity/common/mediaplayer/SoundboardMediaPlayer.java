@@ -12,6 +12,8 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
 
+import javax.annotation.Nonnull;
+
 public class SoundboardMediaPlayer {
     @FunctionalInterface
     public interface OnSoundboardMediaPlayerCompletionListener {
@@ -20,7 +22,7 @@ public class SoundboardMediaPlayer {
 
     @FunctionalInterface
     public interface OnSoundboardMediaPlayerErrorListener {
-        boolean onError(SoundboardMediaPlayer soundboardMediaPlayer, int what, int extra);
+        boolean onError(int what, int extra);
     }
 
     @FunctionalInterface
@@ -28,6 +30,7 @@ public class SoundboardMediaPlayer {
         void stop();
     }
 
+    @Nonnull
     private final MediaPlayer mediaPlayer;
 
     private float volume;
@@ -35,8 +38,8 @@ public class SoundboardMediaPlayer {
     /**
      * Name of the sound that's currently played - or the last sound played.
      */
-    private @Nullable
-    String soundName;
+    @Nullable
+    private String soundName;
 
     @Nullable
     private OnSoundboardMediaPlayerPlayingStopped onPlayingStopped;
@@ -47,12 +50,10 @@ public class SoundboardMediaPlayer {
     }
 
     void init(Context context, OnSoundboardMediaPlayerErrorListener onErrorListener,
-              MediaPlayer.OnPreparedListener onPreparedListener,
               OnSoundboardMediaPlayerCompletionListener onCompletionListener) {
         mediaPlayer.setWakeMode(context.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        setOnSoundboardMediaPlayerErrorListener(onErrorListener);
-        mediaPlayer.setOnPreparedListener(onPreparedListener);
-        setOnSoundboardMediaPlayerCompletionListener(onCompletionListener);
+        setOnErrorListener(onErrorListener);
+        setOnCompletionListener(onCompletionListener);
     }
 
     /**
@@ -75,7 +76,7 @@ public class SoundboardMediaPlayer {
     }
 
     void setLooping(boolean looping) {
-        // FIXME User own implementation. This leads to gaps or white noise.
+        // FIXME Use custom implementation. This leads to gaps or white noise.
         mediaPlayer.setLooping(looping);
     }
 
@@ -97,8 +98,7 @@ public class SoundboardMediaPlayer {
         mediaPlayer.setDataSource(fd, offset, length);
     }
 
-    private void setOnSoundboardMediaPlayerCompletionListener(
-            OnSoundboardMediaPlayerCompletionListener listener) {
+    private void setOnCompletionListener(OnSoundboardMediaPlayerCompletionListener listener) {
         mediaPlayer.setOnCompletionListener(event -> {
             try {
                 playingLogicallyStopped();
@@ -108,12 +108,7 @@ public class SoundboardMediaPlayer {
         });
     }
 
-    void setOnPreparedListener(MediaPlayer.OnPreparedListener onPreparedListener) {
-        mediaPlayer.setOnPreparedListener(onPreparedListener);
-    }
-
-    private void setOnSoundboardMediaPlayerErrorListener(
-            OnSoundboardMediaPlayerErrorListener listener) {
+    private void setOnErrorListener(OnSoundboardMediaPlayerErrorListener listener) {
         mediaPlayer.setOnErrorListener((mp, what, extra) -> {
             try {
                 playingLogicallyStopped();
@@ -121,7 +116,7 @@ public class SoundboardMediaPlayer {
                 // Seems, playingStartedOrStopped() did not work. Can't do anything about it.
             }
 
-            return listener.onError(this, what, extra);
+            return listener.onError(what, extra);
         });
     }
 
@@ -129,7 +124,8 @@ public class SoundboardMediaPlayer {
         this.onPlayingStopped = onPlayingStopped;
     }
 
-    void prepareAsync() {
+    void prepareAsync(MediaPlayer.OnPreparedListener onPreparedListener) {
+        mediaPlayer.setOnPreparedListener(onPreparedListener);
         mediaPlayer.prepareAsync();
     }
 
