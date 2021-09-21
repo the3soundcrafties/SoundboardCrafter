@@ -43,11 +43,11 @@ class SelectableAudioFileListAdapter
         return res.build();
     }
 
-    ImmutableList<AbstractAudioLocation> getAudioLocations(boolean selected) {
+    ImmutableList<AbstractAudioLocation> getNotSelectedAudioLocations() {
         final ImmutableList.Builder<AbstractAudioLocation> res = ImmutableList.builder();
         for (SelectableModel<AbstractAudioFolderEntry> audioFolderEntry :
                 copyAudioFolderEntries()) {
-            if (audioFolderEntry.isSelected() == selected
+            if (!audioFolderEntry.isSelected()
                     && audioFolderEntry.getModel() instanceof AudioModelAndSound) {
                 res.add(((AudioModelAndSound) audioFolderEntry.getModel()).getAudioModel()
                         .getAudioLocation());
@@ -70,15 +70,15 @@ class SelectableAudioFileListAdapter
             boolean isPlaying,
             @Nullable View convertView,
             ViewGroup parent) {
-        // When using convertView there are seldom cases where the user
+        // When using convertView, there are seldom cases where the user
         // cannot click the checkbox. So we always create a new view.
 
-        convertView = new SoundboardEditSelectableAudioRow(parent.getContext());
-        SoundboardEditSelectableAudioRow itemRow = (SoundboardEditSelectableAudioRow) convertView;
+        SoundboardEditSelectableAudioRow newRowView =
+                new SoundboardEditSelectableAudioRow(parent.getContext());
 
-        configureItemRow(itemRow, audioModelAndSound, isPlaying);
+        configureItemRow(newRowView, audioModelAndSound, isPlaying);
 
-        return itemRow;
+        return newRowView;
     }
 
     private void configureItemRow(@NonNull SoundboardEditSelectableAudioRow itemRow,

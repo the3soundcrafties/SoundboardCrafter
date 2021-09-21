@@ -162,7 +162,7 @@ public class SoundboardEditView extends ConstraintLayout {
     }
 
     ImmutableList<AbstractAudioLocation> getAudioLocationsNotSelected() {
-        return adapter.getAudioLocations(false);
+        return adapter.getNotSelectedAudioLocations();
     }
 
     public void setPositionPlaying(@Nullable Integer position) {
