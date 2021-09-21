@@ -128,4 +128,6 @@
     <string name="folder_up">Verzeichnis aufwärts</string>
     <string name="soundboards_currently_playing">Spielt</string>
     <string name="context_menu_copy_soundboard">Kopieren</string>
+    <string name="sound_edit_volume_down">Leiser</string>
+    <string name="sound_edit_volume_up">Lauter</string>
 </resources>
