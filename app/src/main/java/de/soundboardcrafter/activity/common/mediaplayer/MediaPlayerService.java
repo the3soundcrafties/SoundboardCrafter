@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -184,7 +183,7 @@ public class MediaPlayerService extends Service {
     }
 
     public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                    SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+                                    SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped) {
         mediaPlayers.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
     }
 
@@ -255,10 +254,11 @@ public class MediaPlayerService extends Service {
      * Adds a media player and starts playing.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
-     * @see #play(String, AbstractAudioLocation, SoundboardMediaPlayer.OnPlayingStopped)
+     * @see #play(String, AbstractAudioLocation, SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped)
      */
     public void play(@Nullable Soundboard soundboard, @NonNull Sound sound,
-                     @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped)
+                     @Nullable
+                             SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped)
             throws IOException {
         checkNotNull(sound, "sound is null");
 
@@ -286,7 +286,7 @@ public class MediaPlayerService extends Service {
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
-        mediaPlayer.setOnPreparedListener(mp -> {
+        mediaPlayer.setOnPreparedListener((MediaPlayer mp) -> {
             mp.start();
             playingHasChanged();
         });
@@ -298,11 +298,12 @@ public class MediaPlayerService extends Service {
      * without necessarily starting a foreground service etc.
      *
      * @throws IOException In case of an I/O problem (no audio file at <code>soundPath</code>, e.g.)
-     * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnPlayingStopped)
+     * @see #play(Soundboard, Sound, SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped)
      */
     public SoundboardMediaPlayer play(@NonNull String name,
                                       @NonNull AbstractAudioLocation audioLocation,
-                                      @Nullable SoundboardMediaPlayer.OnPlayingStopped
+                                      @Nullable
+                                              SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped
                                               onPlayingStopped)
             throws IOException {
         checkNotNull(audioLocation, "audioLocation is null");
@@ -464,11 +465,9 @@ public class MediaPlayerService extends Service {
         SoundboardMediaPlayers.initMediaPlayer(getApplicationContext(),
                 mediaPlayer, soundName, audioLocation, volumePercentage, loop);
 
-        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        mediaPlayer.setOnSoundboardMediaPlayerErrorListener(
-                (ev, what, extra) -> onError(mediaPlayer, what, extra));
-        mediaPlayer.setOnPreparedListener(this::onPrepared);
-        mediaPlayer.setOnSoundboardMediaPlayerCompletionListener(
+        mediaPlayer.init(getApplicationContext(),
+                (ev, what, extra) -> onError(mediaPlayer, what, extra),
+                this::onPrepared,
                 (mbd) -> onCompletion((SoundboardMediaPlayer) mbd));
     }
 

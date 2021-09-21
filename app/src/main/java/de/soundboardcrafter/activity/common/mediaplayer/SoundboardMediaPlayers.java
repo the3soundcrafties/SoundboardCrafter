@@ -111,14 +111,15 @@ class SoundboardMediaPlayers {
     }
 
     void setOnPlayingStopped(@Nullable Soundboard soundboard, Sound sound,
-                             @Nullable SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+                             @Nullable
+                                     SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped) {
         MediaPlayerSearchId searchId = new MediaPlayerSearchId(soundboard, sound);
 
         setOnPlayingStopped(searchId, onPlayingStopped);
     }
 
     private void setOnPlayingStopped(MediaPlayerSearchId searchId, @Nullable
-            SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
+            SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped) {
         SoundboardMediaPlayer activePlayer = activePlayers.get(searchId);
         if (activePlayer != null) {
             activePlayer.setOnPlayingStopped(onPlayingStopped);

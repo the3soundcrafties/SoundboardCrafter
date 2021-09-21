@@ -63,7 +63,7 @@ class SoundboardItemRow extends RelativeLayout {
         boolean isActivelyPlaying(Soundboard soundboard, Sound sound);
 
         void setOnPlayingStopped(Soundboard soundboard, Sound sound,
-                                 SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped);
+                                 SoundboardMediaPlayer.OnSoundboardMediaPlayerPlayingStopped onPlayingStopped);
 
         /**
          * Stops the sound when it is played in this soundboard.
