@@ -71,6 +71,6 @@ class PlayingListItemAdapter extends BaseAdapter {
     private void configureItemRow(@NonNull AudioItem itemRow,
                                   AudioModelAndSound audioModelAndSound) {
         itemRow.setAudioFile(audioModelAndSound, callback);
-        itemRow.setImage(R.drawable.ic_play);
+        itemRow.setImage(R.drawable.ic_stop);
     }
 }
