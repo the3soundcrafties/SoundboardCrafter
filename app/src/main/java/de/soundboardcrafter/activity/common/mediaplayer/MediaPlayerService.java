@@ -286,8 +286,19 @@ public class MediaPlayerService extends Service {
             mediaPlayers.putActive(soundboard, sound, mediaPlayer);
         }
 
+        final SoundboardMediaPlayer tmp = mediaPlayer;
+
         mediaPlayer.prepareAsync((MediaPlayer mp) -> {
+
+            // FIXME This place?!
+            try {
+                tmp.setLooping(true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             mp.start();
+
             playingHasChanged();
         });
     }

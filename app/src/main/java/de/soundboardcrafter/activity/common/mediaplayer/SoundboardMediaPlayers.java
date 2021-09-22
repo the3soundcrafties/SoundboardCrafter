@@ -7,6 +7,7 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +34,9 @@ import de.soundboardcrafter.model.Soundboard;
  */
 @SuppressWarnings("GrazieInspection")
 class SoundboardMediaPlayers {
+    private static final String TAG = MediaPlayerService.class.getName();
+
+
     /**
      * The players that are <i>actively playing</i>, that is, they are <i>not</i> fading out.
      */
@@ -305,7 +309,11 @@ class SoundboardMediaPlayers {
     @UiThread
     private static void setLoop(@NonNull SoundboardMediaPlayer mediaPlayer, boolean loop) {
         checkNotNull(mediaPlayer, "mediaPlayer is null");
-        mediaPlayer.setLooping(loop);
+        try {
+            mediaPlayer.setLooping(loop);
+        } catch (IOException e) {
+            Log.e(TAG, "Exception when trying to start playing in loop: " + e.getMessage(), e);
+        }
     }
 
     /**
