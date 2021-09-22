@@ -42,22 +42,21 @@ public class AssetsAudioLoader {
      */
     public static final String ASSET_SOUND_PATH = "sounds";
 
-
-    Map<String, List<BasicAudioModel>> getAllAudiosFromAssetsByTopFolderName(
+    Map<String, List<BasicAudioModel>> getAllAudiosByTopFolderName(
             Context context) {
-        final ImmutableList<String> topLevelFolderNames = getTopLevelAssetFolderNames(context);
+        final ImmutableList<String> topLevelFolderNames = getTopLevelFolderNames(context);
 
         ImmutableMap.Builder<String, List<BasicAudioModel>> res = ImmutableMap.builder();
         for (String topLevelFolderName : topLevelFolderNames) {
             res.put(topLevelFolderName,
-                    getAudiosFromAssetsRecursively(context,
+                    getAudiosRecursively(context,
                             ASSET_SOUND_PATH + "/" + topLevelFolderName));
         }
 
         return res.build();
     }
 
-    private ImmutableList<String> getTopLevelAssetFolderNames(@NonNull Context context) {
+    private ImmutableList<String> getTopLevelFolderNames(@NonNull Context context) {
         try {
             return getTopLevelFolderNames(context.getAssets());
         } catch (IOException e) {
@@ -84,9 +83,9 @@ public class AssetsAudioLoader {
                 .collect(ImmutableList.toImmutableList());
     }
 
-    Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> loadAudioFolderEntriesWithoutSounds(
+    Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> loadAudioFolderEntries(
             Context context, @NonNull AssetFolderAudioLocation assetFolderAudioLocation) {
-        return getAudiosAndDirectSubFoldersFromAssets(context,
+        return getAudiosAndDirectSubFolders(context,
                 assetFolderAudioLocation.getInternalPath());
     }
 
@@ -94,7 +93,7 @@ public class AssetsAudioLoader {
      * Loads all audio files directly or recursively contained in a given folder <i>from the
      * assets</i>.
      */
-    private ImmutableList<BasicAudioModel> getAudiosFromAssetsRecursively(
+    private ImmutableList<BasicAudioModel> getAudiosRecursively(
             @NonNull final Context context, @Nonnull String folder) {
         try {
             return getAudiosRecursively(context.getAssets(), normalizeFolder(folder));
@@ -104,13 +103,12 @@ public class AssetsAudioLoader {
         }
     }
 
-
     /**
      * Loads all audio files and subFolders in a given folder <i>from the assets</i>.
      *
      * @return The audio files and the subFolders
      */
-    private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudiosAndDirectSubFoldersFromAssets(
+    private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudiosAndDirectSubFolders(
             @NonNull final Context context, @Nonnull String folder) {
         try {
             return getAudiosAndDirectSubFolders(context.getAssets(), normalizeFolder(folder));
@@ -137,7 +135,7 @@ public class AssetsAudioLoader {
             if (fileName.contains(".")) {
                 // It's a sound file.
                 BasicAudioModel audioModel =
-                        createBasicAudioModelFromAsset(assetPath, fileName);
+                        createBasicAudioModel(assetPath, fileName);
                 res.add(audioModel);
             } else {
                 // It's a subdirectory.
@@ -147,7 +145,6 @@ public class AssetsAudioLoader {
 
         return res.build();
     }
-
 
     private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>>
     getAudiosAndDirectSubFolders(@NonNull AssetManager assets, String directory)
@@ -168,7 +165,7 @@ public class AssetsAudioLoader {
             if (fileName.contains(".")) {
                 // It's a sound file.
                 FullAudioModel audioModel =
-                        createFullAudioModelFromAsset(assets, assetPath, fileName);
+                        createFullAudioModel(assets, assetPath, fileName);
                 audioFileList.add(audioModel);
             } else {
                 // It's a subdirectory.
@@ -195,7 +192,6 @@ public class AssetsAudioLoader {
         }
         return folder;
     }
-
 
     /**
      * Retrieves the number of audio files in this asset directory, including all subdirectories
@@ -224,35 +220,24 @@ public class AssetsAudioLoader {
         return res;
     }
 
-
-    FullAudioModel getAudioFromAssets(Context context, String path) throws IOException {
-        return getAudioFromAssets(context.getAssets(), path);
-    }
-
-    private FullAudioModel getAudioFromAssets(@NonNull AssetManager assets, String assetPath)
+    FullAudioModel getAudio(@NonNull Context context, String path, String name)
             throws IOException {
-        return createFullAudioModelFromAsset(assets, assetPath, extractFilename(assetPath));
-    }
-
-
-    private String extractFilename(@Nullable String path) {
-        if (path == null) {
-            return "";
-        }
-
-        final int indexBeforeFilename = path.lastIndexOf("/");
-        if (indexBeforeFilename < 0) {
-            return path;
-        }
-
-        return path.substring(indexBeforeFilename + 1);
+        return getAudio(context.getAssets(), path, name);
     }
 
     @NonNull
     @Contract("_, _, _ -> new")
-    private FullAudioModel createFullAudioModelFromAsset(AssetManager assets,
-                                                         String assetPath,
-                                                         String filename)
+    private FullAudioModel getAudio(@NonNull AssetManager assets, String assetPath,
+                                    String name)
+            throws IOException {
+        return createFullAudioModel(assets, assetPath, name);
+    }
+
+    @NonNull
+    @Contract("_, _, _ -> new")
+    private FullAudioModel createFullAudioModel(AssetManager assets,
+                                                String assetPath,
+                                                String name)
             throws IOException {
         try (AssetFileDescriptor fileDescriptor = assets.openFd(assetPath)) {
             MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
@@ -260,7 +245,6 @@ public class AssetsAudioLoader {
                     fileDescriptor.getStartOffset(),
                     fileDescriptor.getLength());
 
-            @Nonnull String name = skipExtension(filename);
             long durationSecs = extractDurationSecs(metadataRetriever);
             @Nullable String artist = extractArtist(metadataRetriever);
             return new FullAudioModel(
@@ -272,8 +256,8 @@ public class AssetsAudioLoader {
     }
 
     @NonNull
-    private BasicAudioModel createBasicAudioModelFromAsset(String assetPath,
-                                                           String filename) {
+    private BasicAudioModel createBasicAudioModel(String assetPath,
+                                                  String filename) {
         @Nonnull String name = skipExtension(filename);
         return new BasicAudioModel(new AssetFolderAudioLocation(assetPath), name);
     }

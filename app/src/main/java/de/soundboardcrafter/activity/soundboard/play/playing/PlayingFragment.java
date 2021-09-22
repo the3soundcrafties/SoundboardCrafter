@@ -316,7 +316,8 @@ public class PlayingFragment extends Fragment implements
             try {
                 @Nullable
                 FullAudioModel audioModel =
-                        new AudioLoader().getAudio(context, sound.getAudioLocation());
+                        new AudioLoader().getAudio(context, sound.getAudioLocation(),
+                                sound.getName());
                 if (audioModel == null) {
                     // Permission problem? We do not want to deal with this here.
                     return null;

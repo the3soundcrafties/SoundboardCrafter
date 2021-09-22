@@ -39,7 +39,7 @@ class FileSystemAudioLoader {
      * Loads all audio files from the device.
      */
     @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
-    ImmutableList<FullAudioModel> getAudiosFromDevice(Context context) {
+    ImmutableList<FullAudioModel> getAudios(Context context) {
         final ImmutableList.Builder<FullAudioModel> res = ImmutableList.builder();
 
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -56,7 +56,7 @@ class FileSystemAudioLoader {
             if (c != null) {
                 while (c.moveToNext()) {
                     String path = c.getString(0);
-                    res.add(createAudioModelOnDevice(
+                    res.add(createAudioModel(
                             path, c.getString(1), c.getString(2),
                             c.getInt(3), c.getLong(4)));
                 }
@@ -66,12 +66,11 @@ class FileSystemAudioLoader {
         return res.build();
     }
 
-    FullAudioModel getAudioFromDevice(Context context, String path) {
+    FullAudioModel getAudio(Context context, String path, String name) {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         // MediaStore.Audio.AudioColumns.DURATION has "always" been there and
         // works fine
         @SuppressLint("InlinedApi") String[] projection = {MediaStore.Audio.AudioColumns.DATA,
-                MediaStore.Audio.AudioColumns.TITLE,
                 MediaStore.Audio.ArtistColumns.ARTIST,
                 MediaStore.Audio.AudioColumns.DATE_ADDED,
                 MediaStore.Audio.AudioColumns.DURATION};
@@ -85,9 +84,9 @@ class FileSystemAudioLoader {
                     return null;
                 }
 
-                return createAudioModelOnDevice(
-                        path, c.getString(1), c.getString(2),
-                        c.getInt(3), c.getLong(4));
+                return createAudioModel(
+                        path, name, c.getString(1),
+                        c.getInt(2), c.getLong(3));
             }
         }
 
@@ -100,7 +99,7 @@ class FileSystemAudioLoader {
      * @return The audio files and the subFolders
      */
     @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
-    Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudiosFromDevice(
+    Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudios(
             final Context context, @Nonnull String folder) {
         checkNotNull(folder, "folder was null");
 
@@ -128,7 +127,7 @@ class FileSystemAudioLoader {
                 while (c.moveToNext()) {
                     String path = c.getString(0);
                     if (AudioLoaderUtil.isInFolder(path, folder)) {
-                        audioFileList.add(createAudioModelOnDevice(
+                        audioFileList.add(createAudioModel(
                                 path, c.getString(1), c.getString(2),
                                 c.getInt(3), c.getLong(4)));
                     }
@@ -140,7 +139,7 @@ class FileSystemAudioLoader {
         }
 
 
-        return toAudioFilesAndSubFoldersFromDevice(audioFileList, subFoldersAndAudioFileCounts);
+        return toAudioFilesAndSubFolders(audioFileList, subFoldersAndAudioFileCounts);
     }
 
     /**
@@ -163,7 +162,7 @@ class FileSystemAudioLoader {
      * {@link AudioFolder}s. Assuming, everything is located on the device.
      */
     private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>>
-    toAudioFilesAndSubFoldersFromDevice(
+    toAudioFilesAndSubFolders(
             List<FullAudioModel> audioListIn, @NonNull Map<String, Integer> audioFolderMapIn) {
         ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
         for (Map.Entry<String, Integer> subfolderAndCount : audioFolderMapIn.entrySet()) {
@@ -192,9 +191,9 @@ class FileSystemAudioLoader {
 
     @NonNull
     @Contract("_, _, _, _, _ -> new")
-    private FullAudioModel createAudioModelOnDevice(String path, String name,
-                                                    String artistRaw,
-                                                    int dateAddedMillis, long durationMillis) {
+    private FullAudioModel createAudioModel(String path, String name,
+                                            String artistRaw,
+                                            int dateAddedMillis, long durationMillis) {
         return new FullAudioModel(new FileSystemFolderAudioLocation(path),
                 name,
                 AudioLoaderUtil.formatArtist(artistRaw),

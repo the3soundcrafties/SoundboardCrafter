@@ -38,7 +38,7 @@ public class AudioLoader {
     public Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>>
     loadAudioFolderEntriesWithoutSounds(Context context, IAudioFileSelection selection) {
         if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
-            return new Pair<>(fileSystemAudioLoader.getAudiosFromDevice(context),
+            return new Pair<>(fileSystemAudioLoader.getAudios(context),
                     ImmutableList.of());
         }
 
@@ -46,12 +46,12 @@ public class AudioLoader {
             FileSystemFolderAudioLocation fileSystemFolder =
                     (FileSystemFolderAudioLocation) selection;
             return fileSystemAudioLoader
-                    .getAudiosFromDevice(context, fileSystemFolder.getInternalPath());
+                    .getAudios(context, fileSystemFolder.getInternalPath());
         }
 
         if (selection instanceof AssetFolderAudioLocation) {
             AssetFolderAudioLocation assetFolder = (AssetFolderAudioLocation) selection;
-            return assetsAudioLoader.loadAudioFolderEntriesWithoutSounds(context, assetFolder);
+            return assetsAudioLoader.loadAudioFolderEntries(context, assetFolder);
         }
 
         throw new IllegalStateException(
@@ -59,14 +59,15 @@ public class AudioLoader {
     }
 
     @Nullable
-    public FullAudioModel getAudio(Context context, AbstractAudioLocation audioLocation) {
+    public FullAudioModel getAudio(Context context, AbstractAudioLocation audioLocation,
+                                   String name) {
         if (audioLocation instanceof FileSystemFolderAudioLocation) {
             return fileSystemAudioLoader
-                    .getAudioFromDevice(context, audioLocation.getInternalPath());
+                    .getAudio(context, audioLocation.getInternalPath(), name);
         } else if (audioLocation instanceof AssetFolderAudioLocation) {
             try {
                 return assetsAudioLoader
-                        .getAudioFromAssets(context, audioLocation.getInternalPath());
+                        .getAudio(context, audioLocation.getInternalPath(), name);
             } catch (IOException e) {
                 return null;
             }
@@ -77,6 +78,6 @@ public class AudioLoader {
 
     public Map<String, List<BasicAudioModel>> getAllAudiosFromAssetsByTopFolderName(
             Context appContext) {
-        return assetsAudioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
+        return assetsAudioLoader.getAllAudiosByTopFolderName(appContext);
     }
 }
