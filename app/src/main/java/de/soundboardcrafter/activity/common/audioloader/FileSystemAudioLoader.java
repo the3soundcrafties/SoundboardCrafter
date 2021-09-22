@@ -166,8 +166,11 @@ class FileSystemAudioLoader {
             List<FullAudioModel> audioListIn, @NonNull Map<String, Integer> audioFolderMapIn) {
         ImmutableList.Builder<AudioFolder> audioFolders = ImmutableList.builder();
         for (Map.Entry<String, Integer> subfolderAndCount : audioFolderMapIn.entrySet()) {
+            final FileSystemFolderAudioLocation folderLocation =
+                    new FileSystemFolderAudioLocation(subfolderAndCount.getKey());
             audioFolders.add(new AudioFolder(
-                    new FileSystemFolderAudioLocation(subfolderAndCount.getKey()),
+                    folderLocation,
+                    folderLocation.getDisplayName(),
                     subfolderAndCount.getValue()));
         }
 

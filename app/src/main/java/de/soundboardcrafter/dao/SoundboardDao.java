@@ -223,7 +223,12 @@ public class SoundboardDao extends AbstractDao {
         unlinkAllSounds(soundboard.getId());
 
         for (Sound sound : soundboardWithSounds.getSounds()) {
+            // FIXME This is a problem in case the sound is also part in another
+            //  provided soundboard (for example when we have simply renamed a soundboard):
+            //  We must not remove the sound from the database!
+            //  if (!linkedToAProvidedSoundboard(sound)) {
             soundDao.delete(sound.getId());
+            //  }
         }
 
         delete(soundboard.getId());

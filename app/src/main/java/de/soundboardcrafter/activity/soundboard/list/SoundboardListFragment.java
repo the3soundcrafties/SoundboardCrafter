@@ -486,14 +486,14 @@ public class SoundboardListFragment extends Fragment
             publishProgress(20);
 
             AudioLoader audioLoader = new AudioLoader();
-            Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
+            Map<String, List<BasicAudioModel>> audioModelsByTopFolderName =
                     audioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
 
-            int numSoundboards = audioModelsByTopFolder.size();
+            int numSoundboards = audioModelsByTopFolderName.size();
             int i = 0;
 
             for (Map.Entry<String, List<BasicAudioModel>> entry :
-                    audioModelsByTopFolder.entrySet()) {
+                    audioModelsByTopFolderName.entrySet()) {
                 generateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
                 publishProgress(20 + 70 * i / numSoundboards);
 
@@ -525,14 +525,14 @@ public class SoundboardListFragment extends Fragment
             publishProgress(10);
 
             AudioLoader audioLoader = new AudioLoader();
-            Map<String, List<BasicAudioModel>> audioModelsByTopFolder =
+            Map<String, List<BasicAudioModel>> audioModelsByTopFolderName =
                     audioLoader.getAllAudiosFromAssetsByTopFolderName(appContext);
 
             final ImmutableList<Soundboard> oldSoundboards =
                     SoundboardDao.getInstance(appContext).findAllProvided();
 
             final ImmutableSet.Builder<String> newSoundboardNames =
-                    updateNewSoundboards(appContext, audioModelsByTopFolder);
+                    updateNewSoundboards(appContext, audioModelsByTopFolderName);
 
             deleteObsoleteSoundboards(appContext, oldSoundboards, newSoundboardNames);
 
@@ -563,16 +563,16 @@ public class SoundboardListFragment extends Fragment
         }
 
         @NonNull
-        private ImmutableSet.Builder<String> updateNewSoundboards(Context appContext,
-                                                                  Map<String,
-                                                                          List<BasicAudioModel>> audioModelsByTopFolder) {
+        private ImmutableSet.Builder<String> updateNewSoundboards(
+                Context appContext,
+                Map<String, List<BasicAudioModel>> audioModelsByTopFolderName) {
             final ImmutableSet.Builder<String> newSoundboardNames = ImmutableSet.builder();
 
-            int numNewSoundboards = audioModelsByTopFolder.size();
+            int numNewSoundboards = audioModelsByTopFolderName.size();
             int newSoundboardCount = 0;
 
             for (Map.Entry<String, List<BasicAudioModel>> entry :
-                    audioModelsByTopFolder.entrySet()) {
+                    audioModelsByTopFolderName.entrySet()) {
                 updateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
 
                 newSoundboardNames.add(entry.getKey());

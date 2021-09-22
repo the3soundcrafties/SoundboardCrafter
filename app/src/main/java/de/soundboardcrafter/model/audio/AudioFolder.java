@@ -22,17 +22,17 @@ public class AudioFolder extends AbstractAudioFolderEntry {
 
     private final AbstractAudioLocation folderLocation;
     private final int numAudioFiles;
+    private final String name;
 
-    public AudioFolder(@NonNull AbstractAudioLocation folderLocation, int numAudioFiles) {
+    public AudioFolder(@NonNull AbstractAudioLocation folderLocation,
+                       String name, int numAudioFiles) {
         this.folderLocation = checkNotNull(folderLocation, "audioLocation was null");
+        this.name = name;
         this.numAudioFiles = numAudioFiles;
     }
 
-    /**
-     * Returns only the folder name (not the whole path).
-     */
     public String getName() {
-        return folderLocation.getDisplayName();
+        return name;
     }
 
     public String getPath() {
@@ -75,6 +75,7 @@ public class AudioFolder extends AbstractAudioFolderEntry {
     public String toString() {
         return "AudioFolder{" +
                 "audioLocation='" + folderLocation + '\'' +
+                "name='" + name + '\'' +
                 ", numAudioFiles=" + numAudioFiles +
                 '}';
     }

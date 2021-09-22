@@ -26,11 +26,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -56,44 +58,55 @@ public class AssetsAudioLoader {
 
     Map<String, List<BasicAudioModel>> getAllAudiosByTopFolderName(
             Context context) {
-        final ImmutableList<String> topLevelFolderNames = getTopLevelFolderNames(context);
+        final ImmutableList<Pair<String, String>> topLevelFolders = getTopLevelFolders(context);
 
         ImmutableMap.Builder<String, List<BasicAudioModel>> res = ImmutableMap.builder();
-        for (String topLevelFolderName : topLevelFolderNames) {
-            res.put(
-                    // FIXME translate topLevelFolderName (but not folder path....)
-                    topLevelFolderName,
-                    getAudiosRecursively(context,
-                            ASSET_SOUND_PATH + "/" + topLevelFolderName));
+        for (Pair<String, String> topLevelFolder : topLevelFolders) {
+            res.put(topLevelFolder.second, // internationalized folder name
+                    getAudiosRecursively(context, topLevelFolder.first)); // folder path
         }
 
         return res.build();
     }
 
-    private ImmutableList<String> getTopLevelFolderNames(@NonNull Context context) {
+    /**
+     * Returns the folders (path, name) right below the sound asset root.
+     */
+    private ImmutableList<Pair<String, String>> getTopLevelFolders(@NonNull Context context) {
         try {
-            return getTopLevelFolderNames(context.getAssets());
+            return getTopLevelFolders(context.getAssets());
         } catch (IOException e) {
             Log.w("IOException while loading assets: " + e, e);
             return ImmutableList.of();
         }
     }
-    
-    /**
-     * Returns the folder names right below the sound asset root.
-     */
-    private ImmutableList<String> getTopLevelFolderNames(@NonNull AssetManager assets)
-            throws IOException {
-        @Nullable String[] fileNames = assets.list(ASSET_SOUND_PATH);
 
-        if (fileNames == null) {
+    /**
+     * Returns the folders (path, name) right below the sound asset root.
+     */
+    private ImmutableList<Pair<String, String>> getTopLevelFolders(@NonNull AssetManager assets)
+            throws IOException {
+        List<String> fileNames = toSortedList(assets.list(ASSET_SOUND_PATH));
+
+        Map<String, String> translations = getTranslations(assets, ASSET_SOUND_PATH, fileNames);
+
+        return fileNames.stream()
+                .filter(fn -> !fn.contains("."))
+                // It's a subdirectory.
+                .map(fn -> new Pair<>(ASSET_SOUND_PATH + "/" + fn,
+                        translate(translations, fn)))
+                .collect(ImmutableList.toImmutableList());
+    }
+
+    @NonNull
+    private List<String> toSortedList(@Nullable String[] strings) {
+        if (strings == null || strings.length == 0) {
             return ImmutableList.of();
         }
 
-        return Stream.of(fileNames)
-                .filter(n -> !n.contains("."))
-                // It's a subdirectory.
-                .collect(ImmutableList.toImmutableList());
+        ArrayList<String> orderedFileNames = new ArrayList<>(Arrays.asList(strings));
+        Collections.sort(orderedFileNames);
+        return orderedFileNames;
     }
 
     Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> loadAudioFolderEntries(
@@ -132,11 +145,7 @@ public class AssetsAudioLoader {
 
     private ImmutableList<BasicAudioModel> getAudiosRecursively(
             @NonNull AssetManager assets, String directory) throws IOException {
-        @Nullable String[] fileNames = assets.list(directory);
-
-        if (fileNames == null) {
-            return ImmutableList.of();
-        }
+        List<String> fileNames = toSortedList(assets.list(directory));
 
         Map<String, String> translations = getTranslations(assets, directory, fileNames);
 
@@ -148,15 +157,12 @@ public class AssetsAudioLoader {
 
             if (!fileName.contains(".")) {
                 // It's a subdirectory.
-
-                // FIXME Translate Audio folders
-                //  - Differentiate between folder path and folder name!
-
                 res.addAll(getAudiosRecursively(assets, directory + "/" + fileName));
             } else if (!isATranslationsFile(fileName)) {
                 // It's a sound file.
                 BasicAudioModel audioModel =
-                        createBasicAudioModel(assetPath, translate(translations, fileName));
+                        createBasicAudioModel(assetPath,
+                                translate(translations, skipExtension(fileName)));
                 res.add(audioModel);
             }
         }
@@ -167,11 +173,7 @@ public class AssetsAudioLoader {
     private Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>>
     getAudiosAndDirectSubFolders(@NonNull AssetManager assets, String directory)
             throws IOException {
-        @Nullable String[] fileNames = assets.list(directory);
-
-        if (fileNames == null) {
-            return Pair.create(ImmutableList.of(), ImmutableList.of());
-        }
+        List<String> fileNames = toSortedList(assets.list(directory));
 
         Map<String, String> translations = getTranslations(assets, directory, fileNames);
 
@@ -185,18 +187,17 @@ public class AssetsAudioLoader {
             if (!fileName.contains(".")) {
                 // It's a subdirectory.
 
-                // FIXME Translate Audio folders
-                //  - Differentiate between folder path and folder name!
-
-                AudioFolder audioFolder = new AudioFolder(
-                        new AssetFolderAudioLocation(assetPath),
+                final AssetFolderAudioLocation folderLocation =
+                        new AssetFolderAudioLocation(assetPath);
+                AudioFolder audioFolder = new AudioFolder(folderLocation,
+                        translate(translations, fileName),
                         getNumAudioFiles(assets, assetPath));
                 directSubFolders.add(audioFolder);
             } else if (!isATranslationsFile(fileName)) {
                 // It's a sound file.
                 FullAudioModel audioModel =
                         createFullAudioModel(assets, assetPath,
-                                translate(translations, fileName));
+                                translate(translations, skipExtension(fileName)));
                 audioFileList.add(audioModel);
             }
         }
@@ -206,7 +207,7 @@ public class AssetsAudioLoader {
 
     @Nonnull
     private Map<String, String> getTranslations(AssetManager assets, String directory,
-                                                String[] fileNames) throws IOException {
+                                                Collection<String> fileNames) throws IOException {
         final LocaleListCompat locales =
                 ConfigurationCompat.getLocales(Resources.getSystem().getConfiguration());
 
@@ -226,7 +227,7 @@ public class AssetsAudioLoader {
 
     @Nullable
     private Map<String, String> getTranslations(AssetManager assets, String directory,
-                                                String[] fileNames, Locale locale)
+                                                Collection<String> fileNames, Locale locale)
             throws IOException {
         @Nullable
         Map<String, String> forLocale =
@@ -243,12 +244,12 @@ public class AssetsAudioLoader {
 
     @Nullable
     private Map<String, String> getTranslations(AssetManager assets, String directory,
-                                                String[] fileNames, String localeMarker)
+                                                Collection<String> fileNames, String localeMarker)
             throws IOException {
         String fileName =
                 TRANSLATIONS_FILE_PREFIX + localeMarker + "." + TRANSLATIONS_FILE_EXTENSION;
 
-        if (Arrays.asList(fileNames).contains(fileName)) {
+        if (fileNames.contains(fileName)) {
             return getTranslations(assets, directory, fileName);
         }
 
@@ -298,10 +299,8 @@ public class AssetsAudioLoader {
         return new Pair<>(parts[0].trim(), parts[1].trim());
     }
 
-    private String translate(Map<String, String> translations, String fileName) {
-        final String fileNameWithoutExtension = skipExtension(fileName);
-
-        return translations.getOrDefault(fileNameWithoutExtension, fileNameWithoutExtension);
+    private String translate(Map<String, String> translations, String internationalName) {
+        return translations.getOrDefault(internationalName, internationalName);
     }
 
     @Nonnull
@@ -325,10 +324,7 @@ public class AssetsAudioLoader {
      */
     private int getNumAudioFiles(@NonNull AssetManager assets, String directory)
             throws IOException {
-        @Nullable String[] fileNames = assets.list(directory);
-        if (fileNames == null) {
-            return 0;
-        }
+        List<String> fileNames = toSortedList(assets.list(directory));
 
         int res = 0;
         for (String fileName : fileNames) {

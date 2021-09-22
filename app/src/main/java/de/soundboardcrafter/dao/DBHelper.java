@@ -28,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
      * Database version. Also update this version when there are
      * changes in the sounds assets!
      */
-    private static final int VERSION = 36;
+    private static final int VERSION = 42;
 
     public static final String DB_SHARED_PREFERENCES = "DBHelper_Prefs";
 
