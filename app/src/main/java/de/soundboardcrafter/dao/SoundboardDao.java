@@ -695,7 +695,7 @@ public class SoundboardDao extends AbstractDao {
     private ContentValues buildContentValues(@NonNull Soundboard soundboard) {
         ContentValues values = new ContentValues();
         values.put(DBSchema.SoundboardTable.Cols.ID, soundboard.getId().toString());
-        values.put(DBSchema.SoundboardTable.Cols.NAME, soundboard.getName());
+        values.put(DBSchema.SoundboardTable.Cols.NAME, soundboard.getFullName());
         values.put(SoundboardTable.Cols.PROVIDED, soundboard.isProvided() ? 1 : 0);
 
         return values;

@@ -50,12 +50,7 @@ public class SoundboardWithSounds implements Serializable {
     public UUID getId() {
         return soundboard.getId();
     }
-
-    @NonNull
-    public String getName() {
-        return soundboard.getName();
-    }
-
+    
     public boolean isProvided() {
         return soundboard.isProvided();
     }

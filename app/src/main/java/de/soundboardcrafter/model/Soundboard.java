@@ -1,6 +1,7 @@
 package de.soundboardcrafter.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import androidx.annotation.NonNull;
 
@@ -8,6 +9,8 @@ import java.io.IOException;
 import java.text.CollationKey;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -34,9 +37,14 @@ public class Soundboard extends AbstractEntity {
                 return one.collationKey.compareTo(other.collationKey);
             };
 
+    private static final Pattern LEADING_NUMBERS_REGEX = Pattern.compile("(\\d*\\s*)(.*)");
+
     private static final ThreadSafeCollator nameCollator =
             ThreadSafeCollator.getInstance();
 
+    /**
+     * Name of the soundboard - including leading numbers.
+     */
     @NonNull
     private String name;
 
@@ -68,12 +76,37 @@ public class Soundboard extends AbstractEntity {
     }
 
     /**
-     * Returns the name.
+     * Returns the name for display - also leading numbers are skipped <i>for provided
+     * soundboards</i>.
      * <p></p>
      * For  sorting purposes better use the {@link #collationKey}.
+     *
+     * @see #getFullName()
      */
     @NonNull
-    public String getName() {
+    public String getDisplayName() {
+        return provided ? skipLeadingNumbers(name) : name;
+    }
+
+    @NonNull
+    private String skipLeadingNumbers(@NonNull String name) {
+        final Matcher matcher = LEADING_NUMBERS_REGEX.matcher(name);
+        if (!matcher.find()) {
+            return name;
+        }
+
+        return requireNonNull(matcher.group(2));
+    }
+
+    /**
+     * Returns the full name - also includes leading numbers.
+     * <p></p>
+     * For  sorting purposes better use the {@link #collationKey}.
+     *
+     * @see #getDisplayName()
+     */
+    @NonNull
+    public String getFullName() {
         return name;
     }
 
@@ -85,7 +118,7 @@ public class Soundboard extends AbstractEntity {
     }
 
     private void setCollationKey() {
-        collationKey = nameCollator.getCollationKey(getName());
+        collationKey = nameCollator.getCollationKey(name);
     }
 
     public boolean isProvided() {

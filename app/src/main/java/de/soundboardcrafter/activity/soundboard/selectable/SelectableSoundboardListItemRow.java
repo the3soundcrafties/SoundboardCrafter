@@ -42,7 +42,7 @@ class SelectableSoundboardListItemRow extends LinearLayout {
      */
     @UiThread
     void setSoundboard(SelectableModel<Soundboard> soundboard) {
-        checkboxSoundboard.setText(soundboard.getModel().getName());
+        checkboxSoundboard.setText(soundboard.getModel().getDisplayName());
 
         checkboxSoundboard.setOnCheckedChangeListener(null);
 

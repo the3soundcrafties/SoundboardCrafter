@@ -255,7 +255,7 @@ public class SoundboardListFragment extends Fragment
                     R.string.context_menu_remove_soundboard);
         }
 
-        menu.setHeaderTitle(soundboard.getName());
+        menu.setHeaderTitle(soundboard.getDisplayName());
 
         checkTutorialDaoForContextMenu(soundboard);
     }
@@ -544,7 +544,7 @@ public class SoundboardListFragment extends Fragment
                                                ImmutableList<Soundboard> oldSoundboards,
                                                ImmutableSet.Builder<String> newSoundboardNames) {
             Set<String> oldSoundboardNames =
-                    oldSoundboards.stream().map(Soundboard::getName)
+                    oldSoundboards.stream().map(Soundboard::getFullName)
                             .collect(toSet());
 
             final Sets.SetView<String> removedSoundboardNames = Sets

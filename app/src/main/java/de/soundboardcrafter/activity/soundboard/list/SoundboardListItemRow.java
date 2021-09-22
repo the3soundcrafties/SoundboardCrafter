@@ -54,7 +54,7 @@ class SoundboardListItemRow extends RelativeLayout {
     @UiThread
     void setSoundboard(SoundboardWithSounds soundboard) {
         this.soundboard = soundboard;
-        soundboardName.setText(this.soundboard.getName());
+        soundboardName.setText(this.soundboard.getSoundboard().getDisplayName());
         soundCount.setText(getSoundCountText());
     }
 

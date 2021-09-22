@@ -402,7 +402,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 return getResources().getString(R.string.soundboards_currently_playing);
             }
 
-            return soundboardList.get(position - 1).getName();
+            return soundboardList.get(position - 1).getSoundboard().getDisplayName();
         }
 
         /**

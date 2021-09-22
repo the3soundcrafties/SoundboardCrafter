@@ -233,7 +233,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         editView = rootView.findViewById(R.id.edit_view);
 
         if (mode == Mode.CREATE) {
-            editView.setName(soundboard.getName());
+            editView.setName(soundboard.getFullName());
         }
 
         if (mode != Mode.EDIT) {
@@ -482,7 +482,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     @UiThread
     private void updateUI(@NonNull Soundboard soundboard) {
         this.soundboard = soundboard;
-        editView.setName(soundboard.getName());
+        editView.setName(soundboard.getDisplayName());
         loadAudioFiles();
     }
 
@@ -634,7 +634,8 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
             Log.d(TAG, "Soundboard loaded.");
 
             res = res.userCopy(
-                    appContext.getString(R.string.soundboard_copy_prefix) + res.getName());
+                    appContext.getString(R.string.soundboard_copy_prefix) + res.getSoundboard()
+                            .getDisplayName());
 
             return res;
         }
