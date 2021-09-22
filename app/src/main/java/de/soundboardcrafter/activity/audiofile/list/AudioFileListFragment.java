@@ -52,6 +52,7 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioItem;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
+import de.soundboardcrafter.activity.common.audioloader.AssetsAudioLoader;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -322,7 +323,7 @@ public class AudioFileListFragment extends Fragment implements
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         } else if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             readExternalPermissionNecessary = false;
-            newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
+            newSelection = new AssetFolderAudioLocation(AssetsAudioLoader.ASSET_SOUND_PATH);
         } else {
             readExternalPermissionNecessary = true;
             newSelection = new FileSystemFolderAudioLocation("/");

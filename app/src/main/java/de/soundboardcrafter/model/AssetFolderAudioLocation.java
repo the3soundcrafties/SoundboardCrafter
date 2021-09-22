@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
+import de.soundboardcrafter.activity.common.audioloader.AssetsAudioLoader;
 
 /**
  * The certain folder <i>inside the assets folder</i> where an audio file may reside.
@@ -68,7 +68,7 @@ public class AssetFolderAudioLocation extends AbstractAudioLocation {
             return "/";
         }
 
-        return path.substring(AudioLoader.ASSET_SOUND_PATH.length());
+        return path.substring(AssetsAudioLoader.ASSET_SOUND_PATH.length());
     }
 
     @Override
@@ -83,7 +83,7 @@ public class AssetFolderAudioLocation extends AbstractAudioLocation {
 
     @Override
     public boolean isRoot() {
-        return AudioLoader.ASSET_SOUND_PATH.equals(getInternalPath());
+        return AssetsAudioLoader.ASSET_SOUND_PATH.equals(getInternalPath());
     }
 
     @Override

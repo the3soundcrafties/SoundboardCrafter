@@ -41,6 +41,7 @@ import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.AbstractPermissionFragment;
 import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
+import de.soundboardcrafter.activity.common.audioloader.AssetsAudioLoader;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.common.mediaplayer.MediaPlayerService;
 import de.soundboardcrafter.activity.common.mediaplayer.SoundboardMediaPlayer;
@@ -270,7 +271,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
             audioSelectionChanges =
                     savedInstanceState.getParcelable(STATE_AUDIO_SELECTION_CHANGES);
         } else {
-            setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+            setSelection(new AssetFolderAudioLocation(AssetsAudioLoader.ASSET_SOUND_PATH));
             audioSelectionChanges = new AudioSelectionChanges();
         }
 
@@ -420,7 +421,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
             newSelection = AnywhereInTheFileSystemAudioLocation.INSTANCE;
         } else if (selection instanceof AnywhereInTheFileSystemAudioLocation) {
             readExternalPermissionNecessary = false;
-            newSelection = new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH);
+            newSelection = new AssetFolderAudioLocation(AssetsAudioLoader.ASSET_SOUND_PATH);
         } else {
             readExternalPermissionNecessary = true;
             newSelection = new FileSystemFolderAudioLocation("/");
@@ -458,7 +459,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     protected void onPermissionReadExternalStorageNotGrantedUserGivesUp() {
         stopPlaying();
         rememberAudioSelectionChanges();
-        setSelection(new AssetFolderAudioLocation(AudioLoader.ASSET_SOUND_PATH));
+        setSelection(new AssetFolderAudioLocation(AssetsAudioLoader.ASSET_SOUND_PATH));
 
         if (soundboard != null) {
             loadAudioFiles();
