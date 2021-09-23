@@ -2,6 +2,7 @@ package de.soundboardcrafter.activity.common.audioloader;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -37,6 +38,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.model.AssetFolderAudioLocation;
+import de.soundboardcrafter.model.PathUtil;
 import de.soundboardcrafter.model.audio.AudioFolder;
 import de.soundboardcrafter.model.audio.BasicAudioModel;
 import de.soundboardcrafter.model.audio.FullAudioModel;
@@ -56,6 +58,22 @@ public class AssetsAudioLoader {
 
     private final String TAG = AssetsAudioLoader.class.getName();
 
+    /**
+     * Returns a map, containing all audio files from the assets as a map, mapping
+     * the audio path to the localized audio name.
+     */
+    public ImmutableMap<String, String> getAllAudioNamesByPath(Context context) {
+        return getAllAudiosByTopFolderName(context).values().stream()
+                .flatMap(Collection::stream)
+                .collect(toImmutableMap(
+                        a -> a.getAudioLocation().getInternalPath(),
+                        BasicAudioModel::getName));
+    }
+
+    /**
+     * Retrieves all audio files from the assets, returns a map the maps the top folder
+     * name to the audio files recursively contained.
+     */
     Map<String, List<BasicAudioModel>> getAllAudiosByTopFolderName(
             Context context) {
         final ImmutableList<Pair<String, String>> topLevelFolders = getTopLevelFolders(context);
@@ -115,8 +133,7 @@ public class AssetsAudioLoader {
     }
 
     /**
-     * Loads all audio files directly or recursively contained in a given folder <i>from the
-     * assets</i>.
+     * Loads all audio files directly or recursively contained in a given folder.
      */
     private ImmutableList<BasicAudioModel> getAudiosRecursively(
             @NonNull final Context context, @Nonnull String folder) {
@@ -129,7 +146,7 @@ public class AssetsAudioLoader {
     }
 
     /**
-     * Loads all audio files and subFolders in a given folder <i>from the assets</i>.
+     * Loads all audio files and subFolders in a given folder.
      *
      * @return The audio files and the subFolders
      */
@@ -162,7 +179,8 @@ public class AssetsAudioLoader {
                 // It's a sound file.
                 BasicAudioModel audioModel =
                         createBasicAudioModel(assetPath,
-                                translate(translations, skipExtension(fileName)));
+                                translate(translations,
+                                        pathOrFileNameToInternationalName(fileName)));
                 res.add(audioModel);
             }
         }
@@ -197,7 +215,8 @@ public class AssetsAudioLoader {
                 // It's a sound file.
                 FullAudioModel audioModel =
                         createFullAudioModel(assets, assetPath,
-                                translate(translations, skipExtension(fileName)));
+                                translate(translations,
+                                        pathOrFileNameToInternationalName(fileName)));
                 audioFileList.add(audioModel);
             }
         }
@@ -396,13 +415,8 @@ public class AssetsAudioLoader {
     }
 
     @NonNull
-    private String skipExtension(@NonNull String filename) {
-        int indexOfDot = filename.lastIndexOf(".");
-        if (indexOfDot <= 0) {
-            return filename;
-        }
-
-        return filename.substring(0, indexOfDot);
+    public static String pathOrFileNameToInternationalName(@NonNull String pathOrFileName) {
+        return PathUtil.removeExtension(PathUtil.extractFileName(pathOrFileName));
     }
 
     private long extractDurationSecs(@NonNull MediaMetadataRetriever metadataRetriever) {

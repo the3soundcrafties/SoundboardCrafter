@@ -76,6 +76,10 @@ public class AudioLoader {
         }
     }
 
+    /**
+     * Loads all audio files from the assets, returns a map the maps the top folder
+     * name to the audio files recursively contained.
+     */
     public Map<String, List<BasicAudioModel>> getAllAudiosFromAssetsByTopFolderName(
             Context appContext) {
         return assetsAudioLoader.getAllAudiosByTopFolderName(appContext);

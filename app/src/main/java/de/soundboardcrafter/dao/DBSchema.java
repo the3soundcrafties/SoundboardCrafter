@@ -90,12 +90,12 @@ class DBSchema {
             static final String ID = "_id";
 
             /**
-             * Path to the audio file (in the device's file system or the assets folder)
+             * Path to the audio file (in the device's file system or the asset folder)
              */
             static final String LOCATION_TYPE = "location_type";
 
             /**
-             * Path to the audio file (in the device's file system or the assets folder)
+             * Path to the audio file (in the device's file system or the asset folder)
              */
             static final String PATH = "path";
             static final String NAME = "name";
@@ -104,7 +104,7 @@ class DBSchema {
              */
             static final String VOLUME_PERCENTAGE = "volume_percentage";
             /**
-             * Whether the sound shall be played in a loop
+             * Configures whether the sound shall be played in a loop
              */
             static final String LOOP = "loop";
         }
@@ -128,7 +128,7 @@ class DBSchema {
     }
 
     /**
-     * Which sound belong too which soundboard(s)
+     * Saves which sound belongs to which soundboards.
      */
     static final class SoundboardSoundTable {
         static final String NAME = "soundboard_sound";

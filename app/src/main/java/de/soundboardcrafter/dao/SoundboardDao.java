@@ -53,7 +53,7 @@ public class SoundboardDao extends AbstractDao {
     }
 
     private SoundboardDao(@Nonnull Context context) {
-        super(context);
+        super(context.getApplicationContext());
     }
 
     private void init(@Nonnull Context context) {
@@ -199,6 +199,9 @@ public class SoundboardDao extends AbstractDao {
         }
     }
 
+    /**
+     * Saves or updates this soundboard with these audio files.
+     */
     public void updateProvidedSoundboardWithAudios(String name, List<BasicAudioModel> audioModels) {
         @Nullable
         Soundboard soundboard = findProvidedByName(name);
@@ -211,24 +214,14 @@ public class SoundboardDao extends AbstractDao {
         link(soundboard, audioModels);
     }
 
-    public void deleteProvidedSoundboardAndSounds(String name) {
+    /**
+     * Deletes this provided soundboard.
+     */
+    public void deleteProvidedSoundboard(String name) {
         @Nullable
         Soundboard soundboard = findProvidedByName(name);
         if (soundboard == null) {
             return;
-        }
-
-        final SoundboardWithSounds soundboardWithSounds = findWithSounds(soundboard.getId());
-
-        unlinkAllSounds(soundboard.getId());
-
-        for (Sound sound : soundboardWithSounds.getSounds()) {
-            // FIXME This is a problem in case the sound is also part in another
-            //  provided soundboard (for example when we have simply renamed a soundboard):
-            //  We must not remove the sound from the database!
-            //  if (!linkedToAProvidedSoundboard(sound)) {
-            soundDao.delete(sound.getId());
-            //  }
         }
 
         delete(soundboard.getId());
@@ -306,6 +299,9 @@ public class SoundboardDao extends AbstractDao {
         link(soundboard, audioSelectionChanges.getImmutableAdditions());
     }
 
+    /**
+     * Links this soundboard to these audio files, creating sounds on-the-fly as needed.
+     */
     private void link(Soundboard soundboard, Iterable<BasicAudioModel> audios) {
         for (BasicAudioModel audioModel : audios) {
             @Nullable

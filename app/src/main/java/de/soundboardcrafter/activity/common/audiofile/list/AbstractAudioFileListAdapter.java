@@ -61,7 +61,7 @@ public abstract class AbstractAudioFileListAdapter<T> extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public ImmutableList<T> copyAudioFolderEntries() {
+    protected ImmutableList<T> copyAudioFolderEntries() {
         return ImmutableList.copyOf(audioFolderEntries);
     }
 

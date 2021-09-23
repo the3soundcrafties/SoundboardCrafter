@@ -7,6 +7,7 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import org.jetbrains.annotations.Contract;
@@ -46,7 +47,7 @@ public class SoundDao extends AbstractDao {
     }
 
     private SoundDao(@Nonnull Context context) {
-        super(context);
+        super(context.getApplicationContext());
     }
 
     private void init(@Nonnull Context context) {
@@ -69,6 +70,18 @@ public class SoundDao extends AbstractDao {
         return res.build();
     }
 
+    public ImmutableList<Sound> findAllProvided() {
+        ImmutableList.Builder<Sound> res = ImmutableList.builder();
+
+        try (SoundCursorWrapper cursor = queryAllProvided()) {
+            while (cursor.moveToNext()) {
+                Sound sound = cursor.getSound();
+                res.add(sound);
+            }
+        }
+
+        return res.build();
+    }
 
     /**
      * Finds all sounds, each with a mark, whether the sound is part of this soundboard, and each
@@ -172,6 +185,18 @@ public class SoundDao extends AbstractDao {
     }
 
     @NonNull
+    private SoundCursorWrapper queryAllProvided() {
+        return querySounds(
+                SoundTable.Cols.LOCATION_TYPE + " = '" + SoundTable.LocationType.ASSET
+                        + "'");
+    }
+
+    @NonNull
+    private SoundCursorWrapper querySounds(String whereClause) {
+        return querySounds(whereClause, null);
+    }
+
+    @NonNull
     private SoundCursorWrapper querySounds(String whereClause, String[] whereArgs) {
         final Cursor cursor =
                 getDatabase().query(
@@ -219,7 +244,7 @@ public class SoundDao extends AbstractDao {
     }
 
     /**
-     * Updates this sound which has to exist in the database.
+     * Updates this sound - which has to exist in the database.
      */
     public void update(Sound sound) {
         int rowsUpdated = getDatabase().update(SoundTable.NAME,

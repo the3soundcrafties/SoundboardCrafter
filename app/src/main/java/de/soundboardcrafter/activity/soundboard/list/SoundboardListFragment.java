@@ -34,6 +34,7 @@ import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -48,6 +49,7 @@ import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
 import de.soundboardcrafter.activity.common.TutorialUtil;
+import de.soundboardcrafter.activity.common.audioloader.AssetsAudioLoader;
 import de.soundboardcrafter.activity.common.audioloader.AudioLoader;
 import de.soundboardcrafter.activity.sound.event.SoundEventListener;
 import de.soundboardcrafter.activity.soundboard.edit.SoundboardCreateActivity;
@@ -251,7 +253,7 @@ public class SoundboardListFragment extends Fragment
         if (!soundboard.isProvided()) {
             menu.add(UNIQUE_TAB_ID,
                     CONTEXT_MENU_DELETE_ITEM_ID,
-                    order++,
+                    order,
                     R.string.context_menu_remove_soundboard);
         }
 
@@ -341,11 +343,12 @@ public class SoundboardListFragment extends Fragment
     @Override
     public void somethingMightHaveChanged() {
         @Nullable Context context = getContext();
-        if (context == null) {
+        if (context == null || getActivity() == null) {
             return;
         }
 
-        if (noSoundboards(getActivity()) || providedSoundboardsNeedToBeUpdated(getActivity())) {
+        if (noSoundboards(requireActivity())
+                || providedSoundboardsNeedToBeUpdated(requireActivity())) {
             setLoadingProgress(0);
             listView.addFooterView(loadingFooterView);
         } else {
@@ -465,16 +468,23 @@ public class SoundboardListFragment extends Fragment
             return res;
         }
 
+        /**
+         * If necessary, generates the provided soundboards (from the assets) or updates
+         * the existing provided soundboards and sounds (based on the asset sounds).
+         */
         private void updateSoundboardsIfNecessary(Context appContext) {
             if (noSoundboards(appContext)) {
                 generateProvidedSoundboards(appContext);
             } else if (providedSoundboardsNeedToBeUpdated(appContext)) {
-                updateProvidedSoundboards(appContext);
+                updateProvidedSoundboardsAndSounds(appContext);
             }
 
             DBHelper.setProvidedSoundboardsNeedToBeChecked(appContext, false);
         }
 
+        /**
+         * Generates the provided soundboards from the assets.
+         */
         private void generateProvidedSoundboards(Context appContext) {
             Log.d(TAG, "Generating soundboards from included audio files...");
             publishProgress(10);
@@ -504,6 +514,9 @@ public class SoundboardListFragment extends Fragment
             Log.d(TAG, "Soundboards generated.");
         }
 
+        /**
+         * Generates a provided soundboard.
+         */
         private void generateProvidedSoundboard(Context appContext, String name,
                                                 List<BasicAudioModel> audioModels) {
             Soundboard soundboard = new Soundboard(name, true);
@@ -520,7 +533,11 @@ public class SoundboardListFragment extends Fragment
                     .insertSoundboardAndInsertAllSounds(soundboardWithSounds);
         }
 
-        private void updateProvidedSoundboards(Context appContext) {
+        /**
+         * Migrates (updates, complements, deletes) the existing provided soundboards and sounds,
+         * based on the current assets.
+         */
+        private void updateProvidedSoundboardsAndSounds(Context appContext) {
             Log.d(TAG, "Updating soundboards from included audio files...");
             publishProgress(10);
 
@@ -536,10 +553,44 @@ public class SoundboardListFragment extends Fragment
 
             deleteObsoleteSoundboards(appContext, oldSoundboards, newSoundboardNames);
 
+            updateProvidedSounds(appContext);
+
             publishProgress(90);
             Log.d(TAG, "Soundboards updated.");
         }
 
+        /**
+         * Updates or complements the existing provided soundboards,
+         * based on the current assets. Does not do deletions.
+         *
+         * @return The names of the soundboards according to the assets.
+         */
+        @NonNull
+        private ImmutableSet.Builder<String> updateNewSoundboards(
+                Context appContext,
+                Map<String, List<BasicAudioModel>> audioModelsByTopFolderName) {
+            final ImmutableSet.Builder<String> newSoundboardNames = ImmutableSet.builder();
+
+            int numNewSoundboards = audioModelsByTopFolderName.size();
+            int newSoundboardCount = 0;
+
+            for (Map.Entry<String, List<BasicAudioModel>> entry :
+                    audioModelsByTopFolderName.entrySet()) {
+                updateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
+
+                newSoundboardNames.add(entry.getKey());
+
+                publishProgress(10 + 30 * newSoundboardCount / numNewSoundboards);
+
+                newSoundboardCount++;
+            }
+            return newSoundboardNames;
+        }
+
+        /**
+         * Deletes the old provided Soundboards whenever they are not part of the new provided
+         * soundboards.
+         */
         private void deleteObsoleteSoundboards(Context appContext,
                                                ImmutableList<Soundboard> oldSoundboards,
                                                ImmutableSet.Builder<String> newSoundboardNames) {
@@ -558,40 +609,67 @@ public class SoundboardListFragment extends Fragment
 
                 removedSoundboardCount++;
 
-                publishProgress(70 + 20 * removedSoundboardCount / numRemovedSoundboards);
+                publishProgress(40 + 30 * removedSoundboardCount / numRemovedSoundboards);
             }
         }
 
-        @NonNull
-        private ImmutableSet.Builder<String> updateNewSoundboards(
-                Context appContext,
-                Map<String, List<BasicAudioModel>> audioModelsByTopFolderName) {
-            final ImmutableSet.Builder<String> newSoundboardNames = ImmutableSet.builder();
+        /**
+         * Updates or deletes sounds, based on the current assets:
+         * <ul>
+         * <li>If a sound is no longer part of the assets, the sound will be deleted.</li>
+         * <li>If a sound is still part of the assets and still has its international (english)
+         * name,
+         * and now we provide a localized name for the sound, update the name to the localized
+         * name.</li>
+         * </ul>
+         */
+        private void updateProvidedSounds(Context appContext) {
+            ImmutableMap<String, String> allAssetsAudioNamesByPath =
+                    new AssetsAudioLoader().getAllAudioNamesByPath(appContext);
 
-            int numNewSoundboards = audioModelsByTopFolderName.size();
-            int newSoundboardCount = 0;
+            SoundDao soundDao = SoundDao.getInstance(appContext);
 
-            for (Map.Entry<String, List<BasicAudioModel>> entry :
-                    audioModelsByTopFolderName.entrySet()) {
-                updateProvidedSoundboard(appContext, entry.getKey(), entry.getValue());
+            final ImmutableList<Sound> providedSounds = soundDao.findAllProvided();
 
-                newSoundboardNames.add(entry.getKey());
+            int numProvidedSounds = providedSounds.size();
+            int providedSoundsCount = 0;
 
-                publishProgress(10 + 60 * newSoundboardCount / numNewSoundboards);
+            for (Sound sound : providedSounds) {
+                final String path = sound.getAudioLocation().getInternalPath();
+                @Nullable String audioName = allAssetsAudioNamesByPath.get(path);
 
-                newSoundboardCount++;
+                if (audioName == null) {
+                    // Audio file has been removed from the assets.
+                    soundDao.delete(sound.getId());
+                } else if (sound.getName().equals(
+                        AssetsAudioLoader.pathOrFileNameToInternationalName(path))
+                        && !sound.getName().equals(audioName)) {
+                    // Sound name has not been changed manually, but now
+                    // we have provided a translated name - use ths translated name.
+                    sound.setName(audioName);
+                    soundDao.update(sound);
+                }
+
+                providedSoundsCount++;
+
+                publishProgress(70 + 20 * providedSoundsCount / numProvidedSounds);
             }
-            return newSoundboardNames;
         }
 
+        /**
+         * Saves or updates this soundboard with these audio files.
+         */
         private void updateProvidedSoundboard(Context appContext, String name,
                                               List<BasicAudioModel> audioModels) {
             SoundboardDao.getInstance(appContext)
                     .updateProvidedSoundboardWithAudios(name, audioModels);
         }
 
+        /**
+         * Deletes this provided soundboard.
+         */
         private void deleteProvidedSoundboard(Context appContext, String name) {
-            SoundboardDao.getInstance(appContext).deleteProvidedSoundboardAndSounds(name);
+            SoundboardDao.getInstance(appContext).deleteProvidedSoundboard(name);
         }
 
         private Sound toSound(BasicAudioModel audioModel) {

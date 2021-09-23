@@ -34,7 +34,7 @@ public class FavoritesDao extends AbstractDao {
     }
 
     private FavoritesDao(@Nonnull Context context) {
-        super(context);
+        super(context.getApplicationContext());
     }
 
     /**

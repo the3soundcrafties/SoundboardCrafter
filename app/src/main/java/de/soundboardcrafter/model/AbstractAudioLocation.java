@@ -1,5 +1,6 @@
 package de.soundboardcrafter.model;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -17,6 +18,10 @@ public abstract class AbstractAudioLocation implements IAudioFileSelection {
      * Returns the display name (not necessary the full path).
      */
     public abstract String getDisplayName();
+
+    @Override
+    @NonNull
+    public abstract String getInternalPath();
 
     public abstract AbstractAudioLocation folderUp() throws IllegalStateException;
 

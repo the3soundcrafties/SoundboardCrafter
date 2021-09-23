@@ -8,8 +8,8 @@ import java.util.UUID;
 import de.soundboardcrafter.model.AbstractAudioLocation;
 import de.soundboardcrafter.model.Sound;
 
-public class AbstractSimpleSoundCursorWrapper extends CursorWrapper {
-    public AbstractSimpleSoundCursorWrapper(Cursor cursor) {
+class AbstractSimpleSoundCursorWrapper extends CursorWrapper {
+    AbstractSimpleSoundCursorWrapper(Cursor cursor) {
         super(cursor);
     }
 

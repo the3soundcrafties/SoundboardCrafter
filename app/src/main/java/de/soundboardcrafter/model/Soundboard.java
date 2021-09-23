@@ -110,7 +110,7 @@ public class Soundboard extends AbstractEntity {
         return name;
     }
 
-    public void setName(@NonNull String name) {
+    public final void setName(@NonNull String name) {
         checkNotNull(name, "name is null");
         this.name = name;
 
