@@ -681,7 +681,7 @@ public class SoundboardListFragment extends Fragment
             Context appContext = appContextRef.get();
 
             if (appContext == null) {
-                // application context no longer available, I guess that progress
+                // Application context no longer available, I guess that progress
                 // will be of no use to anyone.
                 // (Anyway - there is no reason to cancel preparing the soundboards.)
                 return;
