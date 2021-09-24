@@ -156,13 +156,15 @@ public class PlayingFragment extends Fragment implements
 
         if (context instanceof ISoundboardPlayActivity) {
             hostingActivity = (ISoundboardPlayActivity) context;
+            hostingActivity.addFragment(this);
         }
     }
 
     @Override
     public void onDetach() {
-        super.onDetach();
+        hostingActivity.removeFragment(this);
         hostingActivity = null;
+        super.onDetach();
     }
 
     @Override

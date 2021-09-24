@@ -520,13 +520,16 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         if (context instanceof ISoundboardPlayActivity) {
             hostingActivity = (ISoundboardPlayActivity) context;
+            hostingActivity.addFragment(this);
+
         }
     }
 
     @Override
     public void onDetach() {
-        super.onDetach();
+        hostingActivity.removeFragment(this);
         hostingActivity = null;
+        super.onDetach();
     }
 
     private void onCreateSoundboardContextMenu(Sound sound, @NonNull ContextMenu menu) {
@@ -613,7 +616,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         switch (requestCode) {
             case EDIT_SOUND_REQUEST_CODE:
-                Log.d(TAG, "Editing sound " + this + ": Returned from sound edit fragment with OK");
+                Log.d(TAG, "Editing sound " + this
+                        + ": Returned from sound edit fragment with OK");
 
                 @Nullable String soundIdString =
                         data.getStringExtra(SoundEditFragment.EXTRA_SOUND_ID);
@@ -621,6 +625,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                     final UUID soundId = UUID.fromString(soundIdString);
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
                     // Sound has been changed
+
+                    // FIXME Call hostactivity....?!
                 } else {
                     // Sound file has been deleted
                     if (hostingActivity != null) {

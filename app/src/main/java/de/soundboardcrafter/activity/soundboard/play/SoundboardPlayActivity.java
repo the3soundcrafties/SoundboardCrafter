@@ -84,6 +84,8 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private final View.OnTouchListener emptyOnTouchListener = (v, event) -> true;
 
+    private final List<Fragment> fragments = new ArrayList<>();
+
     /**
      * ID of the chosen favorites - or <code>null</code>, if all soundboards shall be displayed.
      */
@@ -192,6 +194,16 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     @Override
+    public void addFragment(Fragment fragment) {
+        fragments.add(fragment);
+    }
+
+    @Override
+    public void removeFragment(Fragment fragment) {
+        fragments.remove(fragment);
+    }
+
+    @Override
     public void setChangingSoundboardEnabled(final boolean enabled) {
         pager.setUserInputEnabled(enabled);
 
@@ -212,8 +224,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
          */
-
-
         LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
 
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
@@ -293,7 +303,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
         return true;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -486,10 +495,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     private void notifySoundsChanged() {
-        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+        for (Fragment fragment : fragments) {
             if (fragment instanceof SoundboardFragment) {
                 ((SoundboardFragment) fragment).notifySoundsChanged();
             }
+
+            // FIXME PlayingFragment?
         }
     }
 
