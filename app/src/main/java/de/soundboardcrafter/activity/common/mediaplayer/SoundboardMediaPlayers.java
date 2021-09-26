@@ -100,14 +100,16 @@ class SoundboardMediaPlayers {
         } else if (audioLocation instanceof AssetFolderAudioLocation) {
             @NonNull String assetPath =
                     ((AssetFolderAudioLocation) audioLocation).getInternalPath();
-            try (AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath)) {
-                // Javadoc: "It is the caller's responsibility to close the file descriptor. It is
-                // safe to do so as soon as this call returns."
-                mediaPlayer.setDataSource(
-                        fileDescriptor.getFileDescriptor(),
-                        fileDescriptor.getStartOffset(),
-                        fileDescriptor.getLength());
-            }
+
+            // FIXME Never closed...
+
+            AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath);
+            // Javadoc: "It is the caller's responsibility to close the file descriptor. It is
+            // safe to do so as soon as this call returns."
+            mediaPlayer.setDataSource(
+                    fileDescriptor.getFileDescriptor(),
+                    fileDescriptor.getStartOffset(),
+                    fileDescriptor.getLength());
         } else {
             throw new IllegalStateException("Unexpected audio location type: " +
                     audioLocation.getClass());
