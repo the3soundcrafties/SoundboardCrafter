@@ -139,7 +139,7 @@ public class SoundboardMediaPlayer {
     void setDataSource(Context context,
                        FileDescriptor dataSourceFileDescriptor, long dataSourceOffset,
                        long dataSourceLength) throws IOException {
-        mediaPlayer = new LoopMediaPlayer2(context.getApplicationContext(), R.raw.glaeser_raw);
+        mediaPlayer = new LoopMediaPlayer2(context.getApplicationContext(), R.raw.glaeser_ogg_cut);
         mediaPlayer.start();
     }
 
