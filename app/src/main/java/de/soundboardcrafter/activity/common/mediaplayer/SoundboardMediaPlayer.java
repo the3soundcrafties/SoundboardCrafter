@@ -13,6 +13,8 @@ import java.io.Serializable;
 
 import javax.annotation.Nonnull;
 
+import de.soundboardcrafter.R;
+
 public class SoundboardMediaPlayer {
     private static final String TAG = SoundboardMediaPlayer.class.getName();
 
@@ -42,7 +44,7 @@ public class SoundboardMediaPlayer {
     private Context context;
 
     @Nonnull
-    private LoopMediaPlayer mediaPlayer;
+    private LoopMediaPlayer2 mediaPlayer;
 
     private float volume;
 
@@ -134,10 +136,11 @@ public class SoundboardMediaPlayer {
     void setDataSource(String dataSourcePath) throws IOException {
     }
 
-    void setDataSource(FileDescriptor dataSourceFileDescriptor, long dataSourceOffset,
+    void setDataSource(Context context,
+                       FileDescriptor dataSourceFileDescriptor, long dataSourceOffset,
                        long dataSourceLength) throws IOException {
-        mediaPlayer = new LoopMediaPlayer(context, dataSourceFileDescriptor,
-                dataSourceOffset, dataSourceLength);
+        mediaPlayer = new LoopMediaPlayer2(context.getApplicationContext(), R.raw.glaeser_raw);
+        mediaPlayer.start();
     }
 
     private void setOnCompletionListener() {

@@ -15,70 +15,74 @@ public class LoopMediaPlayer {
 
     public static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
-    private Context mContext = null;
-    private final FileDescriptor mFileDescriptor;
     long mDataSourceOffset;
     long mDataSourceLength;
-    private int mCounter = 1;
 
-    private MediaPlayer mCurrentPlayer = null;
-    private MediaPlayer mNextPlayer = null;
+    private final MediaPlayer currentPlayer;
+    private final MediaPlayer nextPlayer;
 
 
     LoopMediaPlayer(Context context, FileDescriptor fileDescriptor, long dataSourceOffset,
                     long dataSourceLength) throws IOException {
-        mContext = context;
-        mFileDescriptor = fileDescriptor;
-        mDataSourceOffset = dataSourceOffset;
-        mDataSourceLength = dataSourceLength;
+        currentPlayer = new MediaPlayer();
 
-        mCurrentPlayer = new MediaPlayer();
-        mCurrentPlayer.setAudioAttributes(new AudioAttributes.Builder()
+        currentPlayer.setAudioAttributes(new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .setLegacyStreamType(AudioManager.STREAM_MUSIC)
                 .build());
-        mCurrentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        currentPlayer.setDataSource(fileDescriptor, mDataSourceOffset, mDataSourceLength);
+        currentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
-                mCurrentPlayer.start();
+                currentPlayer.start();
             }
         });
-        mCurrentPlayer.setDataSource(fileDescriptor, mDataSourceOffset, mDataSourceLength);
-        mCurrentPlayer.prepareAsync();
+        currentPlayer.prepareAsync();
 
-        createNextMediaPlayer();
-    }
-
-    private void createNextMediaPlayer() throws IOException {
-        mNextPlayer = new MediaPlayer();
-        mNextPlayer.setAudioAttributes(new AudioAttributes.Builder()
+        nextPlayer = new MediaPlayer();
+        nextPlayer.setAudioAttributes(new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .setLegacyStreamType(AudioManager.STREAM_MUSIC)
                 .build());
-        mNextPlayer.setDataSource(mFileDescriptor, mDataSourceOffset, mDataSourceLength);
-        mNextPlayer.prepare();
+        nextPlayer.setDataSource(fileDescriptor, mDataSourceOffset, mDataSourceLength);
+        nextPlayer.prepare();
 
-        mCurrentPlayer.setNextMediaPlayer(mNextPlayer);
-        mCurrentPlayer.setOnCompletionListener(onCompletionListener);
-    }
+        currentPlayer.setNextMediaPlayer(nextPlayer);
 
-    private final MediaPlayer.OnCompletionListener onCompletionListener =
-            new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    mediaPlayer.release();
-                    mCurrentPlayer = mNextPlayer;
 
-                    try {
-                        createNextMediaPlayer();
-                    } catch (IOException e) {
-                        Log.e(TAG, e.getMessage(), e);
-                        throw new RuntimeException(e);
+        currentPlayer.setOnCompletionListener(
+                new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        try {
+                            currentPlayer.reset();
+                            currentPlayer.setDataSource(fileDescriptor, mDataSourceOffset,
+                                    mDataSourceLength);
+                            currentPlayer.prepare();
+                            nextPlayer.setNextMediaPlayer(currentPlayer);
+                        } catch (Exception e) {
+                            Log.e(TAG, "onCompletion: unexpected exception", e);
+                        }
                     }
+                });
+        nextPlayer.setOnCompletionListener(
+                new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        try {
+                            nextPlayer.reset();
+                            nextPlayer.setDataSource(fileDescriptor, mDataSourceOffset,
+                                    mDataSourceLength);
+                            nextPlayer.prepare();
+                            currentPlayer.setNextMediaPlayer(nextPlayer);
+                        } catch (Exception e) {
+                            Log.e(TAG, "onCompletion: unexpected exception", e);
+                        }
+                    }
+                });
 
-                    Log.d(TAG, String.format("Loop #%d", ++mCounter));
-                }
-            };
+        currentPlayer.start();
+    }
 }
