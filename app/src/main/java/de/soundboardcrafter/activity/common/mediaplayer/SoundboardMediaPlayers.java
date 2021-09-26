@@ -107,6 +107,7 @@ class SoundboardMediaPlayers {
             // Javadoc: "It is the caller's responsibility to close the file descriptor. It is
             // safe to do so as soon as this call returns."
             mediaPlayer.setDataSource(
+                    context,
                     fileDescriptor.getFileDescriptor(),
                     fileDescriptor.getStartOffset(),
                     fileDescriptor.getLength());
