@@ -273,6 +273,12 @@ public class SoundboardPlayActivity extends AppCompatActivity
     }
 
     @Override
+    public void soundsChanged() {
+        pagerAdapter.clearForReset(false);
+        new FindSoundboardsTask(this, favoritesId).execute();
+    }
+
+    @Override
     public void soundsDeleted() {
         pagerAdapter.clearForReset(false);
         new FindSoundboardsTask(this, favoritesId).execute();
@@ -639,7 +645,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 index = pagerAdapter.getIndex(tabUuid);
             }
 
-            pager.setCurrentItem(index != null ? index : 0, false);
+            final Integer finalIndex = index;
+
+            // This posting seems to help against bug
+            // https://issuetracker.google.com/issues/72390853 .
+            pager.post(() ->
+                    pager.setCurrentItem(finalIndex != null ? finalIndex : 0, false)
+            );
         }
     }
 
@@ -700,7 +712,13 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 index = pagerAdapter.getIndex(tabUuid);
             }
 
-            pager.setCurrentItem(index != null ? index : 0, false);
+            final Integer finalIndex = index;
+
+            // This posting seems to help against bug
+            // https://issuetracker.google.com/issues/72390853 .
+            pager.post(() ->
+                    pager.setCurrentItem(finalIndex != null ? finalIndex : 0, false)
+            );
         }
     }
 }

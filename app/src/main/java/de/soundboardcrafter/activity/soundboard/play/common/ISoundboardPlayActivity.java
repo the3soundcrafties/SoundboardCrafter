@@ -7,6 +7,8 @@ public interface ISoundboardPlayActivity {
 
     void removeFragment(Fragment fragment);
 
+    void soundsChanged();
+
     void soundsDeleted();
 
     void setChangingSoundboardEnabled(boolean changingSoundboardEnabled);

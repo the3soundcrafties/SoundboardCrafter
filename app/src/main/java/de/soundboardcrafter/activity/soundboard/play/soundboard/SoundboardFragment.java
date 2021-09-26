@@ -625,8 +625,11 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                     final UUID soundId = UUID.fromString(soundIdString);
                     new UpdateSoundsTask(requireActivity()).execute(soundId);
                     // Sound has been changed
-
-                    // FIXME Call hostactivity....?!
+                    /* FIXME Not necessary?
+                    if (hostingActivity != null) {
+                        hostingActivity.soundsChanged();
+                    }
+                    */
                 } else {
                     // Sound file has been deleted
                     if (hostingActivity != null) {

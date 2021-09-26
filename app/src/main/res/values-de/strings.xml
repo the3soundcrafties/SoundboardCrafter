@@ -36,7 +36,6 @@
     <string name="sound_edit_soundboards_label">Soundboards</string>
     <string name="soundboards_tab_title">Soundboards</string>
     <string name="sounds_tab_title">Sounds</string>
-    <string name="audiofile_list_file_not_found">Sound-Datei nicht gefunden</string>
     <string name="update_all_soundboards_and_sounds">Bereinigen</string>
     <plurals name="subfolder_num_sounds">
         <item quantity="one">1 Sound</item>
@@ -47,7 +46,7 @@
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
     <string name="new_soundboard">Neues Soundboard hinzufügen</string>
-    <string name="soundboard_list_preparing">Soundboards werden vorbereitet…</string>
+    <string name="soundboard_list_preparing">Soundboards werden vorbereitet …</string>
     <string name="new_soundboard_name">NEU</string>
     <string name="new_favorites_name">NEUE FAVORITEN</string>
     <string name="sound_name">Name des Sounds</string>
@@ -65,7 +64,6 @@
         <item quantity="other">%d Soundboards</item>
     </plurals>
     <string name="soundboards_default_toolbar">Alle Soundboards</string>
-    <string name="soundboard_file_not_found">Sound-Datei nicht gefunden – aus Soundboard(s) entfernt</string>
     <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
     <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
     <string name="tutorial_soundboard_play_edit_sound_description">Lang klicken zum Bearbeiten</string>
