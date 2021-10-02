@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Color scheme: https://paletton.com/#uid=73f0u0kw0qSlNyhrTvvAklUIdgF -->
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimarySlightlyDark">#006c60</color>
     <color name="colorPrimaryDark">#00574B</color>
