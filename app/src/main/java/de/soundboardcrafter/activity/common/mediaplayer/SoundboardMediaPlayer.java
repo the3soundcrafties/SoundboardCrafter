@@ -1,6 +1,7 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 
@@ -13,9 +14,9 @@ import java.io.Serializable;
 
 import javax.annotation.Nonnull;
 
-import de.soundboardcrafter.R;
-
 public class SoundboardMediaPlayer {
+    // FIXME Check for changes...
+
     private static final String TAG = SoundboardMediaPlayer.class.getName();
 
     private AudioAttributes audioAttributes;
@@ -136,10 +137,10 @@ public class SoundboardMediaPlayer {
     void setDataSource(String dataSourcePath) throws IOException {
     }
 
-    void setDataSource(Context context,
-                       FileDescriptor dataSourceFileDescriptor, long dataSourceOffset,
-                       long dataSourceLength) throws IOException {
-        mediaPlayer = new LoopMediaPlayer2(context.getApplicationContext(), R.raw.glaeser_ogg_cut);
+    void setDataSource(Context context, AssetFileDescriptor assetFileDescriptor)
+            throws IOException {
+        mediaPlayer = new LoopMediaPlayer2(context.getApplicationContext(),
+                assetFileDescriptor);
         mediaPlayer.start();
     }
 

@@ -5,7 +5,12 @@ import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.util.Log;
 
+import java.io.FileDescriptor;
+import java.io.IOException;
+
 public class LoopMediaPlayer2 {
+    // FIXME Merge with LoopMediaPlayer and remove
+
     public static final String TAG = LoopMediaPlayer2.class.getSimpleName();
 
     private final MediaPlayer currentPlayer;
@@ -13,51 +18,46 @@ public class LoopMediaPlayer2 {
     private final AssetFileDescriptor soundFileDescriptor;
     private float volume;
 
-    LoopMediaPlayer2(Context context, int resId) {
-        soundFileDescriptor = context.getResources().openRawResourceFd(resId);
+    LoopMediaPlayer2(Context context, AssetFileDescriptor assetFileDescriptor) throws IOException {
+        soundFileDescriptor = // context.getResources().openRawResourceFd(resId);
+                assetFileDescriptor;
 
-        currentPlayer = MediaPlayer.create(context, resId);
-        nextPlayer = MediaPlayer.create(context, resId);
+        final FileDescriptor fileDescriptor = soundFileDescriptor.getFileDescriptor();
+        final long startOffset = soundFileDescriptor.getStartOffset();
+        final long length = soundFileDescriptor.getLength();
+
+        currentPlayer = new MediaPlayer();
+        currentPlayer.setDataSource(fileDescriptor, startOffset, length);
+        currentPlayer.prepare();
+
+        nextPlayer = new MediaPlayer();
+        nextPlayer.setDataSource(fileDescriptor, startOffset, length);
+        nextPlayer.prepare();
+
         currentPlayer.setNextMediaPlayer(nextPlayer);
 
         currentPlayer.setOnCompletionListener(
-                new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mediaPlayer) {
-                        try {
-                            currentPlayer.reset();
-                            currentPlayer.setDataSource(
-                                    soundFileDescriptor.getFileDescriptor(),
-                                    soundFileDescriptor.getStartOffset(),
-                                    soundFileDescriptor.getLength());
-                            currentPlayer.prepare();
-                            nextPlayer.setNextMediaPlayer(currentPlayer);
-                        } catch (Exception e) {
-                            Log.w(TAG, "onCompletion: unexpected exception", e);
-                        }
+                mediaPlayer -> {
+                    try {
+                        currentPlayer.reset();
+                        currentPlayer.setDataSource(fileDescriptor, startOffset, length);
+                        currentPlayer.prepare();
+                        nextPlayer.setNextMediaPlayer(currentPlayer);
+                    } catch (Exception e) {
+                        Log.w(TAG, "onCompletion: unexpected exception", e);
                     }
                 });
         nextPlayer.setOnCompletionListener(
-                new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mediaPlayer) {
-                        try {
-                            nextPlayer.reset();
-                            nextPlayer.setDataSource(
-                                    soundFileDescriptor.getFileDescriptor(),
-                                    soundFileDescriptor.getStartOffset(),
-                                    soundFileDescriptor.getLength());
-                            nextPlayer.prepare();
-                            currentPlayer.setNextMediaPlayer(nextPlayer);
-                        } catch (Exception e) {
-                            Log.w(TAG, "onCompletion: unexpected exception", e);
-                        }
+                mediaPlayer -> {
+                    try {
+                        nextPlayer.reset();
+                        nextPlayer.setDataSource(fileDescriptor, startOffset, length);
+                        nextPlayer.prepare();
+                        currentPlayer.setNextMediaPlayer(nextPlayer);
+                    } catch (Exception e) {
+                        Log.w(TAG, "onCompletion: unexpected exception", e);
                     }
                 });
-    }
-
-    public static LoopMediaPlayer2 create(Context context, int resId) {
-        return new LoopMediaPlayer2(context, resId);
     }
 
     public void start() {

@@ -103,14 +103,10 @@ class SoundboardMediaPlayers {
 
             // FIXME Never closed...
 
-            AssetFileDescriptor fileDescriptor = context.getAssets().openFd(assetPath);
+            AssetFileDescriptor assetFileDescriptor = context.getAssets().openFd(assetPath);
             // Javadoc: "It is the caller's responsibility to close the file descriptor. It is
             // safe to do so as soon as this call returns."
-            mediaPlayer.setDataSource(
-                    context,
-                    fileDescriptor.getFileDescriptor(),
-                    fileDescriptor.getStartOffset(),
-                    fileDescriptor.getLength());
+            mediaPlayer.setDataSource(context, assetFileDescriptor);
         } else {
             throw new IllegalStateException("Unexpected audio location type: " +
                     audioLocation.getClass());

@@ -12,6 +12,9 @@ import java.io.IOException;
 // See https://stackoverflow.com/questions/26274182/not-able-to-achieve-gapless-audio-looping-so
 // -far-on-android
 public class LoopMediaPlayer {
+    // FIXME Check for differences with original...
+
+    // FIXME Merge with MediaPlayer...
 
     public static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
