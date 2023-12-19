@@ -98,7 +98,7 @@ public class MediaPlayerService extends Service {
 
         launchUIPendingIntent =
                 PendingIntent.getActivity(this, 0,
-                        notificationIntent, 0);
+                        notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         mediaSession =
                 new MediaSessionCompat(this, MEDIA_SESSION_TAG);
@@ -413,7 +413,8 @@ public class MediaPlayerService extends Service {
     private PendingIntent createStopPendingIntent() {
         Intent intent = new Intent(getApplicationContext(), MediaPlayerService.class);
         intent.setAction(ACTION_STOP);
-        return PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent, 0);
+        return PendingIntent.getService(getApplicationContext(), REQUEST_CODE_STOP, intent,
+                PendingIntent.FLAG_IMMUTABLE);
     }
 
     private enum SummaryStyle {
