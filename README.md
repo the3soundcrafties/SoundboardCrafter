@@ -7,4 +7,4 @@ game experience. Best suited for dungeon crawl and fantasy boardgames and pen & 
 https://sonarcloud.io/dashboard?id=the3soundcrafties_SoundboardCrafter
 
 ## Release
-- [How to release](how-to-release.md)
+- [How to release](HOW_TO_RELEASE.md)
