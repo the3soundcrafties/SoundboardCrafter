@@ -46,7 +46,7 @@ public class ResetAllDialogFragment extends DialogFragment {
         super.onAttach(context);
         // Verify that the host activity implements the callback interface
         try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
+            // Instantiate the NoticeDialogListener, so we can send events to the host
             onOkCallback = (OnOkCallback) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception

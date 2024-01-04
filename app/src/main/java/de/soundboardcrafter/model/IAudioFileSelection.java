@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
  * <li>Only files from a certain folder in the assets
  * </ul>>
  * <p/>
- * Every subclass needs to provide {@link #equals(Object)} and {@link #hashCode()}
+ * Every subclass needs to provide <code>equals()</code> and <code>hashCode()</code>
  * as appropriate for a <i>value object</i>.
  */
 public interface IAudioFileSelection extends Parcelable, Serializable {

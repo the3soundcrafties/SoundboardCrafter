@@ -28,10 +28,6 @@ import de.soundboardcrafter.model.FileSystemFolderAudioLocation;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.Soundboard;
 
-/**
- * Several media players. Some of them are <i>active</i>, others are <i>fading out</i>.
- */
-@SuppressWarnings("GrazieInspection")
 class SoundboardMediaPlayers {
     /**
      * The players that are <i>actively playing</i>, that is, they are <i>not</i> fading out.

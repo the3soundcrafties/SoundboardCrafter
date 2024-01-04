@@ -73,7 +73,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     public static final String EXTRA_FAVORITES_ID = "FavoritesId";
 
     /**
-     * The UUID used to identiy the "Currently Playing" tab.
+     * The UUID used to identify the "Currently Playing" tab.
      */
     private static final UUID PLAYING_TAB_UUID =
             UUID.fromString("a4a4d6b4-13ec-45ff-b505-6f7840d14c04");
