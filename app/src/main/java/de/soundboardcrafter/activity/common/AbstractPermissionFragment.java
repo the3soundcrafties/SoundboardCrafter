@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity.common;
 
-import android.Manifest;
 import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
@@ -9,14 +8,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public abstract class AbstractPermissionFragment extends Fragment {
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1024;
+    private static final int REQUEST_PERMISSION_TO_READ_AUDIO_FILE = 1024;
 
     @UiThread
-    protected boolean isPermissionReadExternalStorageGrantedIfNotAskForIt() {
+    protected final boolean isPermissionToReadAudioFilesGrantedIfNotAskForIt() {
         if (ContextCompat.checkSelfPermission(requireActivity(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
+                PermissionUtil.calcPermissionToReadAudioFiles())
                 != PackageManager.PERMISSION_GRANTED) {
-            requestReadExternalPermission();
+            requestPermissionToReadAudioFiles();
 
             return false;
         }
@@ -37,10 +36,10 @@ public abstract class AbstractPermissionFragment extends Fragment {
             return;
         }
 
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+        if (requestCode == REQUEST_PERMISSION_TO_READ_AUDIO_FILE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 PermissionUtil.setShouldShowStatus(requireActivity(),
-                        Manifest.permission.READ_EXTERNAL_STORAGE);
+                        PermissionUtil.calcPermissionToReadAudioFiles());
                 showPermissionRationale();
                 return;
             }
@@ -59,18 +58,18 @@ public abstract class AbstractPermissionFragment extends Fragment {
     private void onOk() {
         if (PermissionUtil
                 .androidDoesNotShowPermissionPopupsAnymore(requireActivity(),
-                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        PermissionUtil.calcPermissionToReadAudioFiles())) {
             startActivity(PermissionUtil.buildAppSettingsIntent());
         } else {
-            requestReadExternalPermission();
+            requestPermissionToReadAudioFiles();
         }
     }
 
     @UiThread
-    private void requestReadExternalPermission() {
-        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+    private void requestPermissionToReadAudioFiles() {
+        requestPermissions(new String []{PermissionUtil.calcPermissionToReadAudioFiles()},
+                REQUEST_PERMISSION_TO_READ_AUDIO_FILE);
     }
-
     protected abstract void onPermissionReadExternalStorageNotGrantedUserGivesUp();
+
 }

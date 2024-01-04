@@ -321,7 +321,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             final AbstractAudioLocation audioLocation = sound.getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                    || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
                 soundboardItemRow.setImage(R.drawable.ic_stop);
                 try {
                     service.play(soundboard.getSoundboard(), sound,
@@ -639,7 +639,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         return mediaPlayerService;
     }
 
-    public boolean isInActionMode() {
+    private boolean isInActionMode() {
         return actionMode != null;
     }
 

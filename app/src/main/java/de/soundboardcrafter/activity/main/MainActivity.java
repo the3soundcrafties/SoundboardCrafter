@@ -1,6 +1,5 @@
 package de.soundboardcrafter.activity.main;
 
-import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -48,7 +47,7 @@ import de.soundboardcrafter.dao.TutorialDao;
  */
 public class MainActivity extends AppCompatActivity
         implements SoundEventListener {
-    private static final int REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_PERMISSION_TO_READ_AUDIO_FILE = 1;
 
     private static final String KEY_SELECTED_PAGE = "selectedPage";
 
@@ -62,7 +61,8 @@ public class MainActivity extends AppCompatActivity
     @Nullable
     private OnBackPressedCallback onBackPressed;
 
-    public OnBackPressedCallback getBackToSoundboardsCallback() {
+    @NonNull
+    private OnBackPressedCallback getBackToSoundboardsCallback() {
         return new OnBackPressedCallback(true /* enabled by default */) {
             @Override
             public void handleOnBackPressed() {
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity
 
                     if (selectedPage == Page.SOUNDS) {
                         if (ContextCompat.checkSelfPermission(MainActivity.this,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                                PermissionUtil.calcPermissionToReadAudioFiles())
                                 != PackageManager.PERMISSION_GRANTED) {
                             requestReadExternalPermission();
                         }
@@ -166,11 +166,11 @@ public class MainActivity extends AppCompatActivity
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+        if (requestCode == REQUEST_PERMISSION_TO_READ_AUDIO_FILE) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 // Permission not granted
                 PermissionUtil.setShouldShowStatus(this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE);
+                        PermissionUtil.calcPermissionToReadAudioFiles());
                 showPermissionRationale();
                 return;
             }
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity
 
     private void onSoundPermissionsRationaleOk() {
         if (PermissionUtil.androidDoesNotShowPermissionPopupsAnymore(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                PermissionUtil.calcPermissionToReadAudioFiles())) {
             startActivity(PermissionUtil.buildAppSettingsIntent());
         } else {
             requestReadExternalPermission();
@@ -211,8 +211,8 @@ public class MainActivity extends AppCompatActivity
 
     @UiThread
     private void requestReadExternalPermission() {
-        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_PERMISSIONS_READ_EXTERNAL_STORAGE);
+        requestPermissions(new String[]{PermissionUtil.calcPermissionToReadAudioFiles()},
+                REQUEST_PERMISSION_TO_READ_AUDIO_FILE);
     }
 
     @Override

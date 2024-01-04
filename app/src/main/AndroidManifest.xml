@@ -8,9 +8,13 @@
     <!-- Necessary for MediaPlayerServer#startForeground() -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+
     <!-- "Dangerous permissions" (need to be requested from the user): -->
-    <!-- Necessary to read media files: https://developer.android.com/training/data-storage/shared/media#query-collection -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Necessary to read audio files starting from Android T -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
+    <!-- Necessary to read media files until Android S-V2: https://developer.android.com/training/data-storage/shared/media#query-collection -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:allowBackup="true"

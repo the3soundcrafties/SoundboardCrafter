@@ -1,10 +1,12 @@
 package de.soundboardcrafter.activity.common;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -86,5 +88,12 @@ public class PermissionUtil {
         SharedPreferences genPrefs =
                 context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE);
         return genPrefs.getBoolean(permission, false);
+    }
+
+    @NonNull
+    public static String calcPermissionToReadAudioFiles() {
+        return Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 ?
+                Manifest.permission.READ_EXTERNAL_STORAGE :
+                Manifest.permission.READ_MEDIA_AUDIO;
     }
 }

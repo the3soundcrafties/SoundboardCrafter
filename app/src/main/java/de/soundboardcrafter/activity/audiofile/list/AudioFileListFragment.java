@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static de.soundboardcrafter.activity.common.TutorialUtil.createClickTutorialListener;
 import static de.soundboardcrafter.dao.TutorialDao.Key.AUDIO_FILE_LIST_EDIT;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -49,6 +48,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import de.soundboardcrafter.R;
+import de.soundboardcrafter.activity.common.PermissionUtil;
 import de.soundboardcrafter.activity.common.TutorialUtil;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioItem;
 import de.soundboardcrafter.activity.common.audiofile.list.AudioSubfolderRow;
@@ -329,7 +329,7 @@ public class AudioFileListFragment extends Fragment implements
             newSelection = new FileSystemFolderAudioLocation("/");
         }
 
-        if (!readExternalPermissionNecessary || permissionReadExternalStorageIsGranted()) {
+        if (!readExternalPermissionNecessary || permissionToReadAudioFilesIsGranted()) {
             setSelection(newSelection);
             setAudioFolderEntries(ImmutableList.of());
             loadAudioFiles();
@@ -390,7 +390,7 @@ public class AudioFileListFragment extends Fragment implements
 
     private void changeFolder(@NonNull AbstractAudioLocation newFolder) {
         if (selection instanceof AssetFolderAudioLocation
-                || permissionReadExternalStorageIsGranted()) {
+                || permissionToReadAudioFilesIsGranted()) {
             setSelection(newFolder);
             loadAudioFiles();
         } // Otherwise, the fragment will receive an event later.
@@ -415,7 +415,7 @@ public class AudioFileListFragment extends Fragment implements
                     audioModelAndSound.getAudioModel().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || permissionReadExternalStorageIsGranted()) {
+                    || permissionToReadAudioFilesIsGranted()) {
                 adapter.setPositionPlaying(position);
 
                 audioFileItemRow.setImage(R.drawable.ic_stop);
@@ -584,16 +584,17 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     private void startFindingAudioFilesIfPermitted() {
         if (selection instanceof AssetFolderAudioLocation
-                || permissionReadExternalStorageIsGranted()) {
+                || permissionToReadAudioFilesIsGranted()) {
             loadAudioFiles();
         } // Otherwise, the fragment will receive an event later.
     }
 
-    private boolean permissionReadExternalStorageIsGranted() {
+    private boolean permissionToReadAudioFilesIsGranted() {
         return ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
+                PermissionUtil.calcPermissionToReadAudioFiles())
                 == PackageManager.PERMISSION_GRANTED;
     }
+
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {

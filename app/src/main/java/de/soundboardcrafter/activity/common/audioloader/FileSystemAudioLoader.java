@@ -38,7 +38,8 @@ class FileSystemAudioLoader {
     /**
      * Loads all audio files from the device.
      */
-    @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
+    @RequiresPermission(anyOf = { "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.READ_MEDIA_AUDIO"})
     ImmutableList<FullAudioModel> getAudios(Context context) {
         final ImmutableList.Builder<FullAudioModel> res = ImmutableList.builder();
 
@@ -98,7 +99,8 @@ class FileSystemAudioLoader {
      *
      * @return The audio files and the subFolders
      */
-    @RequiresPermission("android.permission.READ_EXTERNAL_STORAGE")
+    @RequiresPermission(anyOf = { "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.READ_MEDIA_AUDIO"})
     Pair<ImmutableList<FullAudioModel>, ImmutableList<AudioFolder>> getAudios(
             final Context context, @Nonnull String folder) {
         checkNotNull(folder, "folder was null");

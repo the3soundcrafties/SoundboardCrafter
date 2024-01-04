@@ -176,7 +176,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
 
         if (!service.isActivelyPlaying(sound.getSound())) {
             if (sound.getSound().getAudioLocation() instanceof AssetFolderAudioLocation
-                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                    || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
                 try {
                     service.play(null, sound.getSound(), null);
                 } catch (IOException e) {
@@ -368,7 +368,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
                     soundWithSelectableSoundboards.getSound().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                    || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
                 updateUI(soundWithSelectableSoundboards);
             } // Otherwise, the fragment will receive an event later.
         }

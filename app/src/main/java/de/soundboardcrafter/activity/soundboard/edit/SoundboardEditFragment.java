@@ -336,7 +336,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         rememberAudioSelectionChanges();
 
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
             setSelection(newFolder);
             if (soundboard != null) {
                 loadAudioFiles();
@@ -361,7 +361,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
                     audioModelAndSound.getAudioModel().getAudioLocation();
 
             if (audioLocation instanceof AssetFolderAudioLocation
-                    || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                    || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
                 editView.setPositionPlaying(position);
 
                 audioFileItemRow.setImage(R.drawable.ic_stop);
@@ -402,7 +402,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         clearSelectableAudioFolderEntries();
 
         if (selection instanceof AssetFolderAudioLocation
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
             if (soundboard != null) {
                 loadAudioFiles();
             }
@@ -432,7 +432,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         rememberAudioSelectionChanges();
 
         if (!readExternalPermissionNecessary
-                || isPermissionReadExternalStorageGrantedIfNotAskForIt()) {
+                || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
             setSelection(newSelection);
             if (soundboard != null) {
                 loadAudioFiles();
@@ -473,7 +473,7 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
         audioSelectionChanges.removeAll(editView.getAudioLocationsNotSelected());
     }
 
-    public void loadAudioFiles() {
+    private void loadAudioFiles() {
         clearSelectableAudioFolderEntries();
 
         new FindAudioFilesTask(this, soundboard.getId(), selection,
