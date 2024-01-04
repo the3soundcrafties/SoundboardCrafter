@@ -40,7 +40,6 @@ import de.soundboardcrafter.model.Soundboard;
  * Android service that allows playing media and also keeps track off
  * most of the media players that are playing sounds in the app.
  */
-@SuppressWarnings("GrazieInspection")
 @MainThread
 public class MediaPlayerService extends Service {
     @FunctionalInterface
@@ -107,9 +106,8 @@ public class MediaPlayerService extends Service {
             @Override
             public void onPause() {
                 Log.d(TAG, "onPause");
-                // As many speakers do not have a playingStartedOrStopped button, we
-                // playingStartedOrStopped
-                // the playing here.
+                // As many speakers do not have a stop button, we
+                // stop playing here.
                 // We do not offer resuming anyway.
                 stopPlaying(true);
                 super.onPause();
@@ -123,9 +121,7 @@ public class MediaPlayerService extends Service {
             }
         });
         mediaSession.setPlaybackState(createPlaybackStateNotPlaying());
-        mediaSession.setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setFlags(0);
         mediaSession.setActive(true);
     }
 
