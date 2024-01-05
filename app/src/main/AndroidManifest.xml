@@ -7,6 +7,7 @@
 
     <!-- Necessary for MediaPlayerServer#startForeground() -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
 
     <!-- "Dangerous permissions" (need to be requested from the user): -->
@@ -83,6 +84,7 @@
         <service
             android:name=".activity.common.mediaplayer.MediaPlayerService"
             android:description="@string/media_player_service_description"
+            android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
     </application>
 

@@ -1,5 +1,6 @@
 package de.soundboardcrafter.activity.common.mediaplayer;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.app.Notification;
@@ -23,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.ServiceCompat;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -386,7 +388,17 @@ public class MediaPlayerService extends Service {
 
         // Without this, the service will be killed shortly when the
         // user leaves the app and closes the devices
-        startForeground(ONGOING_NOTIFICATION_ID, notification);
+        startForeground(notification);
+    }
+
+    private void startForeground(Notification notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ServiceCompat.startForeground(
+                    this, ONGOING_NOTIFICATION_ID,
+                    notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else {
+            startForeground(ONGOING_NOTIFICATION_ID, notification);
+        }
     }
 
     private PlaybackStateCompat createPlaybackStateNotPlaying() {
