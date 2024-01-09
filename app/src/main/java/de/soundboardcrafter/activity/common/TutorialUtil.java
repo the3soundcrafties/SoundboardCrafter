@@ -68,6 +68,9 @@ public class TutorialUtil {
         };
     }
 
+    /**
+     * @see #showTutorialHint(Activity, View, int, int, int, boolean, int, TapTargetView.Listener)
+     */
     @UiThread
     public static void showTutorialHint(
             final Activity activity,
@@ -84,6 +87,9 @@ public class TutorialUtil {
                 TapTargetView.showFor(activity, tapTarget, tapTargetViewListener));
     }
 
+    /**
+     * @see #showTutorialHint(Activity, View, int, TapTargetView.Listener)
+     */
     @UiThread
     public static void showTutorialHint(
             final Activity activity,

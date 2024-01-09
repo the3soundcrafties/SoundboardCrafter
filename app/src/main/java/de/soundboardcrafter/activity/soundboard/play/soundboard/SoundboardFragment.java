@@ -213,7 +213,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             int descriptionId, TapTargetView.Listener tapTargetViewListener) {
         @Nullable Activity activity = getActivity();
 
-        if (activity != null) {
+        if (activity != null && !activity.isInMultiWindowMode()) {
             TutorialUtil.showTutorialHint(activity, recyclerView, 70, 60,
                     TAP_TARGET_RADIUS_DP,
                     false, descriptionId,

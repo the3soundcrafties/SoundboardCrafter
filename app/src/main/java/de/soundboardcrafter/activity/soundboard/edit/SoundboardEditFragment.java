@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.common.collect.ImmutableList;
 
@@ -197,11 +198,16 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     private void showTutorialHintForLocalAudio() {
-        TutorialUtil.showTutorialHint(requireActivity(),
-                editView.getSelectionImageButton(),
-                R.string.tutorial_soundboard_edit_local_audio,
-                createClickTutorialListener(() -> editView.getSelectionImageButton().performClick()
-                ));
+        @Nullable final FragmentActivity activity = getActivity();
+
+        if (activity != null && !activity.isInMultiWindowMode()) {
+            TutorialUtil.showTutorialHint(requireActivity(),
+                    editView.getSelectionImageButton(),
+                    R.string.tutorial_soundboard_edit_local_audio,
+                    createClickTutorialListener(
+                            () -> editView.getSelectionImageButton().performClick()
+                    ));
+        }
     }
 
     private void startService() {
