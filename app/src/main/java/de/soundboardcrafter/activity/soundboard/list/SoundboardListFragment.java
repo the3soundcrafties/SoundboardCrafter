@@ -200,14 +200,10 @@ public class SoundboardListFragment extends Fragment
     @UiThread
     private void showListViewFirstItemTutorialHint(
             @StringRes int descriptionId, TapTargetView.Listener tapTargetViewListener) {
-        @Nullable Activity activity = getActivity();
-
-        if (activity != null && !activity.isInMultiWindowMode()) {
-            TutorialUtil.showTutorialHint(activity,
-                    listView, 50, 33, TAP_TARGET_RADIUS_DP,
-                    false, descriptionId,
-                    tapTargetViewListener);
-        }
+        TutorialUtil.showTutorialHint(getActivity(),
+                listView, 50, 33, TAP_TARGET_RADIUS_DP,
+                false, descriptionId,
+                tapTargetViewListener);
     }
 
     @Override

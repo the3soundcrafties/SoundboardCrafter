@@ -15,6 +15,7 @@ import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -73,10 +74,14 @@ public class TutorialUtil {
      */
     @UiThread
     public static void showTutorialHint(
-            final Activity activity,
+            @Nullable final Activity activity,
             final View view,
             int descriptionId,
             TapTargetView.Listener tapTargetViewListener) {
+        if (isConfigurationSpecial(activity, view)) {
+            return;
+        }
+
         final TapTarget tapTarget = TapTarget.forView(
                 view,
                 view.getResources().getString(descriptionId))
@@ -92,13 +97,17 @@ public class TutorialUtil {
      */
     @UiThread
     public static void showTutorialHint(
-            final Activity activity,
+            @Nullable final Activity activity,
             final View view, final int xOffsetDp,
             final int yOffsetDp,
             final int tapTargetRadiusDp,
             boolean fromTheRight,
             @StringRes int descriptionId,
             TapTargetView.Listener tapTargetViewListener) {
+        if (isConfigurationSpecial(activity, view)) {
+            return;
+        }
+
         if (view.getWidth() == 0 && view.getHeight() == 0) {
             return;
         }
@@ -113,6 +122,23 @@ public class TutorialUtil {
         dismissLastTargetView();
         lastTapTargetViewRef = new WeakReference<>(
                 TapTargetView.showFor(activity, tapTargetForBounds, tapTargetViewListener));
+    }
+
+    private static boolean isConfigurationSpecial(@Nullable Activity activity, View view) {
+        // TapTargetView (or our usage of it, at least) does not support
+        // "special" configurations like multi-window mode, Samsung DEX etc.
+        if (activity == null || activity.isInMultiWindowMode()) {
+            return true;
+        }
+
+        // This test is based on
+        // https://github.com/zawadz88/TapTargetView/commit/ef3303b741ce841c956aaae809e8e815040bcefa.
+        final int[] locationOnScreen = new int[2];
+        view.getLocationOnScreen(locationOnScreen);
+        final  int[] locationInWindow = new int[2];
+        view.getLocationOnScreen(locationInWindow);
+
+        return !Arrays.equals(locationOnScreen, locationInWindow);
     }
 
     private static void dismissLastTargetView() {

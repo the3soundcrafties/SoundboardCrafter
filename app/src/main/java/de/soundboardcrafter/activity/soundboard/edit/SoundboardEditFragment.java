@@ -198,16 +198,12 @@ public class SoundboardEditFragment extends AbstractPermissionFragment
     }
 
     private void showTutorialHintForLocalAudio() {
-        @Nullable final FragmentActivity activity = getActivity();
-
-        if (activity != null && !activity.isInMultiWindowMode()) {
-            TutorialUtil.showTutorialHint(requireActivity(),
-                    editView.getSelectionImageButton(),
-                    R.string.tutorial_soundboard_edit_local_audio,
-                    createClickTutorialListener(
-                            () -> editView.getSelectionImageButton().performClick()
-                    ));
-        }
+        TutorialUtil.showTutorialHint(getActivity(),
+                editView.getSelectionImageButton(),
+                R.string.tutorial_soundboard_edit_local_audio,
+                createClickTutorialListener(
+                        () -> editView.getSelectionImageButton().performClick()
+                ));
     }
 
     private void startService() {

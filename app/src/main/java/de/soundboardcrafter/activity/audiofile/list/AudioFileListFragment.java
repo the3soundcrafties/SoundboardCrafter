@@ -273,13 +273,9 @@ public class AudioFileListFragment extends Fragment implements
     @UiThread
     private void showTutorialHint(
             int descriptionId, @NonNull TapTargetView.Listener tapTargetViewListener) {
-        @Nullable Activity activity = getActivity();
-
-        if (activity != null && !activity.isInMultiWindowMode()) {
-            TutorialUtil.showTutorialHint(activity, listView, 20,
-                    30, TAP_TARGET_RADIUS_DP, true,
-                    descriptionId, tapTargetViewListener);
-        }
+        TutorialUtil.showTutorialHint(getActivity(), listView, 20,
+                30, TAP_TARGET_RADIUS_DP, true,
+                descriptionId, tapTargetViewListener);
     }
 
     @Override
