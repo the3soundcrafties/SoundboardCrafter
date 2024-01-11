@@ -357,11 +357,11 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         snackbar.show();
     }
 
-    private AsyncTask<UUID, Void, Void> purge(int position, Sound sound) {
+    private void purge(int position, Sound sound) {
         soundboard.removeSound(position);
         soundboardItemAdapter.notifyItemRemoved(position);
 
-        return new DeleteSoundsTask(requireActivity()).execute(sound.getId());
+        new DeleteSoundsTask(requireActivity()).execute(sound.getId());
     }
 
     public void updateSoundboard(Collection<SoundboardWithSounds> soundboards) {

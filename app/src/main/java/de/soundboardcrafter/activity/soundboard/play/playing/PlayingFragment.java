@@ -248,7 +248,7 @@ public class PlayingFragment extends Fragment implements
         }
     }
 
-    public void loadSoundsCurrentlyPlaying() {
+    private void loadSoundsCurrentlyPlaying() {
         Log.v(TAG, "PlayingFragment#loadSoundsCurrentlyPlaying()");
         Collection<UUID> soundIds = mediaPlayerService.getSoundIdsActivelyPlaying();
         new LoadSoundsCurrentlyPlayingTask(this, soundIds).execute();
