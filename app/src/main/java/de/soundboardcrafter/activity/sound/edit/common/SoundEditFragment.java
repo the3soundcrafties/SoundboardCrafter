@@ -51,6 +51,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
 
     private final SoundEditChangeListener soundEditChangeListener = new SoundEditChangeListener();
 
+    @Nullable
     private MediaPlayerService mediaPlayerService;
 
     static SoundEditFragment newInstance(UUID soundId) {
@@ -165,7 +166,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
      * Starts playing the sound, if it is not already playing.
      */
     private void ensurePlaying() {
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
@@ -212,7 +213,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
      * Sets the volume.
      */
     private void setVolumePercentage(int volumePercentage) {
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
@@ -228,7 +229,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
      * Sets whether the sound shall be played in a loop.
      */
     private void setLoop(boolean loop) {
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
@@ -240,6 +241,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
         service.setLoop(sound.getSound().getId(), loop);
     }
 
+    @Nullable
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             bindService();
@@ -279,7 +281,7 @@ public class SoundEditFragment extends AbstractPermissionFragment implements Ser
             return;
         }
 
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             return;
         }

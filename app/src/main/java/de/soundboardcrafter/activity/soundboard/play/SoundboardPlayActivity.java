@@ -78,6 +78,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
     private static final UUID PLAYING_TAB_UUID =
             UUID.fromString("a4a4d6b4-13ec-45ff-b505-6f7840d14c04");
 
+    @Nullable
     private MediaPlayerService mediaPlayerService;
     private ViewPager2 pager;
     private TabLayout tabLayout;
@@ -474,7 +475,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
          * Stops playback for all soundboards.
          */
         private void stopPlayingAllSoundboards() {
-            MediaPlayerService service = getService();
+            @Nullable MediaPlayerService service = getService();
             if (service == null) {
                 return;
             }
@@ -523,6 +524,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
         bindService();
     }
 
+    @Nullable
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             // TODO Necessary?! Also done in onResume()

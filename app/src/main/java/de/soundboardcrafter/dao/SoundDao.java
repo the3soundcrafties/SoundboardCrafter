@@ -40,7 +40,7 @@ public class SoundDao extends AbstractDao {
     public static SoundDao getInstance(final Context context) {
         if (instance == null) {
             instance = new SoundDao(context);
-            instance.init(context);
+            init(context);
         }
 
         return instance;
@@ -50,7 +50,7 @@ public class SoundDao extends AbstractDao {
         super(context.getApplicationContext());
     }
 
-    private void init(@Nonnull Context context) {
+    private static void init(@Nonnull Context context) {
         soundboardDao = SoundboardDao.getInstance(context);
     }
 

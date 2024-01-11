@@ -40,6 +40,7 @@ public class AnywhereInTheFileSystemAudioLocation implements IAudioFileSelection
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
+        // Nothing to write
     }
 
     @Override

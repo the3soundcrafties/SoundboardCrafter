@@ -134,6 +134,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     private RecyclerView recyclerView;
     private SoundboardItemAdapter soundboardItemAdapter;
+    @Nullable
     private MediaPlayerService mediaPlayerService;
     private SoundboardWithSounds soundboard;
     private static final String ARG_SORT_ORDER = "sortOrder";
@@ -334,7 +335,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     @UiThread
     private void onClickSoundboard(int position, SoundboardItem soundboardItem, Sound sound) {
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             return;
         }
@@ -460,7 +461,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             @Override
             public boolean isActivelyPlaying(Soundboard soundboard, Sound sound) {
-                MediaPlayerService service = getService();
+                @Nullable MediaPlayerService service = getService();
                 if (service == null) {
                     return false;
                 }
@@ -470,7 +471,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             @Override
             public void setOnPlayingStopped(Soundboard soundboard, Sound sound,
                                             SoundboardMediaPlayer.OnPlayingStopped onPlayingStopped) {
-                MediaPlayerService service = getService();
+                @Nullable MediaPlayerService service = getService();
                 if (service != null) {
                     service.setOnPlayingStopped(soundboard, sound, onPlayingStopped);
                 }
@@ -478,7 +479,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             @Override
             public void stopPlaying(Soundboard soundboard, Sound sound, boolean fadeOut) {
-                MediaPlayerService service = getService();
+                @Nullable MediaPlayerService service = getService();
                 if (service != null) {
                     service.stopPlaying(soundboard, sound, fadeOut);
                 }
@@ -679,6 +680,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
+    @Nullable
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             // TODO Necessary?! Also done in onResume()

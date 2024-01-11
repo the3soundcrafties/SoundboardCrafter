@@ -60,6 +60,7 @@ public class PlayingFragment extends Fragment implements
     private ListView listView;
 
     private PlayingListItemAdapter adapter;
+    @Nullable
     private MediaPlayerService mediaPlayerService;
 
     @Nullable
@@ -185,7 +186,7 @@ public class PlayingFragment extends Fragment implements
 
     @UiThread
     private void onClickAudioItem(int position) {
-        MediaPlayerService service = getService();
+        @Nullable MediaPlayerService service = getService();
         if (service == null) {
             // Should never happen.
             return;
@@ -200,6 +201,7 @@ public class PlayingFragment extends Fragment implements
         }
     }
 
+    @Nullable
     private MediaPlayerService getService() {
         if (mediaPlayerService == null) {
             // TODO Necessary?! Also done in onResume()
