@@ -15,10 +15,10 @@
     <string name="context_menu_edit_sound">Edit</string>
     <string name="context_menu_remove_sound">Remove</string>
     <string name="context_menu_edit_favorites">Edit</string>
-    <string name="context_menu_remove_favorites">Delete</string>
+    <string name="context_menu_delete_favorites">Delete</string>
     <string name="context_menu_edit_soundboard">Edit</string>
     <string name="context_menu_copy_soundboard">Copy</string>
-    <string name="context_menu_remove_soundboard">Delete</string>
+    <string name="context_menu_delete_soundboard">Delete</string>
     <string name="toolbar_menu_audiofiles_sort_alpha">Sort by Name</string>
     <string name="toolbar_menu_audiofiles_sort_manually">Sort Manually</string>
     <string name="toolbar_menu_audiofiles_sort_date">Sort by Date</string>
@@ -76,7 +76,7 @@
     <string name="soundboards_default_toolbar">All Soundboards</string>
     <string name="soundboards_currently_playing">Currently Playing</string>
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
-    <string name="audiofile_not_found">Sound file not found any longer</string>
+    <string name="audiofile_not_found">Sound file not found</string>
     <string name="tutorial_soundboard_play_start_sound_description">Click to play</string>
     <string name="tutorial_soundboard_play_edit_sound_description">Long-click to edit</string>
     <string name="tutorial_soundboard_play_remove_sound_description">Long-click to remove sound from your own soundboard</string>

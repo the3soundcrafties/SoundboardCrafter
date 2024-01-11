@@ -164,7 +164,7 @@ public class FavoritesDao extends AbstractDao {
         getDatabase().delete(SoundboardFavoritesTable.NAME, null, new String[]{});
     }
 
-    public void remove(UUID favoritesId) {
+    public void delete(UUID favoritesId) {
         unlinkAllSoundboards(favoritesId);
         getDatabase().delete(DBSchema.FavoritesTable.NAME, DBSchema.FavoritesTable.Cols.ID + " = ?",
                 new String[]{favoritesId.toString()});

@@ -185,7 +185,7 @@ public class FavoritesListFragment extends Fragment
         menu.add(UNIQUE_TAB_ID,
                 2,
                 1,
-                R.string.context_menu_remove_favorites);
+                R.string.context_menu_delete_favorites);
 
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) menuInfo;
@@ -219,7 +219,7 @@ public class FavoritesListFragment extends Fragment
             startActivityForResult(intent, EDIT_FAVORITES_REQUEST_CODE);
             return true;
         } else if (id == 2) {
-            new RemoveFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
+            new DeleteFavoritesTask(requireActivity(), favoritesWithSoundboards).execute();
             adapter.remove(favoritesWithSoundboards);
             return true;
         } else {
@@ -287,14 +287,11 @@ public class FavoritesListFragment extends Fragment
         }
     }
 
-    /**
-     * A background task, used to remove soundboard with the given indexes from the soundboard
-     */
-    static class RemoveFavoritesTask extends AsyncTask<Integer, Void, Void> {
+    static class DeleteFavoritesTask extends AsyncTask<Integer, Void, Void> {
         private final WeakReference<Context> appContextRef;
         private final UUID favoritesId;
 
-        RemoveFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
+        DeleteFavoritesTask(Context context, FavoritesWithSoundboards favoritesWithSoundboards) {
             super();
             appContextRef = new WeakReference<>(context.getApplicationContext());
             favoritesId = favoritesWithSoundboards.getFavorites().getId();
@@ -310,7 +307,7 @@ public class FavoritesListFragment extends Fragment
             }
 
             FavoritesDao favoritesDao = FavoritesDao.getInstance(appContext);
-            favoritesDao.remove(favoritesId);
+            favoritesDao.delete(favoritesId);
             return null;
         }
 

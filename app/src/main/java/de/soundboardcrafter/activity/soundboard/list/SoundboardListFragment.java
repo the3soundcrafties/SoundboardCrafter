@@ -250,7 +250,7 @@ public class SoundboardListFragment extends Fragment
             menu.add(UNIQUE_TAB_ID,
                     CONTEXT_MENU_DELETE_ITEM_ID,
                     order,
-                    R.string.context_menu_remove_soundboard);
+                    R.string.context_menu_delete_soundboard);
         }
 
         menu.setHeaderTitle(soundboard.getDisplayName());

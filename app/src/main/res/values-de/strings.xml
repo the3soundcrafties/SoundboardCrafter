@@ -20,11 +20,11 @@
     <string name="toolbar_menu_audiofiles_folders_single">Nach Verzeichnissen</string>
     <string name="soundboards_play_sort_manually_title">Halten und ziehen zum Sortieren</string>
     <string name="context_menu_edit_sound">Bearbeiten</string>
-    <string name="context_menu_remove_sound">Entfernen</string>
+    <string name="context_menu_remove_sound">Entfernen aus dem Soundboard</string>
     <string name="context_menu_edit_favorites">Bearbeiten</string>
-    <string name="context_menu_remove_favorites">Löschen</string>
+    <string name="context_menu_delete_favorites">Löschen</string>
     <string name="context_menu_edit_soundboard">Bearbeiten</string>
-    <string name="context_menu_remove_soundboard">Löschen</string>
+    <string name="context_menu_delete_soundboard">Löschen</string>
     <string name="reset_all_title">Alle Daten löschen?</string>
     <string name="reset_all_message">Alle Favoriten, Soundboards und Sound-Einstellungen werden
         gelöscht. Lautstärkeeinstellungen etc. gehen verloren. Sound-Dateien bleiben erhalten.</string>
