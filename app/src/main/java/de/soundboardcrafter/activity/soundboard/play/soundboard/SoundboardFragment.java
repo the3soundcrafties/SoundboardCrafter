@@ -458,13 +458,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             soundboardItemAdapter.notifyItemRangeChanged(0, soundboardItemAdapter.getItemCount());
             soundboardItemAdapter.notifyDataSetChanged();
         }
-
-        // In my personal experience, notifyDataSetChanged() does not
-        // work (in some cases). The following lines work - sometimes.
-        if (recyclerView != null) {
-            recyclerView.invalidate();
-            recyclerView.requestLayout();
-        }
     }
 
     @Override

@@ -262,7 +262,6 @@ public class PlayingFragment extends Fragment implements
         }
 
         if (listView != null) {
-            listView.invalidate();
             listView.requestLayout();
         }
     }

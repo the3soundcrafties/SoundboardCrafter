@@ -492,18 +492,6 @@ public class SoundboardPlayActivity extends AppCompatActivity
                 soundboardFragment.updateSoundboard(soundboards);
             }
         }
-
-        // In my personal experience, notifyDataSetChanged() does not
-        // work (in some cases). The following lines work - sometimes.
-        if (tabLayout != null) {
-            tabLayout.invalidate();
-            tabLayout.requestLayout();
-        }
-
-        if (pager != null) {
-            pager.invalidate();
-            pager.requestLayout();
-        }
     }
 
     private void setToolbarTitle(@Nullable String favoritesName) {
