@@ -173,25 +173,54 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private void showTutorialHintAsNecessary() {
         final TutorialDao tutorialDao = TutorialDao.getInstance(requireContext());
         if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
-            showTutorialHint(
-                    R.string.tutorial_soundboard_play_start_sound_description,
-                    createClickTutorialListener(() -> {
-                        @Nullable View itemView = findFirstItemView();
-                        if (itemView != null) {
-                            itemView.performClick();
-                        }
-                    }));
-        } else if (soundboard.isProvided()
+            showClickTutorialHintOnFirstItemView(
+                    R.string.tutorial_soundboard_play_start_sound_description);
+            return;
+        }
+
+        if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_MULTIPLE_SOUNDS)) {
+            if (soundboardItemAdapter.getItemCount() >= 2) {
+                @Nullable MediaPlayerService service = getService();
+
+                if (service != null
+                        &&
+                        // We use this condition to prevent the situation where the first sound
+                        // is still playing and the user is told click on the song (again!),
+                        // which obviously will not end in two songs playing at the same time.
+                        !service.isActivelyPlaying(soundboard.getSoundboard())) {
+                    showClickTutorialHintOnFirstItemView(
+                            R.string.tutorial_soundboard_play_multiple_sounds_description);
+                    return;
+                }
+            }
+        }
+
+        if (soundboard.isProvided()
                 && !tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_EDIT_SOUND)) {
             showTutorialHint(
                     R.string.tutorial_soundboard_play_edit_sound_description,
                     createLongClickTutorialListener(this::performContextClickOnFirstItem));
-        } else if (!soundboard.isProvided()
+            return;
+        }
+
+        if (!soundboard.isProvided()
                 && !tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_REMOVE_SOUND)) {
             showTutorialHint(
                     R.string.tutorial_soundboard_play_remove_sound_description,
                     createLongClickTutorialListener(this::performContextClickOnFirstItem));
+            return;
         }
+    }
+
+    private void showClickTutorialHintOnFirstItemView(int tutorial_description) {
+        showTutorialHint(
+                tutorial_description,
+                createClickTutorialListener(() -> {
+                    @Nullable View itemView = findFirstItemView();
+                    if (itemView != null) {
+                        itemView.performClick();
+                    }
+                }));
     }
 
     private void performContextClickOnFirstItem() {
@@ -334,7 +363,12 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
         @Nullable final Context context = getContext();
         if (context != null) {
-            TutorialDao.getInstance(context).check(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND);
+            final TutorialDao tutorialDao = TutorialDao.getInstance(context);
+            if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
+                tutorialDao.check(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND);
+            } else if (service.isActivelyPlayingMultipleSounds(soundboard.getSoundboard())) {
+                tutorialDao.check(TutorialDao.Key.SOUNDBOARD_PLAY_MULTIPLE_SOUNDS);
+            }
         }
     }
 

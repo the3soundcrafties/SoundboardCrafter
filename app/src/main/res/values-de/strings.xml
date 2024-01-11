@@ -68,6 +68,8 @@
     <string name="soundboard_file_not_found">Sound-Datei nicht gefunden – aus Soundboard(s) entfernt</string>
     <string name="audiofile_not_found">Sound-Datei nicht mehr zu finden</string>
     <string name="tutorial_soundboard_play_start_sound_description">Klicken zum Abspielen</string>
+    <string name="tutorial_soundboard_play_multiple_sounds_description">Sie können mehrere
+        Sounds gleichzeitig abspielen!</string>
     <string name="tutorial_soundboard_play_edit_sound_description">Lang klicken zum Bearbeiten</string>
     <string name="tutorial_audio_file_list_edit">Hier klicken, um Sound einem Soundboard
         hinzuzufügen</string>

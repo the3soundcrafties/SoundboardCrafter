@@ -490,6 +490,26 @@ public class MediaPlayerService extends Service {
     }
 
     /**
+     * Return whether in this soundboard there is currently some  sound <i>actively playing</i>.
+     * To be <i>actively playing</i> means, the sound is playing <i>and not fading out</i>.
+     */
+    public boolean isActivelyPlaying(@NonNull Soundboard soundboard) {
+        checkNotNull(soundboard, "soundboard is null");
+
+        return mediaPlayers.isActivelyPlaying(soundboard);
+    }
+
+    /**
+     * Return whether in this soundboard there is more than one sound <i>actively playing</i>.
+     * To be <i>actively playing</i> means, a sound is playing <i>and not fading out</i>.
+     */
+    public boolean isActivelyPlayingMultipleSounds(@NonNull Soundboard soundboard) {
+        checkNotNull(soundboard, "soundboard is null");
+
+        return mediaPlayers.isActivelyPlayingMultipleSounds(soundboard);
+    }
+
+    /**
      * Return whether this sound is <i>actively playing</i> in this soundboard, that is,
      * it is playing <i>and not fading out</i>.
      */

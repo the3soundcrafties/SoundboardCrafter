@@ -78,6 +78,8 @@
     <string name="soundboard_file_not_found">Sound file not found - removed from soundboard</string>
     <string name="audiofile_not_found">Sound file not found</string>
     <string name="tutorial_soundboard_play_start_sound_description">Click to play</string>
+    <string name="tutorial_soundboard_play_multiple_sounds_description">You can play
+        multiple sounds at the same time</string>
     <string name="tutorial_soundboard_play_edit_sound_description">Long-click to edit</string>
     <string name="tutorial_soundboard_play_remove_sound_description">Long-click to remove sound from your own soundboard</string>
     <string name="tutorial_audio_file_list_edit">Click here to add sound to soundboard</string>

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -228,10 +229,35 @@ class SoundboardMediaPlayers {
      * Playing <i>and not fading out</i>.
      */
     Collection<UUID> getSoundIdsActivelyPlaying() {
-        return activePlayers.entrySet().stream().
-                filter(e -> e.getValue().isPlaying())
+        return activePlayers.entrySet().stream()
+                .filter(e -> e.getValue().isPlaying())
                 .map(e -> e.getKey().getSoundId())
                 .collect(ImmutableSet.toImmutableSet());
+    }
+
+    /**
+     * Return whether in this soundboard there is more than one sound <i>actively playing</i>.
+     * To be <i>actively playing</i> means, a sound is playing <i>and not fading out</i>.
+     */
+     boolean isActivelyPlayingMultipleSounds(@NonNull Soundboard soundboard) {
+         checkNotNull(soundboard, "soundboard is null");
+
+        return activePlayers.entrySet().stream()
+                .filter(e -> e.getValue().isPlaying())
+                .filter(e -> soundboard.getId().equals(e.getKey().getSoundboardId()))
+                .count() > 1;
+    }
+
+    /**
+     * Return whether in this soundboard there is currently some sound <i>actively playing</i>.
+     * To be <i>actively playing</i> means, the sound is playing <i>and not fading out</i>.
+     */
+    boolean isActivelyPlaying(@NonNull Soundboard soundboard) {
+        checkNotNull(soundboard, "soundboard is null");
+
+        return activePlayers.entrySet().stream()
+                .filter(e -> e.getValue().isPlaying())
+                .anyMatch(e -> soundboard.getId().equals(e.getKey().getSoundboardId()));
     }
 
     /**

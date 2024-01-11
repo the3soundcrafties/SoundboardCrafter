@@ -17,6 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class TutorialDao {
     public enum Key {
         SOUNDBOARD_PLAY_START_SOUND,
+        SOUNDBOARD_PLAY_MULTIPLE_SOUNDS,
         SOUNDBOARD_PLAY_EDIT_SOUND,
         SOUNDBOARD_PLAY_REMOVE_SOUND,
         AUDIO_FILE_LIST_EDIT,
@@ -27,8 +28,8 @@ public class TutorialDao {
     }
 
     // Will not be included in backup! See backup_descriptor.
-    // To test this, use "adb shell bmgr backupnow de.soundboardcrafter" to make a backup the app's
-    // data, then uninstall and reinstall the app.
+    // To test this, use "adb shell bmgr backupnow de.soundboardcrafter" to make a backup of the
+    // app's data, then uninstall and reinstall the app.
     private static final String SHARED_PREFERENCES = "Tutorial_Prefs";
 
     private static TutorialDao instance;
