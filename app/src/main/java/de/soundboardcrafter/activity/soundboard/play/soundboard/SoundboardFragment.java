@@ -343,6 +343,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             return;
         }
 
+        boolean soundStarted = false;
         if (!service.isActivelyPlaying(soundboard.getSoundboard(), sound)) {
             final AbstractAudioLocation audioLocation = sound.getAudioLocation();
 
@@ -352,6 +353,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                 try {
                     service.play(soundboard.getSoundboard(), sound,
                             soundboardItemAdapter::notifyDataSetChanged);
+                    soundStarted = true;
                 } catch (IOException e) {
                     soundboardItem.setImage(R.drawable.ic_play);
                     handleSoundFileNotFound(position, sound);
@@ -366,7 +368,9 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             final TutorialDao tutorialDao = TutorialDao.getInstance(context);
             if (!tutorialDao.isChecked(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND)) {
                 tutorialDao.check(TutorialDao.Key.SOUNDBOARD_PLAY_START_SOUND);
-            } else if (service.isActivelyPlayingMultipleSounds(soundboard.getSoundboard())) {
+            } else if (soundStarted
+                    // Before the click, there was already at least one sound playing
+                    && service.isActivelyPlaying(soundboard.getSoundboard())) {
                 tutorialDao.check(TutorialDao.Key.SOUNDBOARD_PLAY_MULTIPLE_SOUNDS);
             }
         }
