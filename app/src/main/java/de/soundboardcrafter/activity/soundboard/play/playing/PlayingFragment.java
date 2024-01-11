@@ -9,6 +9,7 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,6 +55,7 @@ public class PlayingFragment extends Fragment implements
      * fragment
      */
     private static final int EDIT_SOUND_REQUEST_CODE = 1;
+    private static final String TAG = PlayingFragment.class.getName();
 
     private ListView listView;
 
@@ -75,6 +77,8 @@ public class PlayingFragment extends Fragment implements
     @Override
     @UiThread
     public void onServiceConnected(ComponentName name, IBinder binder) {
+        Log.v(TAG, "PlayingFragment#onServiceConnected");
+
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
         // As soon the media player service is connected, the sounds currently playing can
@@ -87,19 +91,23 @@ public class PlayingFragment extends Fragment implements
     @Override
     @UiThread
     public void onServiceDisconnected(ComponentName name) {
+        Log.v(TAG, "PlayingFragment#onServiceDisconnected");
         adapter.setAudiosPlaying(ImmutableList.of());
+        updateUI();
     }
 
     @Override
     @UiThread
     public void onBindingDied(ComponentName name) {
         adapter.setAudiosPlaying(ImmutableList.of());
+        updateUI();
     }
 
     @Override
     @UiThread
     public void onNullBinding(ComponentName name) {
         adapter.setAudiosPlaying(ImmutableList.of());
+        updateUI();
     }
 
     private void bindService() {
@@ -109,6 +117,7 @@ public class PlayingFragment extends Fragment implements
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.v(TAG, "PlayingFragment#onCreate()");
         super.onCreate(savedInstanceState);
 
         Intent intent = new Intent(getActivity(), MediaPlayerService.class);
@@ -130,6 +139,7 @@ public class PlayingFragment extends Fragment implements
     @UiThread
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        Log.v(TAG, "PlayingFragment#onCreateView()");
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_playing,
                 container, false);
 
@@ -152,6 +162,7 @@ public class PlayingFragment extends Fragment implements
 
     @Override
     public void onAttach(@NonNull Context context) {
+        Log.v(TAG, "PlayingFragment#onAttach()");
         super.onAttach(context);
 
         if (context instanceof ISoundboardPlayActivity) {
@@ -161,12 +172,14 @@ public class PlayingFragment extends Fragment implements
 
     @Override
     public void onDetach() {
+        Log.v(TAG, "PlayingFragment#onDetach()");
         super.onDetach();
         hostingActivity = null;
     }
 
     @Override
     public void playingStartedOrStopped() {
+        Log.v(TAG, "PlayingFragment#playingStartedOrStopped()");
         loadSoundsCurrentlyPlaying();
     }
 
@@ -236,6 +249,7 @@ public class PlayingFragment extends Fragment implements
     }
 
     public void loadSoundsCurrentlyPlaying() {
+        Log.v(TAG, "PlayingFragment#loadSoundsCurrentlyPlaying()");
         Collection<UUID> soundIds = mediaPlayerService.getSoundIdsActivelyPlaying();
         new LoadSoundsCurrentlyPlayingTask(this, soundIds).execute();
     }
@@ -245,6 +259,11 @@ public class PlayingFragment extends Fragment implements
     private void updateUI() {
         if (adapter != null) {
             adapter.notifyDataSetChanged();
+        }
+
+        if (listView != null) {
+            listView.invalidate();
+            listView.requestLayout();
         }
     }
 
@@ -282,8 +301,11 @@ public class PlayingFragment extends Fragment implements
         @Override
         @WorkerThread
         protected ImmutableList<AudioModelAndSound> doInBackground(Void... voids) {
+            Log.v(TAG, "PlayingFragment#LoadSoundsCurrentlyPlayingTask#doInBackground()");
             @Nullable PlayingFragment fragment = fragmentRef.get();
             if (fragment == null || fragment.getContext() == null) {
+                Log.v(TAG, "PlayingFragment#LoadSoundsCurrentlyPlayingTask#doInBackground(): "
+                        + "Context lost");
                 cancel(true);
                 return null;
             }
@@ -334,13 +356,19 @@ public class PlayingFragment extends Fragment implements
         @UiThread
         protected void onPostExecute(
                 ImmutableList<AudioModelAndSound> audioModelsAndSounds) {
+            Log.v(TAG, "PlayingFragment#LoadSoundsCurrentlyPlayingTask#onPostExecute()");
             @Nullable PlayingFragment fragment = fragmentRef.get();
             if (fragment == null || fragment.getContext() == null) {
+                Log.v(TAG, "PlayingFragment#LoadSoundsCurrentlyPlayingTask#onPostExecute(): "
+                        + "Context lost.");
                 // fragment (or context) no longer available, I guess that result
                 // will be of no use to anyone
                 return;
             }
+            Log.v(TAG, "PlayingFragment#LoadSoundsCurrentlyPlayingTask#onPostExecute(): "
+                    + audioModelsAndSounds.size() + " audios playing");
             fragment.adapter.setAudiosPlaying(audioModelsAndSounds);
+            fragment.updateUI();
         }
     }
 }

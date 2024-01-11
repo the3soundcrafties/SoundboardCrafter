@@ -39,6 +39,7 @@ import org.jetbrains.annotations.Contract;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +71,7 @@ import de.soundboardcrafter.model.Soundboard;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
 /**
- * Shows Soundboard in a Grid
+ * Fragment for a single Soundboard - shows several sounds in a grid, so they can be played.
  */
 public class SoundboardFragment extends AbstractPermissionFragment implements ServiceConnection {
 
@@ -130,6 +131,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         }
     }
 
+
     private RecyclerView recyclerView;
     private SoundboardItemAdapter soundboardItemAdapter;
     private MediaPlayerService mediaPlayerService;
@@ -162,9 +164,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     public void onServiceConnected(ComponentName name, IBinder binder) {
         MediaPlayerService.Binder b = (MediaPlayerService.Binder) binder;
         mediaPlayerService = b.getService();
-        //as soon the media player service is connected, the play/playingStartedOrStopped icons
-        // can be
-        // set correctly
+        //as soon the media player service is connected, the play/stop icons
+        // can be set correctly
         updateUI();
     }
 
@@ -303,7 +304,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     }
 
     @UiThread
-    private void onClickSoundboard(SoundboardItemRow soundboardItemRow, Sound sound) {
+    private void onClickSoundboard(int position, SoundboardItem soundboardItem, Sound sound) {
         MediaPlayerService service = getService();
         if (service == null) {
             return;
@@ -318,13 +319,13 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
             if (audioLocation instanceof AssetFolderAudioLocation
                     || isPermissionToReadAudioFilesGrantedIfNotAskForIt()) {
-                soundboardItemRow.setImage(R.drawable.ic_stop);
+                soundboardItem.setImage(R.drawable.ic_stop);
                 try {
                     service.play(soundboard.getSoundboard(), sound,
                             soundboardItemAdapter::notifyDataSetChanged);
                 } catch (IOException e) {
-                    soundboardItemRow.setImage(R.drawable.ic_play);
-                    handleSoundFileNotFound(sound);
+                    soundboardItem.setImage(R.drawable.ic_play);
+                    handleSoundFileNotFound(position, sound);
                 }
             }
         } else {
@@ -347,14 +348,30 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         // Nothing happens
     }
 
-    private void handleSoundFileNotFound(Sound sound) {
+    private void handleSoundFileNotFound(int position, Sound sound) {
         Snackbar snackbar = Snackbar
                 .make(recyclerView, getString(R.string.audiofile_not_found),
                         Snackbar.LENGTH_LONG)
                 .setAction(getString(R.string.update_all_soundboards_and_sounds),
-                        view -> new DeleteSoundsTask(requireActivity()).execute(sound.getId())
-                );
+                        view -> purge(position, sound));
         snackbar.show();
+    }
+
+    private AsyncTask<UUID, Void, Void> purge(int position, Sound sound) {
+        soundboard.removeSound(position);
+        soundboardItemAdapter.notifyItemRemoved(position);
+
+        return new DeleteSoundsTask(requireActivity()).execute(sound.getId());
+    }
+
+    public void updateSoundboard(Collection<SoundboardWithSounds> soundboards) {
+        for (SoundboardWithSounds newSoundboard : soundboards) {
+            if (newSoundboard.getSoundboard().getId()
+                    .equals(soundboard.getSoundboard().getId())) {
+                this.soundboard = newSoundboard;
+                soundboardItemAdapter.setSoundboard(soundboard);
+            }
+        }
     }
 
     @Override
@@ -396,8 +413,8 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
 
     @NonNull
     @Contract(" -> new")
-    private SoundboardItemRow.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
-        return new SoundboardItemRow.MediaPlayerServiceCallback() {
+    private SoundboardItem.MediaPlayerServiceCallback newMediaPlayerServiceCallback() {
+        return new SoundboardItem.MediaPlayerServiceCallback() {
             @Override
             public boolean isConnected() {
                 return getService() != null;
@@ -431,10 +448,6 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
         };
     }
 
-    public void notifySoundsChanged() {
-        updateUI();
-    }
-
     /**
      * Starts reading the data for the UI (first time) or
      * simply ensure that the grid shows the latest information.
@@ -442,7 +455,15 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     @UiThread
     private void updateUI() {
         if (soundboardItemAdapter != null) {
+            soundboardItemAdapter.notifyItemRangeChanged(0, soundboardItemAdapter.getItemCount());
             soundboardItemAdapter.notifyDataSetChanged();
+        }
+
+        // In my personal experience, notifyDataSetChanged() does not
+        // work (in some cases). The following lines work - sometimes.
+        if (recyclerView != null) {
+            recyclerView.invalidate();
+            recyclerView.requestLayout();
         }
     }
 
@@ -470,7 +491,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
             @Override
             @UiThread
             public void onItemClick(int position, View view) {
-                if (!(view instanceof SoundboardItemRow)) {
+                if (!(view instanceof SoundboardItem)) {
                     return;
                 }
 
@@ -478,9 +499,9 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
                     return;
                 }
 
-                SoundboardItemRow soundboardItemRow = (SoundboardItemRow) view;
+                SoundboardItem soundboardItem = (SoundboardItem) view;
 
-                onClickSoundboard(soundboardItemRow, soundboardItemAdapter.getItem(position));
+                onClickSoundboard(position, soundboardItem, soundboardItemAdapter.getItem(position));
             }
 
             @Override
@@ -906,7 +927,7 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     }
 
     /**
-     * A background task, used to delete sounds (from the database, from all soundboards etc.)
+     * A background task, used to purge sounds (from the database, from all soundboards etc.)
      */
     @ParametersAreNonnullByDefault
     class DeleteSoundsTask extends AsyncTask<UUID, Void, Void> {

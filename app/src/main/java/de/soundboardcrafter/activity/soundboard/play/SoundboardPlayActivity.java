@@ -389,7 +389,7 @@ public class SoundboardPlayActivity extends AppCompatActivity
             soundboardList.addAll(soundboards);
             soundboardList.sort(SoundboardWithSounds.PROVIDED_LAST_THEN_BY_COLLATION_KEY);
 
-            notifySoundsChanged();
+            notifySoundsChanged(soundboards);
 
             notifyDataSetChanged();
 
@@ -485,11 +485,24 @@ public class SoundboardPlayActivity extends AppCompatActivity
         }
     }
 
-    private void notifySoundsChanged() {
+    private void notifySoundsChanged(Collection<SoundboardWithSounds> soundboards) {
         for (Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment instanceof SoundboardFragment) {
-                ((SoundboardFragment) fragment).notifySoundsChanged();
+                SoundboardFragment soundboardFragment = (SoundboardFragment) fragment;
+                soundboardFragment.updateSoundboard(soundboards);
             }
+        }
+
+        // In my personal experience, notifyDataSetChanged() does not
+        // work (in some cases). The following lines work - sometimes.
+        if (tabLayout != null) {
+            tabLayout.invalidate();
+            tabLayout.requestLayout();
+        }
+
+        if (pager != null) {
+            pager.invalidate();
+            pager.requestLayout();
         }
     }
 

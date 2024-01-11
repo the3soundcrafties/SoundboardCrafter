@@ -12,8 +12,10 @@ import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+import de.soundboardcrafter.model.AbstractEntity;
 import de.soundboardcrafter.model.Sound;
 import de.soundboardcrafter.model.SoundboardWithSounds;
 
@@ -22,8 +24,8 @@ import de.soundboardcrafter.model.SoundboardWithSounds;
  */
 public class SoundboardItemAdapter
         extends RecyclerView.Adapter<SoundboardItemAdapter.ViewHolder> {
-    private final SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback;
-    private final SoundboardWithSounds soundboard;
+    private final SoundboardItem.MediaPlayerServiceCallback mediaPlayerServiceCallback;
+    private SoundboardWithSounds soundboard;
 
     private ActionListener actionListener;
 
@@ -43,17 +45,17 @@ public class SoundboardItemAdapter
      * View holder, providing references to the views for one item.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
-        ViewHolder(SoundboardItemRow itemView) {
+        ViewHolder(SoundboardItem itemView) {
             super(itemView);
         }
 
-        SoundboardItemRow getSoundboardItemRow() {
-            return (SoundboardItemRow) itemView;
+        SoundboardItem getSoundboardItem() {
+            return (SoundboardItem) itemView;
         }
     }
 
     SoundboardItemAdapter(
-            @NonNull SoundboardItemRow.MediaPlayerServiceCallback mediaPlayerServiceCallback,
+            @NonNull SoundboardItem.MediaPlayerServiceCallback mediaPlayerServiceCallback,
             @NonNull SoundboardWithSounds soundboard) {
         this.soundboard = checkNotNull(soundboard, "soundboard is null");
         this.mediaPlayerServiceCallback =
@@ -68,14 +70,27 @@ public class SoundboardItemAdapter
         return soundboard;
     }
 
-    @Override
-    public int getItemCount() {
-        return soundboard.getSounds().size();
+   void setSoundboard(SoundboardWithSounds newSoundboard) {
+       stopAllSoundsExceptFor(newSoundboard.getSounds());
+
+       this.soundboard = newSoundboard;
+       notifyDataSetChanged();
+    }
+
+    private void stopAllSoundsExceptFor(List<Sound> exceptions) {
+        for (Sound sound : this.soundboard.getSounds()) {
+             if (exceptions.stream()
+                     .map(AbstractEntity::getId)
+                     .noneMatch(id -> id.equals(sound.getId()))) {
+                 mediaPlayerServiceCallback.stopPlaying(
+                     soundboard.getSoundboard(), sound, true);
+             }
+         }
     }
 
     @Override
-    public long getItemId(int position) {
-        return position;
+    public int getItemCount() {
+        return soundboard.getSounds().size();
     }
 
     @Override
@@ -83,15 +98,15 @@ public class SoundboardItemAdapter
     public SoundboardItemAdapter.ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent, int viewType) {
         // create a new view
-        SoundboardItemRow v = new SoundboardItemRow(parent.getContext());
+        SoundboardItem v = new SoundboardItem(parent.getContext());
 
         return new SoundboardItemAdapter.ViewHolder(v);
     }
 
     @Override
     public void onViewRecycled(@NonNull ViewHolder holder) {
-        holder.getSoundboardItemRow().setOnClickListener(null);
-        holder.getSoundboardItemRow().setOnCreateContextMenuListener(null);
+        holder.getSoundboardItem().setOnClickListener(null);
+        holder.getSoundboardItem().setOnCreateContextMenuListener(null);
 
         if (holder == contextMenuViewHolder) {
             contextMenuViewHolder = null;
@@ -107,13 +122,13 @@ public class SoundboardItemAdapter
         mediaPlayerServiceCallback.setOnPlayingStopped(soundboard.getSoundboard(), sound,
                 this::notifyDataSetChanged);
 
-        holder.getSoundboardItemRow()
+        holder.getSoundboardItem()
                 .setSound(soundboard.getSoundboard(), sound, mediaPlayerServiceCallback);
 
-        holder.getSoundboardItemRow().setOnClickListener(
+        holder.getSoundboardItem().setOnClickListener(
                 v -> actionListener.onItemClick(holder.getAdapterPosition(), v)
         );
-        holder.getSoundboardItemRow().setOnCreateContextMenuListener(
+        holder.getSoundboardItem().setOnCreateContextMenuListener(
                 (menu, v, menuInfo) -> {
                     contextMenuViewHolder = holder;
                     contextMenuPosition = holder.getAdapterPosition();
