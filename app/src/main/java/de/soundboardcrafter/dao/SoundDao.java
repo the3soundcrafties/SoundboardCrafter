@@ -10,8 +10,6 @@ import androidx.annotation.WorkerThread;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import org.jetbrains.annotations.Contract;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -217,7 +215,7 @@ public class SoundDao extends AbstractDao {
      * <p>
      * (This method is only useful for initialization purposes.)
      */
-    public void insert(@NonNull Collection<Sound> sounds) {
+    void insert(@NonNull Collection<Sound> sounds) {
         for (Sound sound : sounds) {
             insert(sound);
         }
@@ -267,24 +265,10 @@ public class SoundDao extends AbstractDao {
         values.put(SoundTable.Cols.LOOP, sound.isLoop() ? 1 : 0);
         values.put(SoundTable.Cols.LOCATION_TYPE,
                 toLocationType(sound.getAudioLocation()).name());
-        values.put(SoundTable.Cols.PATH, toPath(sound.getAudioLocation()));
+        AbstractAudioLocation audioLocation = sound.getAudioLocation();
+        values.put(SoundTable.Cols.PATH, audioLocation.getInternalPath());
         values.put(SoundTable.Cols.VOLUME_PERCENTAGE, sound.getVolumePercentage());
         return values;
-    }
-
-    @NonNull
-    @Contract("null -> fail")
-    private String toPath(AbstractAudioLocation audioLocation) {
-        if (audioLocation instanceof FileSystemFolderAudioLocation) {
-            return ((FileSystemFolderAudioLocation) audioLocation).getInternalPath();
-        }
-
-        if (audioLocation instanceof AssetFolderAudioLocation) {
-            return ((AssetFolderAudioLocation) audioLocation).getInternalPath();
-        }
-
-        throw new IllegalStateException("Unexpected audio location type " +
-                audioLocation.getClass());
     }
 
     private SoundTable.LocationType toLocationType(AbstractAudioLocation audioLocation) {
