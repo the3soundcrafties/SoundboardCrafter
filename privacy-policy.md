@@ -1,6 +1,3 @@
-JUST FOR A TEST
-
-
 Soundboard Crafter Privacy Policy
 The Soundboard Crafter app is provided by Nikolaj Budzyn, Julia Rimpfl and Anna-Maria Kwasny ("The 3 Sound Crafties").
 
