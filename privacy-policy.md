@@ -4,6 +4,9 @@ The Soundboard Crafter app is provided by Nikolaj Budzyn, Julia Rimpfel and Anna
 Which data does the Soundboard Crafter use?
 The Soundboard Crafter uses media data from the user's device so that the user can play their own sounds.
 
+Does the Soundboard Crafter send any data anywhere?
+No, the Soundboard Crafter does not send any data anywhere. Neither usage data nor the user's media data will leave the user's device.
+
 Do we collect data?
 No, with the Soundboard Crafter, "The 3 Sound Crafties" do not collect any data.
 
