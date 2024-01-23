@@ -85,11 +85,11 @@
     <string name="about_text_html">
         <![CDATA[
         Soundboard Crafter
-        <p>Version 0.2.0</p>
+        <p>Version 0.2.1</p>
         <p>&#160;</p>
-        <p>&#169;2021 The 3 Sound Crafties:<br/>Nikolaj Budzyn, Julia Felkel, Anna-Maria Kwasny</p>
+        <p>&#169;2021 The 3 Sound Crafties:<br/>Nikolaj Budzyn, Julia Rimpfl, Anna-Maria Kwasny</p>
         <p>&#160;</p>
-        <p><i>Programmierung:</i><br>&#160;Nikolaj Budzyn<br>&#160;Julia Felkel</p>
+        <p><i>Programmierung:</i><br>&#160;Nikolaj Budzyn<br>&#160;Julia Rimpfl</p>
         <p>&#160;</p>
         <p><i>Quellcode:</i><br>&#160;<a href="https://github.com/the3soundcrafties/SoundboardCrafter">GitHub</a>&nbsp;&ndash; <a href="https://github.com/the3soundcrafties/SoundboardCrafter/blob/master/LICENSE">Lizenz</a></p>
         <p>&#160;</p>
