@@ -1,5 +1,5 @@
 Soundboard Crafter Privacy Policy
-The Soundboard Crafter app is provided by Nikolaj Budzyn, Julia Rimpfel and Anna-Maria Kwasny ("The 3 Sound Crafties").
+The Soundboard Crafter app is provided by Nikolaj Budzyn, Julia Rimpfl and Anna-Maria Kwasny ("The 3 Sound Crafties").
 
 Which data does the Soundboard Crafter use?
 The Soundboard Crafter uses media data from the user's device so that the user can play their own sounds.
