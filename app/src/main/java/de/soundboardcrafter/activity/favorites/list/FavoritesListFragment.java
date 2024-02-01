@@ -132,10 +132,14 @@ public class FavoritesListFragment extends Fragment
                             @Nullable View itemView =
                                     listView.getChildAt(listView.getFirstVisiblePosition());
                             if (itemView != null) {
-                                TutorialDao.getInstance(requireContext())
-                                        .check(FAVORITES_LIST_CONTEXT_MENU);
-                                itemView.performLongClick(dpToPx(requireContext(), FIRST_ITEM_X_DP),
-                                        dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+                                @Nullable Context context = getContext();
+                                if (context != null) {
+                                    TutorialDao.getInstance(context)
+                                            .check(FAVORITES_LIST_CONTEXT_MENU);
+                                    itemView.performLongClick(
+                                            dpToPx(context, FIRST_ITEM_X_DP),
+                                            dpToPx(context, FIRST_ITEM_Y_DP));
+                                }
                             }
                         }));
     }

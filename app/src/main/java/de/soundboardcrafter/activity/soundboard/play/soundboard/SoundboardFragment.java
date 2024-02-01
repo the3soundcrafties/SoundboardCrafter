@@ -227,16 +227,25 @@ public class SoundboardFragment extends AbstractPermissionFragment implements Se
     private void performContextClickOnFirstItem() {
         @Nullable View itemView = findFirstItemView();
         if (itemView != null) {
-            // Simulate a long in the middle of the item
-            itemView.performLongClick(
-                    dpToPx(requireContext(), FIRST_ITEM_X_DP),
-                    dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+            @Nullable Context context = getContext();
+            if (context != null) {
+                // Simulate a long in the middle of the item
+                itemView.performLongClick(
+                        dpToPx(context, FIRST_ITEM_X_DP),
+                        dpToPx(context, FIRST_ITEM_Y_DP));
+            }
         }
     }
 
+    @Nullable
     private View findFirstItemView() {
-        return recyclerView.findChildViewUnder(dpToPx(requireContext(), FIRST_ITEM_X_DP),
-                dpToPx(requireContext(), FIRST_ITEM_Y_DP));
+        @Nullable Context context = getContext();
+        if (context == null) {
+            return null;
+        }
+
+        return recyclerView.findChildViewUnder(dpToPx(context, FIRST_ITEM_X_DP),
+                dpToPx(context, FIRST_ITEM_Y_DP));
     }
 
     @UiThread

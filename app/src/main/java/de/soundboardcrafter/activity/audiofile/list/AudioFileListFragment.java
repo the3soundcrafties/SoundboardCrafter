@@ -264,8 +264,11 @@ public class AudioFileListFragment extends Fragment implements
                     @Nullable View itemView =
                             listView.getChildAt(listView.getFirstVisiblePosition());
                     if (itemView != null) {
-                        TutorialDao.getInstance(requireContext()).check(AUDIO_FILE_LIST_EDIT);
-                        itemView.performClick();
+                        @Nullable Context context = getContext();
+                        if (context != null) {
+                            TutorialDao.getInstance(context).check(AUDIO_FILE_LIST_EDIT);
+                            itemView.performClick();
+                        }
                     }
                 }));
     }
